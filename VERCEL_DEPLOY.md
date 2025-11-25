@@ -50,9 +50,10 @@ vercel
 
 ### 使用 SQLite（默认，推荐用于简单部署）
 Noteblog 在 Vercel 上默认使用 SQLite 数据库，无需额外配置：
-- 数据库文件路径：`sqlite:///tmp/noteblog.db`
+- 数据库文件路径：`sqlite:///tmp/noteblog.db`（临时目录）
 - 适用于个人博客或小型网站
 - 零配置，部署简单
+- **注意**：在 serverless 环境中，如果文件系统权限受限，会自动切换到内存数据库
 
 ### 使用 Vercel Postgres（生产环境推荐）
 对于生产环境或需要更高性能的场景：

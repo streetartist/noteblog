@@ -24,6 +24,8 @@ def create_app(config_name='default'):
     # 检查是否有自定义实例路径（用于 Vercel 部署）
     instance_path = os.getenv('FLASK_INSTANCE_PATH')
     if instance_path:
+        # 确保实例路径存在
+        os.makedirs(instance_path, exist_ok=True)
         app = Flask(__name__, instance_path=instance_path)
     else:
         app = Flask(__name__)
