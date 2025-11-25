@@ -15,6 +15,13 @@
   "env": {
     "FLASK_ENV": "production",
     "SKIP_PLUGIN_INIT": "1",
-    "DATABASE_URL": "sqlite:///tmp/noteblog.db"
+    "DATABASE_URL": "sqlite:///:memory:",
+    "USE_MEMORY_DB": "true",
+    "PYTHONPATH": "/var/task"
+  },
+  "functions": {
+    "api/index.py": {
+      "runtime": "python3.9"
+    }
   }
 }

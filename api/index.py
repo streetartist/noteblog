@@ -16,10 +16,21 @@ os.environ.setdefault('SKIP_PLUGIN_INIT', '1')
 temp_dir = tempfile.gettempdir()
 os.environ.setdefault('FLASK_INSTANCE_PATH', temp_dir)
 
-# 使用内存数据库或临时目录中的数据库
-# 在 Vercel serverless 环境中，使用内存数据库更可靠
-db_path = os.path.join(temp_dir, 'noteblog.db')
-os.environ.setdefault('DATABASE_URL', f'sqlite:///{db_path}')
+# 在 Vercel serverless 环境中，优先使用内存数据库
+# 因为无服务器环境的文件系统是临时的
+use_memory_db = os.getenv('USE_MEMORY_DB', 'true').lower() == 'true'
+
+if use_memory_db:
+    # 使用内存数据库 - 最适合无服务器环境
+    db_uri = 'sqlite:///:memory:'
+    print("使用内存数据库")
+else:
+    # 尝试使用临时文件数据库
+    db_path = os.path.join(temp_dir, 'noteblog.db')
+    db_uri = f'sqlite:///{db_path}'
+    print(f"使用文件数据库: {db_path}")
+
+os.environ.setdefault('DATABASE_URL', db_uri)
 
 # 确保数据库目录存在
 os.makedirs(temp_dir, exist_ok=True)
@@ -30,22 +41,23 @@ from app import create_app, db
 # 创建 Flask 应用 - 使用临时目录作为实例路径
 app = create_app()
 
-# 强制设置数据库路径到临时目录
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+# 强制设置数据库路径
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 app.config['INSTANCE_PATH'] = temp_dir
 
-# 确保数据库文件可以创建
-try:
-    # 尝试创建数据库文件以确保权限正确
-    import sqlite3
-    conn = sqlite3.connect(db_path)
-    conn.close()
-    print(f"数据库文件路径: {db_path}")
-except Exception as e:
-    print(f"数据库文件创建失败: {e}")
-    # 如果无法创建文件，使用内存数据库
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    print("切换到内存数据库")
+# 如果使用文件数据库，确保文件可以创建
+if not use_memory_db:
+    try:
+        # 尝试创建数据库文件以确保权限正确
+        import sqlite3
+        conn = sqlite3.connect(db_path)
+        conn.close()
+        print(f"数据库文件创建成功: {db_path}")
+    except Exception as e:
+        print(f"数据库文件创建失败: {e}")
+        # 如果无法创建文件，切换到内存数据库
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        print("切换到内存数据库")
 
 def init_default_settings():
     """初始化默认设置"""
@@ -65,53 +77,94 @@ def init_default_settings():
         ('time_format', '%H:%M:%S', 'string', '时间格式', False),
     ]
     
-    for key, value, value_type, description, is_public in default_settings:
-        setting = Setting.query.filter_by(key=key).first()
-        if not setting:
-            setting = Setting(key, value, value_type=value_type,
-                              description=description, is_public=is_public)
-            db.session.add(setting)
-    
-    db.session.commit()
+    try:
+        for key, value, value_type, description, is_public in default_settings:
+            setting = Setting.query.filter_by(key=key).first()
+            if not setting:
+                setting = Setting(key, value, value_type=value_type,
+                                  description=description, is_public=is_public)
+                db.session.add(setting)
+        
+        db.session.commit()
+        print("默认设置初始化成功")
+    except Exception as e:
+        print(f"默认设置初始化失败: {e}")
+        db.session.rollback()
 
 def create_admin_user():
     """创建默认管理员用户"""
     from app.models.user import User
-    admin = User.query.filter_by(is_admin=True).first()
-    if not admin:
-        admin = User(
-            'admin',
-            'admin@example.com',
-            'admin123',
-            display_name='管理员',
-            is_admin=True,
-            is_active=True
-        )
-        db.session.add(admin)
-        db.session.commit()
+    try:
+        admin = User.query.filter_by(is_admin=True).first()
+        if not admin:
+            admin = User(
+                'admin',
+                'admin@example.com',
+                'admin123',
+                display_name='管理员',
+                is_admin=True,
+                is_active=True
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print("管理员用户创建成功")
+    except Exception as e:
+        print(f"管理员用户创建失败: {e}")
+        db.session.rollback()
 
-# Vercel 需要导出一个名为 'app' 的 WSGI 应用
-# 但在 serverless 环境中，我们需要处理一些初始化逻辑
+# 全局变量来跟踪初始化状态
+_db_initialized = False
 
-# 在应用上下文中初始化数据库表和默认设置
-with app.app_context():
+# 创建一个初始化函数，在每次请求时调用
+def ensure_database_initialized():
+    """确保数据库已初始化"""
+    global _db_initialized
+    
+    # 如果已经初始化过，直接返回
+    if _db_initialized:
+        return True
+    
     try:
         # 创建数据库表
         db.create_all()
         print("数据库表创建完成")
         
-        # 初始化默认设置（模拟 run.py init 的行为）
+        # 初始化默认设置
         init_default_settings()
-        print("默认设置初始化完成")
         
         # 创建管理员用户
         create_admin_user()
-        print("管理员用户创建完成")
         
+        _db_initialized = True
+        return True
     except Exception as e:
-        # 在 serverless 环境中，某些数据库操作可能会失败
-        # 我们可以记录错误但继续运行
-        print(f"初始化过程中出现错误: {e}")
+        print(f"数据库初始化错误: {e}")
+        _db_initialized = False
+        return False
+
+# 修改应用以处理数据库初始化
+@app.before_request
+def before_request():
+    """在每个请求前确保数据库已初始化"""
+    global _db_initialized
+    
+    # 如果还没有初始化，尝试初始化
+    if not _db_initialized:
+        ensure_database_initialized()
+    
+    # 尝试连接数据库以确保其可用性
+    try:
+        # 简单的数据库连接测试
+        with db.engine.connect() as conn:
+            conn.execute(db.text('SELECT 1'))
+    except Exception as e:
+        print(f"数据库连接测试失败: {e}")
+        # 如果连接失败，重置初始化状态并尝试重新初始化
+        _db_initialized = False
+        ensure_database_initialized()
+
+# 初始化数据库（如果可能）
+ensure_database_initialized()
 
 # 导出 WSGI 应用
 # Vercel 会自动调用这个应用来处理请求

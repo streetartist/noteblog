@@ -78,10 +78,14 @@ class SettingManager:
     @staticmethod
     def get(key, default=None):
         """获取设置值"""
-        setting = Setting.query.filter_by(key=key).first()
-        if setting:
-            return setting.get_typed_value()
-        return default
+        try:
+            setting = Setting.query.filter_by(key=key).first()
+            if setting:
+                return setting.get_typed_value()
+            return default
+        except Exception:
+            # 如果数据库连接失败，返回默认值
+            return default
     
     @staticmethod
     def set(key, value, value_type='string', description=None, category='general', 
