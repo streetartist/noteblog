@@ -1,0 +1,30 @@
+<!-- 友情链接侧边栏模块 -->
+{% if friend_links and friend_links.links %}
+<div class="widget friend-links-widget">
+    <h3 class="widget-title">
+        {% if friend_links.title %}
+            {{ friend_links.title }}
+        {% else %}
+            友情链接
+        {% endif %}
+    </h3>
+    <div class="friend-links-list">
+        {% for link in friend_links.links %}
+        <div class="friend-link-item">
+            <a href="{{ link.url }}" 
+               {% if friend_links.open_new_window %}target="_blank"{% endif %}
+               {% if link.description %}title="{{ link.description }}"{% endif %}
+               class="friend-link">
+                {% if link.logo %}
+                <img src="{{ link.logo }}" alt="{{ link.name }}" class="friend-link-logo">
+                {% endif %}
+                <span class="friend-link-name">{{ link.name }}</span>
+            </a>
+            {% if friend_links.show_description and link.description %}
+            <div class="friend-link-description">{{ link.description }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

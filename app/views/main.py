@@ -37,7 +37,10 @@ def index():
         'tags': tags,
         'site_title': SettingManager.get('site_title', 'Noteblog'),
         'site_description': SettingManager.get('site_description', ''),
-        'current_user': current_user
+        'current_user': current_user,
+        'plugin_hooks': {
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+        }
     }
     
     # 应用过滤器
@@ -65,7 +68,10 @@ def post_detail(slug):
         'post': post,
         'comments': comments,
         'site_title': f"{post.title} - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
+        'current_user': current_user,
+        'plugin_hooks': {
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+        }
     }
     
     # 应用过滤器
@@ -90,7 +96,10 @@ def category(slug):
         'category': category,
         'posts': posts,
         'site_title': f"{category.name} - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
+        'current_user': current_user,
+        'plugin_hooks': {
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+        }
     }
     
     return theme_manager.render_template('category.html', **context)
@@ -113,7 +122,10 @@ def tag(slug):
         'tag': tag,
         'posts': posts,
         'site_title': f"{tag.name} - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
+        'current_user': current_user,
+        'plugin_hooks': {
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+        }
     }
     
     return theme_manager.render_template('tag.html', **context)
@@ -147,7 +159,10 @@ def search():
         'posts': posts,
         'total': total,
         'site_title': f"搜索: {query} - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
+        'current_user': current_user,
+        'plugin_hooks': {
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+        }
     }
     
     return theme_manager.render_template('search.html', **context)
@@ -235,7 +250,10 @@ def archives():
     context = {
         'archives': archives,
         'site_title': f"归档 - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
+        'current_user': current_user,
+        'plugin_hooks': {
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+        }
     }
     
     return theme_manager.render_template('archives.html', **context)
@@ -248,7 +266,10 @@ def categories_list():
     context = {
         'categories': categories,
         'site_title': f"分类 - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
+        'current_user': current_user,
+        'plugin_hooks': {
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+        }
     }
     return theme_manager.render_template('categories.html', **context)
 
@@ -260,7 +281,10 @@ def tags_list():
     context = {
         'tags': tags,
         'site_title': f"标签 - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
+        'current_user': current_user,
+        'plugin_hooks': {
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+        }
     }
     return theme_manager.render_template('tags.html', **context)
 
@@ -275,7 +299,10 @@ def page(slug):
     context = {
         'page': page,
         'site_title': f"{page.title} - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
+        'current_user': current_user,
+        'plugin_hooks': {
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+        }
     }
     
     return theme_manager.render_template('page.html', **context)

@@ -144,6 +144,13 @@
                                 {% endfor %}
                             </div>
                         </div>
+                        
+                        <!-- 插件钩子：侧边栏底部 -->
+                        {% if plugin_hooks and plugin_hooks.sidebar_bottom %}
+                            {% for hook_content in plugin_hooks.sidebar_bottom %}
+                                {{ hook_content|safe }}
+                            {% endfor %}
+                        {% endif %}
                         {% endblock %}
                     </aside>
                     {% endif %}

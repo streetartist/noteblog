@@ -28,10 +28,12 @@
                         <div style="font-size: 12px; opacity: 0.9;">版本 {{ plugin.version or '1.0.0' }}</div>
                     </div>
                     <div>
-                        {% if plugin.is_active %}
+                        {% if plugin.is_installed is defined and not plugin.is_installed %}
+                        <el-tag size="small" type="info">未安装</el-tag>
+                        {% elif plugin.is_active %}
                         <el-tag size="small" type="success">已激活</el-tag>
                         {% else %}
-                        <el-tag size="small" type="info">未激活</el-tag>
+                        <el-tag size="small" type="warning">已安装</el-tag>
                         {% endif %}
                     </div>
                 </div>
@@ -62,21 +64,34 @@
                 
                 <!-- 操作按钮 -->
                 <div style="display: flex; gap: 8px;">
-                    {% if plugin.is_active %}
+                    {% if plugin.is_installed is defined and not plugin.is_installed %}
+                    <!-- 未安装的插件 -->
+                    <el-button size="small" type="primary" @click="installPluginByName('{{ plugin.name }}')" style="flex: 1;">
+                        <i class="el-icon-download"></i> 安装
+                    </el-button>
+                    {% elif plugin.is_active %}
+                    <!-- 已激活的插件 -->
                     <el-button size="small" type="warning" @click="deactivatePlugin('{{ plugin.name }}')" style="flex: 1;">
                         <i class="el-icon-video-pause"></i> 停用
                     </el-button>
-                    {% else %}
-                    <el-button size="small" type="success" @click="activatePlugin('{{ plugin.name }}')" style="flex: 1;">
-                        <i class="el-icon-video-play"></i> 激活
-                    </el-button>
-                    {% endif %}
                     <el-button size="small" @click="configurePlugin('{{ plugin.name }}')" style="flex: 1;">
                         <i class="el-icon-setting"></i> 配置
                     </el-button>
                     <el-button size="small" type="danger" @click="uninstallPlugin('{{ plugin.name }}', '{{ plugin.display_name or plugin.name }}')">
                         <i class="el-icon-delete"></i>
                     </el-button>
+                    {% else %}
+                    <!-- 已安装但未激活的插件 -->
+                    <el-button size="small" type="success" @click="activatePlugin('{{ plugin.name }}')" style="flex: 1;">
+                        <i class="el-icon-video-play"></i> 激活
+                    </el-button>
+                    <el-button size="small" @click="configurePlugin('{{ plugin.name }}')" style="flex: 1;">
+                        <i class="el-icon-setting"></i> 配置
+                    </el-button>
+                    <el-button size="small" type="danger" @click="uninstallPlugin('{{ plugin.name }}', '{{ plugin.display_name or plugin.name }}')">
+                        <i class="el-icon-delete"></i>
+                    </el-button>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -97,56 +112,98 @@
 </div>
 
 <script>
-const { createApp } = Vue;
-const app = createApp({
-    methods: {
-        activatePlugin(pluginName) {
-            // 创建表单提交激活请求
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/admin/plugins/${pluginName}/activate`;
+// 插件管理页面的方法，添加到全局Vue应用中
+document.addEventListener('DOMContentLoaded', function() {
+    // 等待全局Vue应用加载完成
+    setTimeout(() => {
+        if (window._noteblog_app) {
+            const app = window._noteblog_app;
             
-            document.body.appendChild(form);
-            form.submit();
-        },
-        deactivatePlugin(pluginName) {
-            this.$confirm('确定要停用此插件吗？', '确认停用', {
-                confirmButtonText: '确定停用',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(() => {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/admin/plugins/${pluginName}/deactivate`;
-                
-                document.body.appendChild(form);
-                form.submit();
-            }).catch(() => {
-                this.$message.info('已取消停用');
-            });
-        },
-        configurePlugin(pluginName) {
-            this.$message.info('插件配置功能开发中...');
-        },
-        uninstallPlugin(pluginName, displayName) {
-            this.$confirm(`确定要卸载插件 "${displayName}" 吗？此操作不可恢复。`, '确认卸载', {
-                confirmButtonText: '确定卸载',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(() => {
-                this.$message.info('卸载插件功能开发中...');
-            }).catch(() => {
-                this.$message.info('已取消卸载');
-            });
-        },
-        installPlugin() {
-            this.$message.info('安装插件功能开发中...');
+            // 添加插件管理相关的方法
+            app.config.globalProperties.$adminPlugins = {
+                activatePlugin(pluginName) {
+                    // 创建表单提交激活请求
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/plugins/${pluginName}/activate`;
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                },
+                deactivatePlugin(pluginName) {
+                    app.config.globalProperties.$confirm('确定要停用此插件吗？', '确认停用', {
+                        confirmButtonText: '确定停用',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/admin/plugins/${pluginName}/deactivate`;
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    }).catch(() => {
+                        app.config.globalProperties.$message.info('已取消停用');
+                    });
+                },
+                configurePlugin(pluginName) {
+                    app.config.globalProperties.$message.info('插件配置功能开发中...');
+                },
+                uninstallPlugin(pluginName, displayName) {
+                    app.config.globalProperties.$confirm(`确定要卸载插件 "${displayName}" 吗？此操作不可恢复。`, '确认卸载', {
+                        confirmButtonText: '确定卸载',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        app.config.globalProperties.$message.info('卸载插件功能开发中...');
+                    }).catch(() => {
+                        app.config.globalProperties.$message.info('已取消卸载');
+                    });
+                },
+                installPlugin() {
+                    app.config.globalProperties.$prompt('请输入插件名称（插件文件夹名称）', '安装插件', {
+                        confirmButtonText: '安装',
+                        cancelButtonText: '取消',
+                        inputPattern: /^[a-zA-Z0-9_-]+$/,
+                        inputErrorMessage: '插件名称只能包含字母、数字、下划线和横线'
+                    }).then(({ value }) => {
+                        this.installPluginByName(value);
+                    }).catch(() => {
+                        app.config.globalProperties.$message.info('已取消安装');
+                    });
+                },
+                installPluginByName(pluginName) {
+                    const loading = app.config.globalProperties.$loading({
+                        lock: true,
+                        text: '正在安装插件...',
+                        spinner: 'el-icon-loading',
+                        background: 'rgba(0, 0, 0, 0.7)'
+                    });
+                    
+                    // 创建表单提交安装请求
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/plugins/${pluginName}/install`;
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                    
+                    // 由于是表单提交，这里只是显示加载状态
+                    setTimeout(() => {
+                        loading.close();
+                    }, 2000);
+                }
+            };
+            
+            // 为了在模板中使用，将这些方法添加到根实例
+            app._instance.data.activatePlugin = app.config.globalProperties.$adminPlugins.activatePlugin;
+            app._instance.data.deactivatePlugin = app.config.globalProperties.$adminPlugins.deactivatePlugin;
+            app._instance.data.configurePlugin = app.config.globalProperties.$adminPlugins.configurePlugin;
+            app._instance.data.uninstallPlugin = app.config.globalProperties.$adminPlugins.uninstallPlugin;
+            app._instance.data.installPlugin = app.config.globalProperties.$adminPlugins.installPlugin;
+            app._instance.data.installPluginByName = app.config.globalProperties.$adminPlugins.installPluginByName;
         }
-    }
+    }, 100);
 });
-
-// 注册Element Plus
-app.use(ElementPlus);
-app.mount('.admin-plugins');
 </script>
 {% endblock %}

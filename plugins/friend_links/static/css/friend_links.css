@@ -1,0 +1,210 @@
+/* 友情链接插件样式 */
+
+.friend-links-widget {
+    margin-bottom: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.friend-links-widget .widget-title {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 16px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: none;
+}
+
+.friend-links-list {
+    padding: 16px;
+}
+
+.friend-link-item {
+    margin-bottom: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.friend-link-item:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.friend-link-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.friend-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+.friend-link:hover {
+    color: #409eff;
+}
+
+.friend-link-icon {
+    margin-right: 8px;
+    font-size: 14px;
+    color: #409eff;
+    width: 16px;
+    text-align: center;
+}
+
+.friend-link-name {
+    flex: 1;
+    font-size: 14px;
+}
+
+.friend-link-description {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    padding-left: 24px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .friend-links-widget {
+        margin-bottom: 15px;
+    }
+    
+    .friend-links-list {
+        padding: 12px;
+    }
+    
+    .friend-link-item {
+        margin-bottom: 10px;
+        padding: 6px 0;
+    }
+    
+    .friend-link-name {
+        font-size: 13px;
+    }
+    
+    .friend-link-description {
+        font-size: 11px;
+        padding-left: 20px;
+    }
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+    .friend-links-widget {
+        background: #2c3e50;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .friend-link {
+        color: #ecf0f1;
+    }
+    
+    .friend-link:hover {
+        color: #3498db;
+    }
+    
+    .friend-link-item:hover {
+        background-color: #34495e;
+    }
+    
+    .friend-link-item {
+        border-bottom-color: #34495e;
+    }
+    
+    .friend-link-description {
+        color: #bdc3c7;
+    }
+}
+
+/* 动画效果 */
+.friend-link-item {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 图标样式增强 */
+.friend-link-icon.fab,
+.friend-link-icon.fas,
+.friend-link-icon.far {
+    font-size: 16px;
+}
+
+.friend-link-icon.el-icon {
+    font-size: 16px;
+}
+
+.friend-link-logo {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    border-radius: 2px;
+    object-fit: cover;
+}
+
+/* 特殊链接样式 */
+.friend-link[href*="github.com"] .friend-link-icon {
+    color: #333;
+}
+
+.friend-link[href*="twitter.com"] .friend-link-icon {
+    color: #1da1f2;
+}
+
+.friend-link[href*="facebook.com"] .friend-link-icon {
+    color: #1877f2;
+}
+
+.friend-link[href*="linkedin.com"] .friend-link-icon {
+    color: #0077b5;
+}
+
+.friend-link[href*="weibo.com"] .friend-link-icon {
+    color: #e6162d;
+}
+
+/* 加载状态 */
+.friend-links-widget.loading .friend-links-list {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.friend-links-widget.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #409eff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

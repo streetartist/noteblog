@@ -1,0 +1,76 @@
+{
+    "name": "friend_links",
+    "display_name": "友情链接",
+    "version": "1.0.0",
+    "description": "在侧边栏显示友情链接的插件",
+    "author": "Noteblog Team",
+    "website": "https://github.com/noteblog/friend_links_plugin",
+    "license": "MIT",
+    "entry_point": "create_plugin",
+    "blueprints": [
+        {
+            "name": "friend_links_bp",
+            "url_prefix": "/friend_links"
+        }
+    ],
+    "requirements": [],
+    "min_noteblog_version": "1.0.0",
+    "max_noteblog_version": "2.0.0",
+    "config_schema": {
+        "title": {
+            "type": "string",
+            "default": "友情链接",
+            "description": "侧边栏友链模块的标题"
+        },
+        "show_in_sidebar": {
+            "type": "boolean",
+            "default": true,
+            "description": "是否在侧边栏显示友链"
+        },
+        "max_links": {
+            "type": "integer",
+            "default": 10,
+            "description": "最大显示链接数量"
+        },
+        "open_new_window": {
+            "type": "boolean",
+            "default": true,
+            "description": "是否在新窗口打开链接"
+        },
+        "show_description": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否显示链接描述"
+        }
+    },
+    "hooks": [
+        "template_context",
+        "admin_navigation"
+    ],
+    "filters": [],
+    "permissions": [
+        "admin.access"
+    ],
+    "templates": {
+        "admin": "templates/admin.html",
+        "sidebar": "templates/sidebar.html"
+    },
+    "assets": {
+        "css": [
+            "static/css/friend_links.css"
+        ]
+    },
+    "database": {
+        "models": [],
+        "migrations": []
+    },
+    "api_endpoints": [
+        {
+            "path": "/api/friend_links",
+            "methods": ["GET", "POST"],
+            "description": "获取或管理友情链接"
+        }
+    ],
+    "cron_jobs": [],
+    "event_listeners": []
+}

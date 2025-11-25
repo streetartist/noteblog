@@ -555,10 +555,49 @@ def toggle_user_status(user_id):
 @admin_required
 def plugins():
     """插件列表"""
-    plugins = Plugin.query.order_by(Plugin.name).all()
+    # 获取已安装的插件
+    installed_plugins = Plugin.query.order_by(Plugin.name).all()
+    installed_names = {p.name for p in installed_plugins}
+    
+    # 获取可安装的插件（在plugins目录下但未安装的）
+    available_plugins = []
+    import os
+    plugins_dir = 'plugins'
+    
+    if os.path.exists(plugins_dir):
+        for item in os.listdir(plugins_dir):
+            plugin_path = os.path.join(plugins_dir, item)
+            if os.path.isdir(plugin_path) and item not in installed_names:
+                # 检查是否有plugin.json文件
+                plugin_json_path = os.path.join(plugin_path, 'plugin.json')
+                if os.path.exists(plugin_json_path):
+                    try:
+                        import json
+                        with open(plugin_json_path, 'r', encoding='utf-8') as f:
+                            plugin_info = json.load(f)
+                        
+                        # 创建一个插件对象用于显示
+                        class AvailablePlugin:
+                            def __init__(self, info, name):
+                                self.name = name
+                                self.display_name = info.get('display_name', name)
+                                self.description = info.get('description', '')
+                                self.version = info.get('version', '1.0.0')
+                                self.author = info.get('author', '')
+                                self.website = info.get('website', '')
+                                self.is_active = False
+                                self.is_installed = False
+                        
+                        available_plugins.append(AvailablePlugin(plugin_info, item))
+                    except Exception as e:
+                        print(f"Error reading plugin info for {item}: {e}")
+                        continue
+    
+    # 合并插件列表
+    all_plugins = list(installed_plugins) + available_plugins
     
     context = {
-        'plugins': plugins,
+        'plugins': all_plugins,
         'site_title': f"插件管理 - {SettingManager.get('site_title', 'Noteblog')} 管理后台",
         'current_user': current_user
     }
@@ -588,6 +627,48 @@ def deactivate_plugin(plugin_name):
         flash('插件停用失败', 'error')
     
     return redirect(url_for('admin.plugins'))
+
+@bp.route('/plugins/<plugin_name>/install', methods=['POST'])
+@login_required
+@admin_required
+def install_plugin(plugin_name):
+    """安装插件"""
+    if plugin_manager.install_plugin(plugin_name):
+        flash('插件安装成功', 'success')
+    else:
+        flash('插件安装失败', 'error')
+    
+    return redirect(url_for('admin.plugins'))
+
+@bp.route('/api/plugins/<plugin_name>/install', methods=['POST'])
+@login_required
+@admin_required
+def api_install_plugin(plugin_name):
+    """API：安装插件"""
+    if plugin_manager.install_plugin(plugin_name):
+        return jsonify({'success': True, 'message': '插件安装成功'})
+    else:
+        return jsonify({'success': False, 'message': '插件安装失败'})
+
+@bp.route('/api/plugins/<plugin_name>/activate', methods=['POST'])
+@login_required
+@admin_required
+def api_activate_plugin(plugin_name):
+    """API：激活插件"""
+    if plugin_manager.activate_plugin(plugin_name):
+        return jsonify({'success': True, 'message': '插件激活成功'})
+    else:
+        return jsonify({'success': False, 'message': '插件激活失败'})
+
+@bp.route('/api/plugins/<plugin_name>/deactivate', methods=['POST'])
+@login_required
+@admin_required
+def api_deactivate_plugin(plugin_name):
+    """API：停用插件"""
+    if plugin_manager.deactivate_plugin(plugin_name):
+        return jsonify({'success': True, 'message': '插件停用成功'})
+    else:
+        return jsonify({'success': False, 'message': '插件停用失败'})
 
 # 主题管理
 @bp.route('/themes')

@@ -70,6 +70,26 @@ def create_app(config_name='default'):
     from app.services.theme_manager import theme_manager
     if os.getenv('SKIP_PLUGIN_INIT', '0') != '1':
         theme_manager.init_app(app)
+    
+    # 添加全局模板上下文处理器
+    @app.context_processor
+    def inject_plugin_hooks():
+        """为所有模板注入插件钩子"""
+        if os.getenv('SKIP_PLUGIN_INIT', '0') == '1':
+            return {}
+        
+        try:
+            from app.services.plugin_manager import plugin_manager
+            
+            # 获取插件钩子内容
+            plugin_hooks = {
+                'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            }
+            
+            return {'plugin_hooks': plugin_hooks}
+        except Exception:
+            # 如果插件管理器不可用，返回空字典
+            return {}
 
     # 提供主题静态文件（/themes/<theme>/static/...）的路由，便于主题资源加载
     @app.route('/themes/<theme_name>/static/<path:filename>')

@@ -4,6 +4,7 @@
 import os
 import sys
 import importlib
+import importlib.util
 import inspect
 from typing import Dict, List, Any, Callable
 from flask import current_app
@@ -30,19 +31,16 @@ class PluginManager:
             self.load_active_plugins()
     
     def discover_plugins(self):
-        """发现插件"""
+        """发现插件（仅扫描，不自动注册）"""
         plugins_dir = os.path.join(os.getcwd(), 'plugins')
         
         if not os.path.exists(plugins_dir):
             os.makedirs(plugins_dir)
             return
         
-        for plugin_name in os.listdir(plugins_dir):
-            plugin_path = os.path.join(plugins_dir, plugin_name)
-            
-            # 检查是否为插件目录
-            if os.path.isdir(plugin_path):
-                self._register_plugin(plugin_name, plugin_path)
+        # 只扫描插件目录，不自动注册到数据库
+        # 插件注册将在用户点击安装时进行
+        pass
     
     def _register_plugin(self, plugin_name: str, plugin_path: str):
         """注册插件到数据库"""
@@ -96,14 +94,35 @@ class PluginManager:
         """加载单个插件"""
         plugin_path = plugin.install_path
         
-        # 添加插件路径到 Python 路径
-        if plugin_path not in sys.path:
-            sys.path.insert(0, plugin_path)
+        # 确保插件路径存在
+        if not os.path.exists(plugin_path):
+            current_app.logger.error(f"插件路径不存在: {plugin_path}")
+            return
         
         # 导入插件模块
         module_name = plugin.name
         try:
-            module = importlib.import_module(module_name)
+            # 使用插件目录作为包路径进行导入
+            # 这样可以正确处理相对导入
+            plugins_dir = os.path.join(os.getcwd(), 'plugins')
+            if plugins_dir not in sys.path:
+                sys.path.insert(0, plugins_dir)
+            
+            # 导入插件模块
+            spec = importlib.util.spec_from_file_location(
+                module_name, 
+                os.path.join(plugin_path, '__init__.py')
+            )
+            if spec is None:
+                current_app.logger.error(f"无法为插件 {plugin.name} 创建模块规范")
+                return
+                
+            module = importlib.util.module_from_spec(spec)
+            
+            # 设置模块的 __package__ 属性以支持相对导入
+            module.__package__ = module_name
+            
+            spec.loader.exec_module(module)
             self.plugin_modules[plugin.name] = module
             
             # 查找插件类
@@ -125,12 +144,71 @@ class PluginManager:
                 if hasattr(plugin_instance, 'register_hooks'):
                     plugin_instance.register_hooks()
                 
+                # 注册插件的蓝图
+                self._register_plugin_blueprints(module, plugin.name)
+                
                 current_app.logger.info(f"插件 {plugin.name} 加载成功")
             else:
                 current_app.logger.warning(f"插件 {plugin.name} 中未找到插件类")
                 
-        except ImportError as e:
+        except Exception as e:
             current_app.logger.error(f"导入插件 {plugin.name} 失败: {e}")
+            import traceback
+            current_app.logger.error(f"详细错误信息: {traceback.format_exc()}")
+    
+    def _register_plugin_blueprints(self, module, plugin_name: str):
+        """注册插件的蓝图"""
+        try:
+            # 在应用上下文中注册蓝图
+            with self.app.app_context():
+                # 查找模块中的所有蓝图
+                for name, obj in inspect.getmembers(module):
+                    # 检查是否是蓝图实例（friend_links插件使用这种方式）
+                    # 使用更安全的方式检查蓝图属性，避免触发请求上下文
+                    is_blueprint_instance = False
+                    try:
+                        if (hasattr(obj, 'register') and 
+                            hasattr(obj, 'import_name') and
+                            hasattr(obj, 'deferred_functions')):  # Blueprint特有属性
+                            is_blueprint_instance = True
+                    except RuntimeError:
+                        # 如果检查属性时出现上下文错误，跳过这个对象
+                        continue
+                    
+                    if is_blueprint_instance:
+                        # 这是一个蓝图实例
+                        blueprint = obj
+                        # 延迟注册蓝图，避免在注册时触发路由函数中的current_app访问
+                        try:
+                            self.app.register_blueprint(blueprint)
+                            self.app.logger.info(f"插件 {plugin_name} 蓝图 {name} 注册成功")
+                        except Exception as register_error:
+                            self.app.logger.error(f"注册蓝图 {name} 时出错: {register_error}")
+                            # 继续尝试其他蓝图，不中断整个注册过程
+                            continue
+                    
+                    # 检查是否是蓝图类
+                    elif inspect.isclass(obj):
+                        try:
+                            if (hasattr(obj, 'register') and 
+                                hasattr(obj, 'name') and 
+                                hasattr(obj, 'url_prefix')):
+                                # 这是一个Flask Blueprint类
+                                blueprint = obj()
+                                if hasattr(blueprint, 'register'):
+                                    self.app.register_blueprint(blueprint)
+                                    self.app.logger.info(f"插件 {plugin_name} 蓝图类 {name} 注册成功")
+                        except RuntimeError:
+                            # 如果检查属性时出现上下文错误，跳过这个类
+                            continue
+                        except Exception as register_error:
+                            self.app.logger.error(f"注册蓝图类 {name} 时出错: {register_error}")
+                            continue
+                        
+        except Exception as e:
+            self.app.logger.error(f"注册插件 {plugin_name} 蓝图失败: {e}")
+            import traceback
+            self.app.logger.error(f"详细错误信息: {traceback.format_exc()}")
     
     def register_hook(self, hook_name: str, callback: Callable, 
                      priority: int = 10, accepted_args: int = 1, 
@@ -286,6 +364,53 @@ class PluginManager:
                         current_app.logger.error(f"获取模板钩子 {hook_name} (插件: {plugin_name}) 失败: {e}")
         
         return hooks
+    
+    def install_plugin(self, plugin_name: str):
+        """安装插件"""
+        try:
+            # 先检查插件是否已存在
+            plugin = Plugin.query.filter_by(name=plugin_name).first()
+            if plugin:
+                current_app.logger.error(f"插件 {plugin_name} 已存在")
+                return False
+            
+            # 注册插件到数据库
+            plugins_dir = os.path.join(os.getcwd(), 'plugins')
+            plugin_path = os.path.join(plugins_dir, plugin_name)
+            
+            if not os.path.exists(plugin_path):
+                current_app.logger.error(f"插件目录 {plugin_path} 不存在")
+                return False
+            
+            # 调用注册方法
+            self._register_plugin(plugin_name, plugin_path)
+            
+            # 重新获取插件对象
+            plugin = Plugin.query.filter_by(name=plugin_name).first()
+            if not plugin:
+                current_app.logger.error(f"插件 {plugin_name} 注册失败")
+                return False
+            
+            # 加载插件
+            self._load_plugin(plugin)
+            plugin_instance = self.plugins.get(plugin_name)
+            
+            if plugin_instance and hasattr(plugin_instance, 'install'):
+                # 调用插件的install方法
+                result = plugin_instance.install()
+                if result:
+                    current_app.logger.info(f"插件 {plugin_name} 安装成功")
+                    return True
+                else:
+                    current_app.logger.error(f"插件 {plugin_name} 安装失败")
+                    return False
+            else:
+                current_app.logger.error(f"插件 {plugin_name} 没有install方法")
+                return False
+                
+        except Exception as e:
+            current_app.logger.error(f"安装插件 {plugin_name} 失败: {e}")
+            return False
     
     def activate_plugin(self, plugin_name: str):
         """激活插件"""
