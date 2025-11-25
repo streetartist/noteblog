@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% set _admin_page = true %}
+
+{% block title %}个人资料 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<div class="post-detail">
+    <div class="text-center mb-4">
+        <h2>个人资料</h2>
+        <p class="text-muted">管理您的个人信息和账户设置</p>
+    </div>
+    
+    <div class="widget">
+        <div class="row">
+            <div class="col-md-4 text-center mb-4">
+                <div class="mb-3">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar }}" alt="{{ user.display_name or user.username }}" 
+                             style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color, #409EFF);">
+                    {% else %}
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: #f5f7fa; display: flex; align-items: center; justify-content: center; border: 4px solid var(--primary-color, #409EFF); margin: 0 auto;">
+                            <i class="el-icon-user" style="font-size: 48px; color: #909399;"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <h3>{{ user.display_name or user.username }}</h3>
+                <p class="mb-3">
+                    {% if user.is_admin %}
+                        <el-tag type="danger">管理员</el-tag>
+                    {% else %}
+                        <el-tag type="primary">用户</el-tag>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="widget-title">基本信息</div>
+                
+                <div class="mb-3">
+                    <strong>用户名：</strong>
+                    <span>{{ user.username }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>显示名称：</strong>
+                    <span>{{ user.display_name or '未设置' }}</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>邮箱：</strong>
+                    <span>{{ user.email }}</span>
+                </div>
+                
+                {% if user.bio %}
+                <div class="mb-3">
+                    <strong>个人简介：</strong>
+                    <span>{{ user.bio }}</span>
+                </div>
+                {% endif %}
+                
+                {% if user.website %}
+                <div class="mb-3">
+                    <strong>个人网站：</strong>
+                    <span><a href="{{ user.website }}" target="_blank">{{ user.website }}</a></span>
+                </div>
+                {% endif %}
+                
+                {% if user.location %}
+                <div class="mb-3">
+                    <strong>所在地：</strong>
+                    <span>{{ user.location }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <strong>注册时间：</strong>
+                    <span>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else '未知' }}</span>
+                </div>
+                
+                <div class="mb-4">
+                    <strong>最后登录：</strong>
+                    <span>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else '从未登录' }}</span>
+                </div>
+                
+                <div class="post-actions">
+                    <el-button type="primary" @click="showEditProfileDialog">
+                        <i class="el-icon-edit"></i> 编辑资料
+                    </el-button>
+                    <el-button @click="showChangePasswordDialog">
+                        <i class="el-icon-lock"></i> 修改密码
+                    </el-button>
+                    {% if user.is_admin %}
+                    <el-button type="success" @click="goToAdmin">
+                        <i class="el-icon-setting"></i> 管理后台
+                    </el-button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 个人资料页面的方法已在base.html中定义 -->
+{% endblock %}

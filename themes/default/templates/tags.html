@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_title or '标签' }}{% endblock %}
+
+{% block content %}
+<div class="tag-list">
+    <h2>所有标签</h2>
+    {% if tags %}
+    <div class="tag-cloud">
+        {% for tag in tags %}
+        <el-tag size="small" style="margin:4px;">
+            <a href="/tag/{{ tag.slug }}">{{ tag.name }}</a>
+        </el-tag>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>暂无标签</p>
+    {% endif %}
+</div>
+{% endblock %}

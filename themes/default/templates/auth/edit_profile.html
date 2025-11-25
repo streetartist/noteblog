@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}编辑资料 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>编辑个人资料</h2>
+                <p>更新您的个人信息</p>
+            </div>
+            
+            <form method="POST" class="auth-form" enctype="multipart/form-data">
+                <!-- Flash messages will be handled by theme manager -->
+                
+                <div class="form-group">
+                    <el-form-item label="用户名">
+                        <el-input
+                            value="{{ user.username }}"
+                            disabled
+                            placeholder="用户名不可修改">
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="显示名称">
+                        <el-input
+                            name="display_name"
+                            placeholder="请输入显示名称"
+                            value="{{ user.display_name or '' }}"
+                            clearable>
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="邮箱" required>
+                        <el-input
+                            name="email"
+                            type="email"
+                            placeholder="请输入邮箱地址"
+                            value="{{ user.email }}"
+                            clearable
+                            required>
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="个人简介">
+                        <el-input
+                            name="bio"
+                            type="textarea"
+                            :rows="4"
+                            placeholder="请输入个人简介"
+                            clearable>{{ user.bio or '' }}</el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="个人网站">
+                        <el-input
+                            name="website"
+                            placeholder="请输入个人网站地址"
+                            value="{{ user.website or '' }}"
+                            clearable>
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="所在地">
+                        <el-input
+                            name="location"
+                            placeholder="请输入所在地"
+                            value="{{ user.location or '' }}"
+                            clearable>
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="头像">
+                        <div class="avatar-upload">
+                            {% if user.avatar %}
+                                <div class="current-avatar">
+                                    <img src="{{ user.avatar }}" alt="当前头像" class="avatar-preview">
+                                    <p>当前头像</p>
+                                </div>
+                            {% endif %}
+                            <el-upload
+                                class="avatar-uploader"
+                                action="#"
+                                :auto-upload="false"
+                                :show-file-list="false"
+                                accept="image/*"
+                                onchange="handleAvatarChange(this)">
+                                <div class="avatar-upload-trigger">
+                                    <i class="el-icon-plus"></i>
+                                    <div class="upload-text">选择头像</div>
+                                </div>
+                            </el-upload>
+                            <input type="file" name="avatar" id="avatar-input" style="display: none;" accept="image/*">
+                            <el-button @click="document.getElementById('avatar-input').click()" size="small">
+                                选择文件
+                            </el-button>
+                            <p class="upload-tip">支持 JPG、PNG 格式，文件大小不超过 2MB</p>
+                        </div>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-actions">
+                    <el-button @click="goBack">取消</el-button>
+                    <el-button type="primary" native-type="submit">保存修改</el-button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.auth-page {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-header h2 {
+    color: #303133;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.auth-header p {
+    color: #909399;
+    margin: 0;
+    font-size: 14px;
+}
+
+.auth-form {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+.avatar-upload {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.current-avatar {
+    text-align: center;
+}
+
+.avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ebeef5;
+    margin-bottom: 8px;
+}
+
+.current-avatar p {
+    margin: 0;
+    font-size: 12px;
+    color: #909399;
+}
+
+.avatar-upload-trigger {
+    border: 2px dashed #d9d9d9;
+    border-radius: 6px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.avatar-upload-trigger:hover {
+    border-color: var(--primary-color, #409EFF);
+}
+
+.avatar-upload-trigger i {
+    font-size: 24px;
+    color: #8c939d;
+    margin-bottom: 8px;
+}
+
+.upload-text {
+    font-size: 12px;
+    color: #8c939d;
+}
+
+.upload-tip {
+    margin: 8px 0 0 0;
+    font-size: 12px;
+    color: #909399;
+    flex: 1;
+    min-width: 200px;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 20px;
+    }
+    
+    .auth-header h2 {
+        font-size: 20px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .el-button {
+        width: 100%;
+    }
+    
+    .avatar-upload {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .upload-tip {
+        text-align: center;
+        min-width: auto;
+    }
+}
+</style>
+
+<script>
+// 头像预览功能
+function handleAvatarChange(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // 检查文件大小
+        if (file.size > 2 * 1024 * 1024) {
+            alert('头像文件大小不能超过 2MB');
+            input.value = '';
+            return;
+        }
+        
+        // 检查文件类型
+        if (!file.type.match('image.*')) {
+            alert('请选择图片文件');
+            input.value = '';
+            return;
+        }
+        
+        // 预览图片
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // 更新预览
+            const previewContainer = input.closest('.form-group').querySelector('.current-avatar');
+            if (previewContainer) {
+                previewContainer.innerHTML = `
+                    <img src="${e.target.result}" alt="头像预览" class="avatar-preview">
+                    <p>头像预览</p>
+                `;
+            } else {
+                // 如果没有预览容器，创建一个
+                const uploadContainer = input.closest('.avatar-upload');
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'current-avatar';
+                previewDiv.innerHTML = `
+                    <img src="${e.target.result}" alt="头像预览" class="avatar-preview">
+                    <p>头像预览</p>
+                `;
+                uploadContainer.insertBefore(previewDiv, uploadContainer.firstChild);
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Vue 应用方法
+if (window._noteblog_app) {
+    const app = window._noteblog_app;
+    
+    app.config.globalProperties.goBack = function() {
+        window.history.back();
+    };
+}
+
+// 表单验证
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.auth-form');
+    
+    form.addEventListener('submit', function(e) {
+        const email = form.querySelector('input[name="email"]').value;
+        const website = form.querySelector('input[name="website"]').value;
+        
+        // 邮箱格式验证
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('请输入有效的邮箱地址');
+            return false;
+        }
+        
+        // 网站格式验证（如果填写了）
+        if (website) {
+            try {
+                new URL(website);
+            } catch {
+                e.preventDefault();
+                alert('请输入有效的网站地址（包含 http:// 或 https://）');
+                return false;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

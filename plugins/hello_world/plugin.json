@@ -1,0 +1,81 @@
+{
+    "name": "hello_world",
+    "version": "1.0.0",
+    "description": "一个简单的Hello World示例插件，演示插件系统的基本功能",
+    "author": "Noteblog Team",
+    "website": "https://github.com/noteblog/hello_world_plugin",
+    "license": "MIT",
+    "entry_point": "create_plugin",
+    "blueprints": [
+        {
+            "name": "hello_world_bp",
+            "url_prefix": "/hello_world"
+        }
+    ],
+    "requirements": [],
+    "min_noteblog_version": "1.0.0",
+    "max_noteblog_version": "2.0.0",
+    "config_schema": {
+        "message": {
+            "type": "string",
+            "default": "Hello from HelloWorld Plugin!",
+            "description": "显示的消息内容"
+        },
+        "show_in_footer": {
+            "type": "boolean",
+            "default": true,
+            "description": "是否在页脚显示消息"
+        },
+        "append_message": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否在文章内容后追加消息"
+        },
+        "add_prefix": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否在页面标题前添加前缀"
+        }
+    },
+    "hooks": [
+        "before_request",
+        "after_request",
+        "template_context",
+        "admin_navigation"
+    ],
+    "filters": [
+        "post_content",
+        "page_title"
+    ],
+    "permissions": [
+        "admin.access"
+    ],
+    "templates": {
+        "admin": "templates/admin.html",
+        "frontend": "templates/frontend.html"
+    },
+    "assets": {
+        "css": [
+            "static/css/hello_world.css"
+        ],
+        "js": [
+            "static/js/hello_world.js"
+        ]
+    },
+    "database": {
+        "models": [],
+        "migrations": []
+    },
+    "api_endpoints": [
+        {
+            "path": "/api/hello_world/message",
+            "methods": ["GET", "POST"],
+            "description": "获取或设置插件消息"
+        }
+    ],
+    "cron_jobs": [],
+    "event_listeners": [
+        "user_registered",
+        "post_published"
+    ]
+}

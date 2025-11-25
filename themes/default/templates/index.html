@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<div class="posts-list">
+    {% if posts.items %}
+        {% for post in posts.items %}
+        <article class="post-item">
+            {% if post.featured_image %}
+            <div class="post-thumbnail">
+                <img src="{{ post.featured_image }}" alt="{{ post.title }}" loading="lazy">
+            </div>
+            {% endif %}
+            
+            <div class="post-content">
+                <header class="post-header">
+                    <h2 class="post-title">
+                        <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+                        {% if post.is_featured %}
+                        <el-tag type="danger" size="small">置顶</el-tag>
+                        {% endif %}
+                        {% if post.is_top %}
+                        <el-tag type="warning" size="small">推荐</el-tag>
+                        {% endif %}
+                    </h2>
+                    
+                    <div class="post-meta">
+                        <span class="post-author">
+                            <i class="el-icon-user"></i>
+                            {{ post.author.display_name or post.author.username }}
+                        </span>
+                        <span class="post-date">
+                            <i class="el-icon-time"></i>
+                            {{ post.published_at or post.created_at }}[:10]
+                        </span>
+                        {% if post.category %}
+                        <span class="post-category">
+                            <i class="el-icon-folder"></i>
+                            <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
+                        </span>
+                        {% endif %}
+                        <span class="post-comments">
+                            <i class="el-icon-chat-dot-round"></i>
+                            {{ post.comment_count }} 评论
+                        </span>
+                        <span class="post-views">
+                            <i class="el-icon-view"></i>
+                            {{ post.view_count }} 阅读
+                        </span>
+                    </div>
+                </header>
+                
+                <div class="post-excerpt">
+                    {% if get_theme_config().show_excerpt != false %}
+                        {% if post.excerpt %}
+                            {{ post.get_excerpt_html()|safe }}
+                        {% else %}
+                            {{ post.get_excerpt_html(200)|safe }}
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                {% if post.tags %}
+                <div class="post-tags">
+                    {% for tag in post.tags %}
+                    <el-tag size="small" style="margin: 2px;">
+                        <a href="/tag/{{ tag.slug }}">{{ tag.name }}</a>
+                    </el-tag>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <footer class="post-footer">
+                    <el-button type="primary" size="small" @click="readMore('/post/{{ post.slug }}')">
+                        阅读全文
+                    </el-button>
+                </footer>
+            </div>
+        </article>
+        {% endfor %}
+        
+        <!-- 分页 -->
+        <div class="pagination">
+            <el-pagination
+                @current-change="handlePageChange"
+                :current-page="{{ posts.page }}"
+                :page-size="{{ posts.per_page }}"
+                :total="{{ posts.total }}"
+                layout="prev, pager, next, jumper">
+            </el-pagination>
+        </div>
+    {% else %}
+        <div class="empty-posts">
+            <el-empty description="暂无文章">
+                <el-button type="primary" @click="goToAdmin">去写文章</el-button>
+            </el-empty>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 页面脚本使用全局 Vue 应用（在 base.html 中初始化） -->
+{% endblock %}

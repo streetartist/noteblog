@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_title or '分类' }}{% endblock %}
+
+{% block content %}
+<div class="category-list">
+    <h2>所有分类</h2>
+    {% if categories %}
+    <ul>
+        {% for category in categories %}
+        <li>
+            <a href="/category/{{ category.slug }}">{{ category.name }}</a>
+            <span>({{ category.post_count }})</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>暂无分类</p>
+    {% endif %}
+</div>
+{% endblock %}

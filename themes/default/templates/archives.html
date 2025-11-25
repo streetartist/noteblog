@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_title or '归档' }}{% endblock %}
+
+{% block content %}
+<div class="archives">
+    <h2>文章归档</h2>
+    {% if archives %}
+        {% for year, posts in archives|dictsort(true) %}
+        <section class="archive-year">
+            <h3>{{ year }}</h3>
+            <ul>
+                {% for post in posts %}
+                <li>
+                    <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+                    <span class="meta">{{ post.published_at.strftime('%Y-%m-%d') if post.published_at else post.created_at.strftime('%Y-%m-%d') }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endfor %}
+    {% else %}
+        <p>暂无归档内容</p>
+    {% endif %}
+</div>
+{% endblock %}

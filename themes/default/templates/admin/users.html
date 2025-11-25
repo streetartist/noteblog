@@ -1,0 +1,196 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="admin-users">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #303133;">用户管理</h2>
+        <div>
+            <button type="button" onclick="window.location.href='/auth/register'" 
+                    style="background: #409EFF; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                + 新建用户
+            </button>
+        </div>
+    </div>
+
+    <!-- 筛选器 -->
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="color: #606266; font-size: 14px;">状态筛选：</label>
+                <select id="statusFilter" onchange="filterUsers()" 
+                        style="padding: 6px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                    <option value="">全部状态</option>
+                    <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>激活</option>
+                    <option value="inactive" {% if request.args.get('status') == 'inactive' %}selected{% endif %}>禁用</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="text" id="searchKeyword" placeholder="搜索用户名或邮箱" 
+                       style="padding: 6px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; width: 200px;">
+                <button type="button" onclick="searchUsers()" 
+                        style="background: #409EFF; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                    搜索
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户列表 -->
+    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f5f7fa;">
+                <tr>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5; font-weight: 500; color: #909399; font-size: 14px;">用户信息</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5; font-weight: 500; color: #909399; font-size: 14px;">邮箱</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5; font-weight: 500; color: #909399; font-size: 14px;">角色</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5; font-weight: 500; color: #909399; font-size: 14px;">状态</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5; font-weight: 500; color: #909399; font-size: 14px;">注册时间</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5; font-weight: 500; color: #909399; font-size: 14px;">最后登录</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5; font-weight: 500; color: #909399; font-size: 14px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users.items %}
+                <tr style="border-bottom: 1px solid #ebeef5;">
+                    <td style="padding: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                                {% if user.avatar %}
+                                <img src="{{ user.avatar }}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                {% else %}
+                                <div style="font-size: 20px; color: #c0c4cc;">👤</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #303133; margin-bottom: 4px;">
+                                    {{ user.display_name or user.username }}
+                                    {% if user.is_admin %}
+                                    <span style="background: #f56c6c; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-left: 8px;">管理员</span>
+                                    {% endif %}
+                                </div>
+                                <div style="font-size: 12px; color: #909399;">@{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 12px;">
+                        <div style="color: #606266; font-size: 14px;">{{ user.email }}</div>
+                    </td>
+                    <td style="padding: 12px;">
+                        {% if user.is_admin %}
+                        <span style="background: #f56c6c; color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px;">管理员</span>
+                        {% else %}
+                        <span style="background: #909399; color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px;">用户</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px;">
+                        {% if user.is_active %}
+                        <span style="background: #67c23a; color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px;">激活</span>
+                        {% else %}
+                        <span style="background: #f56c6c; color: white; padding: 2px 6px; border-radius: 3px; font-size: 12px;">禁用</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px;">
+                        <div style="color: #606266; font-size: 13px;">
+                            {{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else '' }}
+                        </div>
+                    </td>
+                    <td style="padding: 12px;">
+                        <div style="color: #606266; font-size: 13px;">
+                            {% if user.last_login %}
+                            {{ user.last_login.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                            <span style="color: #c0c4cc;">从未登录</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td style="padding: 12px;">
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" onclick="editUser({{ user.id }})" 
+                                    style="background: #409EFF; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                                编辑
+                            </button>
+                            <button type="button" onclick="toggleUserStatus({{ user.id }}, '{{ user.username }}', {{ user.is_active|lower }})" 
+                                    style="background: {{ '#e6a23c' if user.is_active else '#67c23a' }}; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                                {{ '禁用' if user.is_active else '激活' }}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- 分页 -->
+        <div style="padding: 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: #606266; font-size: 14px;">
+                共 {{ users.total }} 条记录
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                {% if users.has_prev %}
+                <button type="button" onclick="goToPage({{ users.prev_num }})" 
+                        style="padding: 6px 12px; border: 1px solid #dcdfe6; background: white; cursor: pointer; border-radius: 4px; font-size: 14px;">
+                    上一页
+                </button>
+                {% endif %}
+                
+                <span style="color: #606266; font-size: 14px;">
+                    第 {{ users.page }} / {{ users.pages }} 页
+                </span>
+                
+                {% if users.has_next %}
+                <button type="button" onclick="goToPage({{ users.next_num }})" 
+                        style="padding: 6px 12px; border: 1px solid #dcdfe6; background: white; cursor: pointer; border-radius: 4px; font-size: 14px;">
+                    下一页
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterUsers() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const url = new URL(window.location);
+    
+    if (statusFilter) {
+        url.searchParams.set('status', statusFilter);
+    } else {
+        url.searchParams.delete('status');
+    }
+    
+    url.searchParams.delete('page'); // 重置到第一页
+    window.location.href = url.toString();
+}
+
+function searchUsers() {
+    const searchKeyword = document.getElementById('searchKeyword').value.trim();
+    if (searchKeyword) {
+        alert('搜索功能开发中...');
+    }
+}
+
+function editUser(userId) {
+    alert('编辑用户功能开发中...');
+}
+
+function toggleUserStatus(userId, username, isActive) {
+    const action = isActive ? '禁用' : '激活';
+    if (confirm(`确定要${action}用户 "${username}" 吗？`)) {
+        // 创建表单提交状态切换请求
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/users/${userId}/toggle-status`;
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function goToPage(page) {
+    const url = new URL(window.location);
+    url.searchParams.set('page', page);
+    window.location.href = url.toString();
+}
+</script>
+{% endblock %}

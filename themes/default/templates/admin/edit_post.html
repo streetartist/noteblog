@@ -1,0 +1,335 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="admin-edit-post">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #303133;">编辑文章</h2>
+        <div>
+            <el-button onclick="window.location.href='/admin/posts'">
+                <i class="el-icon-back"></i> 返回列表
+            </el-button>
+        </div>
+    </div>
+
+    <form method="POST" id="postForm">
+        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
+            <!-- 主要内容区 -->
+            <div>
+                <!-- 基本信息 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">基本信息</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章标题 <span style="color: #f56c6c;">*</span></label>
+                        <input type="text" name="title" value="{{ post.title|e }}" placeholder="请输入文章标题" required 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章别名 (Slug)</label>
+                        <input type="text" name="slug" value="{{ post.slug|e }}" placeholder="自动生成，可手动修改" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                        <div style="font-size: 12px; color: #909399; margin-top: 4px;">用于URL的友好地址，留空将自动生成</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章摘要</label>
+                        <textarea name="excerpt" rows="3" placeholder="请输入文章摘要" 
+                                  style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;">{{ post.excerpt|e }}</textarea>
+                        <div style="font-size: 12px; color: #909399; margin-top: 4px;">留空将自动从文章内容中提取</div>
+                    </div>
+                </div>
+
+                <!-- 文章内容 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">文章内容 <span style="color: #f56c6c;">*</span></h3>
+                    <textarea name="content" rows="15" placeholder="请输入文章内容，支持Markdown格式" required 
+                              style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;">{{ post.content|e }}</textarea>
+                </div>
+
+                <!-- SEO设置 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">SEO设置</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">SEO标题</label>
+                        <input type="text" name="seo_title" value="{{ post.seo_title|e }}" placeholder="留空将使用文章标题" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">SEO描述</label>
+                        <textarea name="seo_description" rows="2" placeholder="留空将使用文章摘要" 
+                                  style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;">{{ post.seo_description|e }}</textarea>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">SEO关键词</label>
+                        <input type="text" name="seo_keywords" value="{{ post.seo_keywords|e }}" placeholder="多个关键词用逗号分隔" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div>
+                <!-- 发布设置 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">发布设置</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">状态</label>
+                        <select name="status" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <option value="draft" {% if post.status == 'draft' %}selected{% endif %}>草稿</option>
+                            <option value="published" {% if post.status == 'published' %}selected{% endif %}>已发布</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章类型</label>
+                        <select name="post_type" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <option value="post" {% if post.post_type == 'post' %}selected{% endif %}>文章</option>
+                            <option value="page" {% if post.post_type == 'page' %}selected{% endif %}>页面</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">评论状态</label>
+                        <select name="comment_status" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <option value="open" {% if post.comment_status == 'open' %}selected{% endif %}>开放</option>
+                            <option value="closed" {% if post.comment_status == 'closed' %}selected{% endif %}>关闭</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">特色图片</label>
+                        <input type="text" name="featured_image" value="{{ post.featured_image|e }}" placeholder="请输入图片URL" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                    </div>
+                </div>
+
+                <!-- 分类和标签 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">分类和标签</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">分类</label>
+                        <select name="category_id" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <option value="">选择分类</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if post.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">标签</label>
+                        <input type="text" name="tags" value="{{ post.tags|map(attribute='name')|join(', ') if post.tags else '' }}" placeholder="多个标签用逗号分隔" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                        <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                            现有标签：
+                            {% for tag in tags[:5] %}
+                            <span style="display: inline-block; padding: 2px 6px; margin: 2px; background: #f0f0f0; border-radius: 3px; font-size: 12px;">{{ tag.name }}</span>
+                            {% endfor %}
+                            {% if tags|length > 5 %}...{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文章信息 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">文章信息</h3>
+                    
+                    <div style="font-size: 12px; color: #909399; line-height: 1.6;">
+                        <div style="margin-bottom: 8px;">
+                            <strong>创建时间：</strong>{{ post.created_at.strftime('%Y-%m-%d %H:%M:%S') if post.created_at else '' }}
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <strong>更新时间：</strong>{{ post.updated_at.strftime('%Y-%m-%d %H:%M:%S') if post.updated_at else '' }}
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <strong>作者：</strong>{{ post.author.display_name or post.author.username if post.author else '' }}
+                        </div>
+                        <div>
+                            <strong>文章ID：</strong>{{ post.id }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button type="submit" style="width: 100%; padding: 10px; background: #409eff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            <i class="el-icon-check"></i> 更新文章
+                        </button>
+                        <button type="button" onclick="saveDraft()" style="width: 100%; padding: 10px; background: #909399; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            <i class="el-icon-document"></i> 保存草稿
+                        </button>
+                        <button type="button" onclick="previewPost()" style="width: 100%; padding: 10px; background: #67c23a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            <i class="el-icon-view"></i> 预览文章
+                        </button>
+                        <button type="button" onclick="window.location.href='/admin/posts'" style="width: 100%; padding: 10px; background: #f56c6c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            <i class="el-icon-close"></i> 取消
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// 自动保存草稿功能
+let autoSaveTimer;
+let lastSaveTime = null;
+
+function saveDraft() {
+    const form = document.getElementById('postForm');
+    const statusInput = form.querySelector('select[name="status"]');
+    statusInput.value = 'draft';
+    form.submit();
+}
+
+function previewPost() {
+    // 先保存当前内容为草稿，然后预览
+    const form = document.getElementById('postForm');
+    const formData = new FormData(form);
+    
+    // 使用 AJAX 保存草稿
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (response.ok) {
+            // 在新窗口中预览文章
+            window.open(`/post/{{ post.slug }}`, '_blank');
+        } else {
+            alert('保存失败，请重试');
+        }
+    }).catch(error => {
+        console.error('保存失败:', error);
+        alert('保存失败，请重试');
+    });
+}
+
+function autoSave() {
+    const form = document.getElementById('postForm');
+    const formData = new FormData(form);
+    
+    // 设置状态为草稿
+    formData.set('status', 'draft');
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (response.ok) {
+            lastSaveTime = new Date();
+            updateSaveStatus('已自动保存');
+        } else {
+            updateSaveStatus('自动保存失败');
+        }
+    }).catch(error => {
+        console.error('自动保存失败:', error);
+        updateSaveStatus('自动保存失败');
+    });
+}
+
+function updateSaveStatus(message) {
+    let statusElement = document.getElementById('saveStatus');
+    if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.id = 'saveStatus';
+        statusElement.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #67c23a; color: white; padding: 8px 16px; border-radius: 4px; font-size: 14px; z-index: 9999;';
+        document.body.appendChild(statusElement);
+    }
+    
+    statusElement.textContent = message;
+    statusElement.style.background = message.includes('失败') ? '#f56c6c' : '#67c23a';
+    
+    // 3秒后隐藏状态消息
+    setTimeout(() => {
+        if (statusElement.parentNode) {
+            statusElement.parentNode.removeChild(statusElement);
+        }
+    }, 3000);
+}
+
+// 监听表单变化，触发自动保存
+function setupAutoSave() {
+    const form = document.getElementById('postForm');
+    const inputs = form.querySelectorAll('input, textarea, select');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(autoSave, 30000); // 30秒后自动保存
+        });
+    });
+}
+
+// 生成 slug
+function generateSlug() {
+    const titleInput = document.querySelector('input[name="title"]');
+    const slugInput = document.querySelector('input[name="slug"]');
+    
+    if (titleInput && slugInput && !slugInput.value) {
+        let slug = titleInput.value.toLowerCase()
+            .replace(/[^\w\s-]/g, '') // 移除特殊字符
+            .replace(/[\s_-]+/g, '-') // 替换空格、下划线为连字符
+            .replace(/^-+|-+$/g, ''); // 移除开头和结尾的连字符
+        
+        slugInput.value = slug;
+    }
+}
+
+// 页面加载完成后的初始化
+document.addEventListener('DOMContentLoaded', function() {
+    setupAutoSave();
+    
+    // 标题输入时自动生成 slug
+    const titleInput = document.querySelector('input[name="title"]');
+    if (titleInput) {
+        titleInput.addEventListener('input', generateSlug);
+    }
+    
+    // 表单提交前确认
+    const form = document.getElementById('postForm');
+    form.addEventListener('submit', function(e) {
+        const title = document.querySelector('input[name="title"]').value.trim();
+        const content = document.querySelector('textarea[name="content"]').value.trim();
+        
+        if (!title || !content) {
+            e.preventDefault();
+            alert('标题和内容不能为空');
+            return false;
+        }
+        
+        // 如果状态是发布，确认是否发布
+        const status = document.querySelector('select[name="status"]').value;
+        if (status === 'published') {
+            if (!confirm('确定要发布这篇文章吗？')) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+    
+    // 快捷键支持
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+S 保存草稿
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            saveDraft();
+        }
+        // Ctrl+Enter 发布文章
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            const statusSelect = document.querySelector('select[name="status"]');
+            statusSelect.value = 'published';
+            form.submit();
+        }
+    });
+});
+</script>
+{% endblock %}

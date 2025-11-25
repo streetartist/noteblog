@@ -1,0 +1,3 @@
+Noteblog是一个基于flask的博客框架，支持theme, plugin等功能，具有极强的可扩展性，与可自定义性。
+noteblog的本身与theme都会定义大量的插件槽，plugin可以在这些槽中插入自己的代码，实现自定义的功能。
+noteblog有清晰的后台管理系统。

@@ -1,0 +1,65 @@
+{
+  "display_name": "默认主题",
+  "description": "Noteblog 的默认主题，基于 Vue.js 和 Element Plus 构建",
+  "version": "1.0.0",
+  "author": "Noteblog Team",
+  "author_website": "https://github.com/noteblog",
+  "license": "MIT",
+  "min_noteblog_version": "1.0.0",
+  "is_system": true,
+  "supports_widgets": true,
+  "supports_menus": true,
+  "supports_customizer": true,
+  "supports_post_formats": false,
+  "screenshot": "/themes/default/screenshot.png",
+  "demo_url": "",
+  "config_schema": {
+    "site_logo": {
+      "type": "text",
+      "label": "网站 Logo",
+      "description": "网站 Logo 图片 URL"
+    },
+    "site_favicon": {
+      "type": "text",
+      "label": "网站图标",
+      "description": "网站图标 URL"
+    },
+    "primary_color": {
+      "type": "color",
+      "label": "主题色",
+      "default": "#409EFF"
+    },
+    "show_excerpt": {
+      "type": "checkbox",
+      "label": "显示文章摘要",
+      "default": true
+    },
+    "posts_per_page": {
+      "type": "number",
+      "label": "每页文章数量",
+      "default": 10,
+      "min": 1,
+      "max": 50
+    },
+    "show_sidebar": {
+      "type": "checkbox",
+      "label": "显示侧边栏",
+      "default": true
+    },
+    "sidebar_widgets": {
+      "type": "array",
+      "label": "侧边栏小工具",
+      "default": ["recent_posts", "categories", "tags"]
+    },
+    "footer_text": {
+      "type": "textarea",
+      "label": "页脚文本",
+      "default": "© 2024 Noteblog. All rights reserved."
+    },
+    "analytics_code": {
+      "type": "textarea",
+      "label": "统计代码",
+      "description": "Google Analytics 或其他统计代码"
+    }
+  }
+}

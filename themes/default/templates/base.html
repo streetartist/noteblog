@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_title or 'Noteblog' }}{% endblock %}</title>
+    <meta name="description" content="{% block description %}{{ site_description or '' }}{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}{{ site_keywords or '' }}{% endblock %}">
+    
+    <!-- Favicon -->
+    {% if get_theme_config().site_favicon %}
+    <link rel="icon" href="{{ get_theme_config().site_favicon }}">
+    {% endif %}
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus@2.4.0/dist/index.css">
+    <link rel="stylesheet" href="/themes/default/static/css/style.css">
+    <link rel="stylesheet" href="/themes/default/static/css/markdown.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    
+    {% block head %}{% endblock %}
+    
+    <!-- 主题色 -->
+    <style>
+        :root {
+            --primary-color: {{ get_theme_config().primary_color or '#409EFF' }};
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 头部 -->
+        <header class="site-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="site-branding">
+                        {% if get_theme_config().site_logo %}
+                        <img src="{{ get_theme_config().site_logo }}" alt="{{ site_title }}" class="site-logo">
+                        {% else %}
+                        <h1 class="site-title">
+                            <a href="/">{{ site_title or 'Noteblog' }}</a>
+                        </h1>
+                        {% endif %}
+                        {% if site_description %}
+                        <p class="site-description">{{ site_description }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <nav class="main-navigation">
+                        <el-menu mode="horizontal" :default-active="activeIndex" class="el-menu-demo" @select="handleMenuSelect">
+                            <el-menu-item index="1" data-path="/">首页</el-menu-item>
+                            <el-menu-item index="2" data-path="/archives">归档</el-menu-item>
+                            <el-menu-item index="3" data-path="/categories">分类</el-menu-item>
+                            <el-menu-item index="4" data-path="/tags">标签</el-menu-item>
+                            <el-menu-item index="5" data-path="/search">搜索</el-menu-item>
+                        </el-menu>
+                    </nav>
+                    
+                    <div class="user-menu">
+                        {% if current_user.is_authenticated %}
+                        <el-dropdown>
+                            <span class="el-dropdown-link">
+                                {{ current_user.display_name or current_user.username }}
+                                <el-icon class="el-icon--right">
+                                    <arrow-down />
+                                </el-icon>
+                            </span>
+                            <template #dropdown>
+                                <el-dropdown-menu>
+                                    <el-dropdown-item @click="showEditProfileDialog">
+                                        编辑资料
+                                    </el-dropdown-item>
+                                    <el-dropdown-item @click="showChangePasswordDialog">
+                                        修改密码
+                                    </el-dropdown-item>
+                                    <el-dropdown-item>
+                                        <a href="/auth/profile">查看资料</a>
+                                    </el-dropdown-item>
+                                    {% if current_user.is_admin %}
+                                    <el-dropdown-item>
+                                        <a href="/admin">管理后台</a>
+                                    </el-dropdown-item>
+                                    {% endif %}
+                                    <el-dropdown-item divided>
+                                        <a href="/auth/logout">退出登录</a>
+                                    </el-dropdown-item>
+                                </el-dropdown-menu>
+                            </template>
+                        </el-dropdown>
+                        {% else %}
+                        <el-button type="primary" @click="showLoginDialog">登录</el-button>
+                        <el-button @click="showRegisterDialog">注册</el-button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容 -->
+        <main class="site-main">
+            <div class="container">
+                <div class="content-wrapper">
+                    <!-- 主内容区 -->
+                    <div class="main-content" :class="{ 'with-sidebar': showSidebar }">
+                        {% block content %}{% endblock %}
+                    </div>
+                    
+                    <!-- 侧边栏 -->
+                    {% if get_theme_config().show_sidebar != false and not _admin_page %}
+                    <aside class="sidebar">
+                        {% block sidebar %}
+                        <!-- 最新文章 -->
+                        <div class="widget">
+                            <h3 class="widget-title">最新文章</h3>
+                            <ul class="widget-list">
+                                {% for post in (recent_posts|default([]))[:5] %}
+                                <li>
+                                    <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <!-- 分类 -->
+                        <div class="widget">
+                            <h3 class="widget-title">分类</h3>
+                            <ul class="widget-list">
+                                {% for category in (categories|default([])) %}
+                                <li>
+                                    <a href="/category/{{ category.slug }}">{{ category.name }} ({{ category.post_count }})</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        <!-- 标签 -->
+                        <div class="widget">
+                            <h3 class="widget-title">标签</h3>
+                            <div class="tag-cloud">
+                                {% for tag in (tags|default([])) %}
+                                <el-tag size="small" style="margin: 2px;">
+                                    <a href="/tag/{{ tag.slug }}">{{ tag.name }}</a>
+                                </el-tag>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endblock %}
+                    </aside>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="site-footer">
+            <div class="container">
+                <div class="footer-content">
+                    <p>{{ get_theme_config().footer_text or '© 2024 Noteblog. All rights reserved.' }}</p>
+                    <p>
+                        Powered by <a href="https://github.com/noteblog/noteblog">Noteblog</a>
+                    </p>
+                </div>
+            </div>
+        </footer>
+        
+        {% if not current_user.is_authenticated %}
+        <!-- 登录对话框 -->
+        <el-dialog v-model="loginDialogVisible" title="登录" width="400px">
+            <el-form :model="loginForm" label-width="80px" :rules="loginRules" ref="loginFormRef">
+                <el-form-item label="用户名" prop="username">
+                    <el-input v-model="loginForm.username" placeholder="用户名或邮箱" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="密码" prop="password">
+                    <el-input v-model="loginForm.password" type="password" placeholder="密码" show-password @keyup.enter="handleLogin"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
+                </el-form-item>
+                <div style="text-align: right; margin-bottom: 10px;">
+                    <el-link type="primary" @click="showForgotPassword">忘记密码？</el-link>
+                </div>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="loginDialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="handleLogin" :loading="isSubmitting">登录</el-button>
+                </span>
+            </template>
+        </el-dialog>
+
+        <!-- 注册对话框 -->
+        <el-dialog v-model="registerDialogVisible" title="注册" width="420px">
+            <el-form :model="registerForm" label-width="80px" :rules="registerRules" ref="registerFormRef">
+                <el-form-item label="用户名" prop="username">
+                    <el-input v-model="registerForm.username" placeholder="用户名" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱" prop="email">
+                    <el-input v-model="registerForm.email" type="email" placeholder="邮箱" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="显示名称">
+                    <el-input v-model="registerForm.display_name" placeholder="显示名称（可选）" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="密码" prop="password">
+                    <el-input v-model="registerForm.password" type="password" placeholder="密码（至少6位）" show-password></el-input>
+                </el-form-item>
+                <el-form-item label="确认密码" prop="confirmPassword">
+                    <el-input v-model="registerForm.confirmPassword" type="password" placeholder="确认密码" show-password @keyup.enter="handleRegister"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="registerDialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="handleRegister" :loading="isSubmitting">注册</el-button>
+                </span>
+            </template>
+        </el-dialog>
+        {% endif %}
+        
+        <!-- 忘记密码对话框 -->
+        <el-dialog v-model="forgotPasswordDialogVisible" title="忘记密码" width="420px">
+            <el-form :model="forgotPasswordForm" label-width="80px" :rules="forgotPasswordRules" ref="forgotPasswordFormRef">
+                <el-form-item label="邮箱地址" prop="email">
+                    <el-input v-model="forgotPasswordForm.email" type="email" placeholder="请输入您的邮箱地址" clearable></el-input>
+                </el-form-item>
+                <el-alert
+                    title="安全提示"
+                    type="info"
+                    :closable="false"
+                    show-icon style="margin-bottom: 20px;">
+                    <template #default>
+                        <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                            <li style="margin-bottom: 5px; font-size: 13px; color: #606266;">密码重置链接将在24小时后失效</li>
+                            <li style="margin-bottom: 5px; font-size: 13px; color: #606266;">请确保您能够访问该邮箱</li>
+                            <li style="margin-bottom: 5px; font-size: 13px; color: #606266;">如果没有收到邮件，请检查垃圾邮件文件夹</li>
+                        </ul>
+                    </template>
+                </el-alert>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="forgotPasswordDialogVisible = false">取消</el-button>
+                    <el-button @click="showLoginDialog">返回登录</el-button>
+                    <el-button type="primary" @click="handleForgotPassword" :loading="isSubmitting">发送重置链接</el-button>
+                </span>
+            </template>
+        </el-dialog>
+        
+        {% if current_user.is_authenticated %}
+        <!-- 编辑资料对话框 -->
+        <el-dialog v-model="editProfileDialogVisible" title="编辑个人资料" width="500px">
+            <el-form :model="editProfileForm" label-width="80px" :rules="editProfileRules" ref="editProfileFormRef">
+                <el-form-item label="用户名">
+                    <el-input value="{{ current_user.username }}" disabled placeholder="用户名不可修改"></el-input>
+                </el-form-item>
+                <el-form-item label="显示名称">
+                    <el-input v-model="editProfileForm.display_name" placeholder="请输入显示名称" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱" prop="email">
+                    <el-input v-model="editProfileForm.email" type="email" placeholder="请输入邮箱地址" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="个人简介">
+                    <el-input v-model="editProfileForm.bio" type="textarea" :rows="3" placeholder="请输入个人简介" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="个人网站">
+                    <el-input v-model="editProfileForm.website" placeholder="请输入个人网站地址" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="所在地">
+                    <el-input v-model="editProfileForm.location" placeholder="请输入所在地" clearable></el-input>
+                </el-form-item>
+                <el-form-item label="头像">
+                    <div class="avatar-upload">
+                        {% if current_user.avatar %}
+                        <div class="current-avatar">
+                            <img src="{{ current_user.avatar }}" alt="当前头像" class="avatar-preview">
+                            <p>当前头像</p>
+                        </div>
+                        {% endif %}
+                        <input type="file" name="avatar" id="avatar-input" style="display: none;" accept="image/*" @change="handleAvatarChange">
+                        <el-button @click="document.getElementById('avatar-input').click()" size="small">选择文件</el-button>
+                        <p class="upload-tip">支持 JPG、PNG 格式，文件大小不超过 2MB</p>
+                    </div>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="editProfileDialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="handleEditProfile" :loading="isSubmitting">保存修改</el-button>
+                </span>
+            </template>
+        </el-dialog>
+
+        <!-- 修改密码对话框 -->
+        <el-dialog v-model="changePasswordDialogVisible" title="修改密码" width="450px">
+            <el-form :model="changePasswordForm" label-width="100px" :rules="changePasswordRules" ref="changePasswordFormRef">
+                <el-form-item label="当前密码" prop="current_password">
+                    <el-input v-model="changePasswordForm.current_password" type="password" placeholder="请输入当前密码" show-password></el-input>
+                </el-form-item>
+                <el-form-item label="新密码" prop="new_password">
+                    <el-input v-model="changePasswordForm.new_password" type="password" placeholder="请输入新密码（至少6位）" show-password @input="checkPasswordStrength"></el-input>
+                    <div class="password-strength" v-if="changePasswordForm.new_password" style="margin-top: 10px; padding: 10px; background: #f5f7fa; border-radius: 4px; font-size: 12px;">
+                        <div style="margin-bottom: 5px; color: #606266;">密码强度：</div>
+                        <div style="width: 100%; height: 4px; background: #ebeef5; border-radius: 2px; overflow: hidden; margin-bottom: 5px;">
+                            <div class="strength-fill" :style="{width: passwordStrength.width + '%', backgroundColor: passwordStrength.color, height: '100%', transition: 'all 0.3s ease'}"></div>
+                        </div>
+                        <div style="color: #606266;" v-text="passwordStrength.text"></div>
+                    </div>
+                </el-form-item>
+                <el-form-item label="确认新密码" prop="confirm_password">
+                    <el-input v-model="changePasswordForm.confirm_password" type="password" placeholder="请再次输入新密码" show-password @input="checkPasswordMatch"></el-input>
+                    <div v-if="changePasswordForm.confirm_password" style="margin-top: 8px; font-size: 12px;" :class="passwordMatch ? 'text-success' : 'text-danger'">
+                        <span v-text="passwordMatch ? '密码匹配' : '密码不匹配'"></span>
+                    </div>
+                </el-form-item>
+                <div style="background: #f0f9ff; border: 1px solid #b3d8ff; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #409eff; font-size: 14px;">密码要求：</h4>
+                    <ul style="margin: 0; padding-left: 20px; list-style: none;">
+                        <li style="margin-bottom: 5px; color: #909399; display: flex; align-items: center; gap: 8px;" :class="passwordChecks.length ? 'text-success' : ''">
+                            <i :class="passwordChecks.length ? 'el-icon-circle-check' : 'el-icon-circle-close'"></i>
+                            <span>至少6个字符</span>
+                        </li>
+                        <li style="margin-bottom: 5px; color: #909399; display: flex; align-items: center; gap: 8px;" :class="passwordChecks.complexity ? 'text-success' : ''">
+                            <i :class="passwordChecks.complexity ? 'el-icon-circle-check' : 'el-icon-circle-close'"></i>
+                            <span>包含字母和数字</span>
+                        </li>
+                    </ul>
+                </div>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="changePasswordDialogVisible = false">取消</el-button>
+                    <el-button type="primary" @click="handleChangePassword" :loading="isSubmitting">修改密码</el-button>
+                </span>
+            </template>
+        </el-dialog>
+        {% endif %}
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://unpkg.com/vue@3.3.0/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/element-plus@2.4.0/dist/index.full.js"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue@2.1.0/dist/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script src="/themes/default/static/js/app.js"></script>
+    
+    <!-- 全局 Vue 应用：提供登录/注册以及通用方法，保证所有页面都有 Vue 上下文 -->
+    <script>
+    (function(){
+        const { createApp } = Vue;
+        const app = createApp({
+            data() {
+                return {
+                    activeIndex: '1',
+                    loginDialogVisible: false,
+                    registerDialogVisible: false,
+                    forgotPasswordDialogVisible: false,
+                    editProfileDialogVisible: false,
+                    changePasswordDialogVisible: false,
+                    isSubmitting: false,
+                    loginForm: { username: '', password: '', remember: false },
+                    registerForm: { username: '', email: '', display_name: '', password: '', confirmPassword: '' },
+                    forgotPasswordForm: { email: '' },
+                    editProfileForm: { 
+                        display_name: '{{ current_user.display_name or "" }}', 
+                        email: '{{ current_user.email }}', 
+                        bio: '{{ current_user.bio or "" }}', 
+                        website: '{{ current_user.website or "" }}', 
+                        location: '{{ current_user.location or "" }}' 
+                    },
+                    changePasswordForm: { current_password: '', new_password: '', confirm_password: '' },
+                    // 评论相关表单（post 页面需要）
+                    commentForm: { content: '', author_name: '', author_email: '', author_website: '' },
+                    replyForm: { parentId: null, content: '', author_name: '', author_email: '' },
+                    // 搜索和侧边栏相关属性
+                    query: '',
+                    showSidebar: true,
+                    // 表单验证规则
+                    loginRules: {
+                        username: [
+                            { required: true, message: '请输入用户名或邮箱', trigger: 'blur' }
+                        ],
+                        password: [
+                            { required: true, message: '请输入密码', trigger: 'blur' }
+                        ]
+                    },
+                    registerRules: {
+                        username: [
+                            { required: true, message: '请输入用户名', trigger: 'blur' },
+                            { min: 3, message: '用户名长度至少为3位', trigger: 'blur' }
+                        ],
+                        email: [
+                            { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+                            { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+                        ],
+                        password: [
+                            { required: true, message: '请输入密码', trigger: 'blur' },
+                            { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
+                        ],
+                        confirmPassword: [
+                            { required: true, message: '请确认密码', trigger: 'blur' },
+                            { validator: (rule, value, callback) => {
+                                if (value !== this.registerForm.password) {
+                                    callback(new Error('两次输入的密码不一致'));
+                                } else {
+                                    callback();
+                                }
+                            }, trigger: 'blur' }
+                        ]
+                    },
+                    forgotPasswordRules: {
+                        email: [
+                            { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+                            { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+                        ]
+                    },
+                    editProfileRules: {
+                        email: [
+                            { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+                            { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+                        ]
+                    },
+                    changePasswordRules: {
+                        current_password: [
+                            { required: true, message: '请输入当前密码', trigger: 'blur' }
+                        ],
+                        new_password: [
+                            { required: true, message: '请输入新密码', trigger: 'blur' },
+                            { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
+                        ],
+                        confirm_password: [
+                            { required: true, message: '请确认新密码', trigger: 'blur' },
+                            { validator: (rule, value, callback) => {
+                                if (value !== this.changePasswordForm.new_password) {
+                                    callback(new Error('两次输入的密码不一致'));
+                                } else {
+                                    callback();
+                                }
+                            }, trigger: 'blur' }
+                        ]
+                    }
+                }
+            },
+            mounted() {
+                // 从URL参数获取搜索词和模态框状态
+                const urlParams = new URLSearchParams(window.location.search);
+                this.query = urlParams.get('q') || '';
+                
+                // 根据当前页面路径设置激活的菜单项
+                this.setActiveMenu();
+                
+                // 根据URL参数自动打开对应的模态框
+                const modal = urlParams.get('modal');
+                if (modal === 'login') {
+                    this.loginDialogVisible = true;
+                } else if (modal === 'register') {
+                    this.registerDialogVisible = true;
+                } else if (modal === 'forgot_password') {
+                    this.forgotPasswordDialogVisible = true;
+                }
+                
+                // 显示flash消息
+                this.showFlashMessages();
+                
+                // 渲染数学公式
+                this.renderMath();
+            },
+            computed: {
+                passwordStrength() {
+                    const password = this.changePasswordForm.new_password;
+                    let strength = 0;
+                    
+                    // 长度检查
+                    if (password.length >= 6) strength++;
+                    if (password.length >= 10) strength++;
+                    
+                    // 复杂度检查
+                    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+                    if (/\d/.test(password)) strength++;
+                    if (/[^a-zA-Z0-9]/.test(password)) strength++;
+                    
+                    // 返回强度对象
+                    if (strength <= 2) {
+                        return { width: 33, color: '#f56c6c', text: '弱' };
+                    } else if (strength <= 3) {
+                        return { width: 66, color: '#e6a23c', text: '中等' };
+                    } else {
+                        return { width: 100, color: '#67c23a', text: '强' };
+                    }
+                },
+                passwordMatch() {
+                    return this.changePasswordForm.new_password === this.changePasswordForm.confirm_password;
+                },
+                passwordChecks() {
+                    const password = this.changePasswordForm.new_password;
+                    return {
+                        length: password.length >= 6,
+                        complexity: /[a-zA-Z]/.test(password) && /\d/.test(password)
+                    };
+                }
+            },
+            methods: {
+                showLoginDialog() { this.loginDialogVisible = true },
+                showRegisterDialog() { this.registerDialogVisible = true },
+                showEditProfileDialog() { this.editProfileDialogVisible = true },
+                showChangePasswordDialog() { this.changePasswordDialogVisible = true },
+                readMore(url) { window.location.href = url },
+                handlePageChange(page) { 
+                    const url = new URL(window.location); 
+                    url.searchParams.set('page', page); 
+                    window.location.href = url.toString(); 
+                },
+                goToAdmin() { window.location.href = '/admin' },
+                goToEditProfile() { window.location.href = '/auth/profile/edit' },
+                goToChangePassword() { window.location.href = '/auth/change-password' },
+                validateConfirmPassword(rule, value, callback) {
+                    if (value !== this.registerForm.password) {
+                        callback(new Error('两次输入的密码不一致'));
+                    } else {
+                        callback();
+                    }
+                },
+                handleLogin() {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    
+                    this.$refs.loginFormRef.validate((valid) => {
+                        if (valid) {
+                            this.isSubmitting = true;
+                            
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '/auth/login';
+                            
+                            const u = document.createElement('input');
+                            u.type = 'hidden';
+                            u.name = 'username';
+                            u.value = this.loginForm.username;
+                            form.appendChild(u);
+                            
+                            const p = document.createElement('input');
+                            p.type = 'hidden';
+                            p.name = 'password';
+                            p.value = this.loginForm.password;
+                            form.appendChild(p);
+                            
+                            const r = document.createElement('input');
+                            r.type = 'hidden';
+                            r.name = 'remember_me';
+                            r.value = this.loginForm.remember ? 'on' : '';
+                            form.appendChild(r);
+                            
+                            document.body.appendChild(form);
+                            form.submit();
+                        } else {
+                            ElMessage.error('请检查表单输入');
+                            return false;
+                        }
+                    });
+                },
+                handleRegister() {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    
+                    this.$refs.registerFormRef.validate((valid) => {
+                        if (valid) {
+                            this.isSubmitting = true;
+                            
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '/auth/register';
+                            
+                            const u = document.createElement('input');
+                            u.type = 'hidden';
+                            u.name = 'username';
+                            u.value = this.registerForm.username;
+                            form.appendChild(u);
+                            
+                            const e = document.createElement('input');
+                            e.type = 'hidden';
+                            e.name = 'email';
+                            e.value = this.registerForm.email;
+                            form.appendChild(e);
+                            
+                            const dn = document.createElement('input');
+                            dn.type = 'hidden';
+                            dn.name = 'display_name';
+                            dn.value = this.registerForm.display_name;
+                            form.appendChild(dn);
+                            
+                            const p = document.createElement('input');
+                            p.type = 'hidden';
+                            p.name = 'password';
+                            p.value = this.registerForm.password;
+                            form.appendChild(p);
+                            
+                            const cp = document.createElement('input');
+                            cp.type = 'hidden';
+                            cp.name = 'confirm_password';
+                            cp.value = this.registerForm.confirmPassword;
+                            form.appendChild(cp);
+                            
+                            document.body.appendChild(form);
+                            form.submit();
+                        } else {
+                            ElMessage.error('请检查表单输入');
+                            return false;
+                        }
+                    });
+                },
+                // 以下为帖子页面所需的方法
+                likePost() {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    ElMessage.success('点赞成功！');
+                },
+                sharePost() {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    if (navigator.share) {
+                        navigator.share({
+                            title: document.title,
+                            text: '',
+                            url: window.location.href
+                        });
+                    } else {
+                        navigator.clipboard.writeText(window.location.href).then(() => {
+                            ElMessage.success('链接已复制到剪贴板');
+                        });
+                    }
+                },
+                submitComment(postId) {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    if (!this.commentForm.content.trim()) {
+                        ElMessage.error('请输入评论内容');
+                        return;
+                    }
+                    
+                    const data = {
+                        post_id: parseInt(postId || document.querySelector('input[name="post_id"]')?.value || ''),
+                        content: this.commentForm.content,
+                        author_name: this.commentForm.author_name,
+                        author_email: this.commentForm.author_email,
+                        author_website: this.commentForm.author_website
+                    };
+
+                    fetch('/api/comments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 201) {
+                            ElMessage.success(data.message);
+                            this.commentForm.content = '';
+                            setTimeout(() => window.location.reload(), 1000);
+                        } else {
+                            ElMessage.error(data.message || '评论失败');
+                        }
+                    }).catch(() => ElMessage.error('评论失败'));
+                },
+                replyComment(parentId, authorName) {
+                    this.replyForm.parentId = parentId;
+                    this.replyForm.content = `@${authorName} `;
+                },
+                submitReply(postId) {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    if (!this.replyForm.content.trim()) {
+                        ElMessage.error('请输入回复内容');
+                        return;
+                    }
+                    
+                    const data = {
+                        post_id: parseInt(postId || document.querySelector('input[name="post_id"]')?.value || ''),
+                        content: this.replyForm.content,
+                        parent_id: this.replyForm.parentId || null,
+                        author_name: this.replyForm.author_name,
+                        author_email: this.replyForm.author_email
+                    };
+
+                    fetch('/api/comments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 201) {
+                            ElMessage.success(data.message);
+                            this.cancelReply();
+                            setTimeout(() => window.location.reload(), 1000);
+                        } else {
+                            ElMessage.error(data.message || '回复失败');
+                        }
+                    }).catch(() => ElMessage.error('回复失败'));
+                },
+                cancelReply() { this.replyForm.parentId = null; this.replyForm.content = ''; },
+                showFlashMessages() {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    // 显示flash消息
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                {% if category == 'error' %}
+                                    ElMessage.error('{{ message|e }}');
+                                {% elif category == 'success' %}
+                                    ElMessage.success('{{ message|e }}');
+                                {% elif category == 'info' %}
+                                    ElMessage.info('{{ message|e }}');
+                                {% else %}
+                                    ElMessage('{{ message|e }}');
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                },
+                showForgotPassword() {
+                    this.loginDialogVisible = false;
+                    this.forgotPasswordDialogVisible = true;
+                },
+                handleForgotPassword() {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    
+                    this.$refs.forgotPasswordFormRef.validate((valid) => {
+                        if (valid) {
+                            this.isSubmitting = true;
+                            
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '/auth/forgot-password';
+                            
+                            const e = document.createElement('input');
+                            e.type = 'hidden';
+                            e.name = 'email';
+                            e.value = this.forgotPasswordForm.email;
+                            form.appendChild(e);
+                            
+                            document.body.appendChild(form);
+                            form.submit();
+                        } else {
+                            ElMessage.error('请检查表单输入');
+                            return false;
+                        }
+                    });
+                },
+                handleEditProfile() {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    
+                    this.$refs.editProfileFormRef.validate((valid) => {
+                        if (valid) {
+                            this.isSubmitting = true;
+                            
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '/auth/edit-profile';
+                            form.enctype = 'multipart/form-data';
+                            
+                            // 添加表单字段
+                            const fields = {
+                                'display_name': this.editProfileForm.display_name,
+                                'email': this.editProfileForm.email,
+                                'bio': this.editProfileForm.bio,
+                                'website': this.editProfileForm.website,
+                                'location': this.editProfileForm.location
+                            };
+                            
+                            for (const [name, value] of Object.entries(fields)) {
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = name;
+                                input.value = value;
+                                form.appendChild(input);
+                            }
+                            
+                            // 添加头像文件（如果有选择）
+                            const avatarInput = document.getElementById('avatar-input');
+                            if (avatarInput.files.length > 0) {
+                                const fileInput = document.createElement('input');
+                                fileInput.type = 'file';
+                                fileInput.name = 'avatar';
+                                fileInput.files = avatarInput.files;
+                                form.appendChild(fileInput);
+                            }
+                            
+                            document.body.appendChild(form);
+                            form.submit();
+                        } else {
+                            ElMessage.error('请检查表单输入');
+                            return false;
+                        }
+                    });
+                },
+                handleChangePassword() {
+                    const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                    
+                    this.$refs.changePasswordFormRef.validate((valid) => {
+                        if (valid) {
+                            if (!this.passwordMatch) {
+                                ElMessage.error('新密码与确认密码不匹配');
+                                return false;
+                            }
+                            
+                            this.isSubmitting = true;
+                            
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '/auth/change-password';
+                            
+                            const fields = {
+                                'current_password': this.changePasswordForm.current_password,
+                                'new_password': this.changePasswordForm.new_password,
+                                'confirm_password': this.changePasswordForm.confirm_password
+                            };
+                            
+                            for (const [name, value] of Object.entries(fields)) {
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = name;
+                                input.value = value;
+                                form.appendChild(input);
+                            }
+                            
+                            document.body.appendChild(form);
+                            form.submit();
+                        } else {
+                            ElMessage.error('请检查表单输入');
+                            return false;
+                        }
+                    });
+                },
+                checkPasswordStrength() {
+                    // 交由 computed 属性 `passwordStrength` 和 `passwordChecks` 自动计算并响应。
+                    // 此处保留方法以便模板中使用 @input="checkPasswordStrength"，不做写入计算属性的操作。
+                },
+                checkPasswordMatch() {
+                    // `passwordMatch` 为 computed 属性，直接由数据驱动，无需在方法中写入。
+                },
+                handleAvatarChange(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // 检查文件大小
+                        if (file.size > 2 * 1024 * 1024) {
+                            const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                            ElMessage.error('头像文件大小不能超过2MB');
+                            event.target.value = '';
+                            return;
+                        }
+                        
+                        // 检查文件类型
+                        if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+                            const ElMessage = ElementPlus.ElMessage || ElementPlus;
+                            ElMessage.error('只支持JPG和PNG格式的图片');
+                            event.target.value = '';
+                            return;
+                        }
+                        
+                        // 预览图片
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            // 更新预览
+                            const previewContainer = document.querySelector('.current-avatar');
+                            if (previewContainer) {
+                                previewContainer.innerHTML = `
+                                    <img src="${e.target.result}" alt="头像预览" class="avatar-preview">
+                                    <p>头像预览</p>
+                                `;
+                            } else {
+                                // 如果没有预览容器，创建一个
+                                const avatarUpload = document.querySelector('.avatar-upload');
+                                const newPreview = document.createElement('div');
+                                newPreview.className = 'current-avatar';
+                                newPreview.innerHTML = `
+                                    <img src="${e.target.result}" alt="头像预览" class="avatar-preview">
+                                    <p>头像预览</p>
+                                `;
+                                avatarUpload.insertBefore(newPreview, avatarUpload.firstChild);
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+                // 管理后台文章页面方法
+                editPost(postId) {
+                    console.log('编辑文章:', postId);
+                    window.location.href = `/admin/posts/${postId}/edit`;
+                },
+                deletePost(postId, title) {
+                    this.$confirm(`确定要删除文章 "${title}" 吗？此操作不可恢复。`, '确认删除', {
+                        confirmButtonText: '确定删除',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        // 创建表单提交删除请求
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/admin/posts/${postId}/delete`;
+                        
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                        if (csrfToken) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'csrf_token';
+                            input.value = csrfToken.getAttribute('content');
+                            form.appendChild(input);
+                        }
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    }).catch(() => {
+                        this.$message.info('已取消删除');
+                    });
+                },
+                filterPosts() {
+                    const url = new URL(window.location);
+                    if (this.adminPostsData && this.adminPostsData.statusFilter) {
+                        url.searchParams.set('status', this.adminPostsData.statusFilter);
+                    } else {
+                        url.searchParams.delete('status');
+                    }
+                    window.location.href = url.toString();
+                },
+                handleAdminPageChange(page) {
+                    try {
+                        const url = new URL(window.location);
+                        url.searchParams.set('page', page);
+                        window.location.href = url.toString();
+                    } catch (error) {
+                        console.error('页面跳转错误:', error);
+                        this.$message.error('页面跳转失败');
+                    }
+                },
+                goToCreatePost() {
+                    window.location.href = '/admin/posts/create';
+                },
+                setActiveMenu() {
+                    const path = window.location.pathname;
+                    if (path === '/' || path === '') {
+                        this.activeIndex = '1';
+                    } else if (path === '/archives') {
+                        this.activeIndex = '2';
+                    } else if (path === '/categories') {
+                        this.activeIndex = '3';
+                    } else if (path === '/tags') {
+                        this.activeIndex = '4';
+                    } else if (path === '/search') {
+                        this.activeIndex = '5';
+                    } else {
+                        this.activeIndex = '1';
+                    }
+                },
+                handleMenuSelect(index) {
+                    this.activeIndex = index;
+                    // 根据索引获取对应的路径
+                    const pathMap = {
+                        '1': '/',
+                        '2': '/archives',
+                        '3': '/categories',
+                        '4': '/tags',
+                        '5': '/search'
+                    };
+                    const path = pathMap[index];
+                    if (path) {
+                        window.location.href = path;
+                    }
+                },
+                navigateTo(path) {
+                    window.location.href = path;
+                },
+                logout() {
+                    if (confirm('确定要退出登录吗？')) {
+                        window.location.href = '/auth/logout';
+                    }
+                },
+                renderMath() {
+                    // 渲染数学公式
+                    if (typeof renderMathInElement !== 'undefined' && typeof katex !== 'undefined') {
+                        try {
+                            // 渲染文章内容和评论内容中的数学公式
+                            const elements = document.querySelectorAll('.post-content, .comment-text');
+                            elements.forEach(element => {
+                                renderMathInElement(element, {
+                                    delimiters: [
+                                        {left: '$$', right: '$$', display: true},
+                                        {left: '$', right: '$', display: false},
+                                        {left: '\\[', right: '\\]', display: true},
+                                        {left: '\\(', right: '\\)', display: false}
+                                    ],
+                                    throwOnError: false,
+                                    strict: false,
+                                    trust: true,
+                                    macros: {
+                                        "\\f": "#1f(#2)"
+                                    }
+                                });
+                            });
+                            console.log('数学公式渲染完成');
+                        } catch (error) {
+                            console.error('数学公式渲染失败:', error);
+                        }
+                    } else {
+                        console.warn('KaTeX或renderMathInElement未加载');
+                        // 如果KaTeX未加载，尝试重新加载
+                        this.loadKaTeX();
+                    }
+                },
+                
+                // 加载KaTeX库
+                loadKaTeX() {
+                    if (typeof katex === 'undefined') {
+                        console.log('正在加载KaTeX...');
+                        // 检查是否已经存在script标签
+                        if (!document.querySelector('script[src*="katex.min.js"]')) {
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js';
+                            script.onload = () => {
+                                // 加载auto-render扩展
+                                const renderScript = document.createElement('script');
+                                renderScript.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js';
+                                renderScript.onload = () => {
+                                    console.log('KaTeX加载完成，开始渲染数学公式');
+                                    setTimeout(() => this.renderMath(), 100);
+                                };
+                                document.head.appendChild(renderScript);
+                            };
+                            document.head.appendChild(script);
+                        }
+                    }
+                },
+                
+                // 增强的数学公式渲染方法，用于动态内容
+                renderMathInElement(element) {
+                    if (typeof renderMathInElement !== 'undefined' && typeof katex !== 'undefined') {
+                        try {
+                            renderMathInElement(element, {
+                                delimiters: [
+                                    {left: '$$', right: '$$', display: true},
+                                    {left: '$', right: '$', display: false},
+                                    {left: '\\[', right: '\\]', display: true},
+                                    {left: '\\(', right: '\\)', display: false}
+                                ],
+                                throwOnError: false,
+                                strict: false,
+                                trust: true
+                            });
+                        } catch (error) {
+                            console.error('数学公式渲染失败:', error);
+                        }
+                    } else {
+                        // 如果KaTeX未加载，先加载再渲染
+                        this.loadKaTeX();
+                        setTimeout(() => {
+                            if (typeof renderMathInElement !== 'undefined') {
+                                this.renderMathInElement(element);
+                            }
+                        }, 500);
+                    }
+                },
+                
+                // 观察DOM变化并自动渲染数学公式
+                observeMathElements() {
+                    if (typeof MutationObserver !== 'undefined') {
+                        const observer = new MutationObserver((mutations) => {
+                            let shouldRender = false;
+                            for (const mutation of mutations) {
+                                if (mutation.type === 'childList') {
+                                    for (const node of mutation.addedNodes) {
+                                        if (node.nodeType === Node.ELEMENT_NODE) {
+                                            // 检查是否包含数学公式相关的元素
+                                            if (node.textContent && (node.textContent.includes('$$') || node.textContent.includes('\\[') || node.textContent.includes('\\('))) {
+                                                shouldRender = true;
+                                                break;
+                                            }
+                                            // 检查是否是包含数学公式的容器
+                                            if (node.classList && (node.classList.contains('post-content') || node.classList.contains('comment-text'))) {
+                                                shouldRender = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (shouldRender) break;
+                            }
+                            
+                            if (shouldRender) {
+                                // 延迟渲染以确保DOM完全更新
+                                setTimeout(() => {
+                                    this.renderMath();
+                                }, 100);
+                            }
+                        });
+                        
+                        observer.observe(document.body, {
+                            childList: true,
+                            subtree: true
+                        });
+                        
+                        // 保存观察器以便后续清理
+                        this.mathObserver = observer;
+                    }
+                },
+                
+                // 手动触发数学公式渲染（用于AJAX加载的内容）
+                refreshMath() {
+                    console.log('手动刷新数学公式渲染');
+                    this.renderMath();
+                }
+            }
+        });
+        
+        // 注册Element Plus（这会自动注册所有组件）
+        app.use(ElementPlus);
+        
+        app.mount('#app');
+        // expose for debugging/tests
+        window._noteblog_app = app;
+    })();
+    </script>
+
+    {% block scripts %}{% endblock %}
+    
+    <!-- 统计代码 -->
+    {% if get_theme_config().analytics_code %}
+    {{ get_theme_config().analytics_code|safe }}
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,152 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="admin-plugins">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #303133;">插件管理</h2>
+        <div>
+            <el-button type="primary" @click="installPlugin">
+                <i class="el-icon-download"></i> 安装插件
+            </el-button>
+        </div>
+    </div>
+
+    <!-- 插件列表 -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+        {% for plugin in plugins %}
+        <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;" 
+             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.15)'" 
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">
+            <!-- 插件头部 -->
+            <div style="padding: 20px; border-bottom: 1px solid #f0f0f0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <div style="width: 48px; height: 48px; border-radius: 8px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;">
+                        <i class="el-icon-s-grid" style="font-size: 24px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0; font-size: 18px; font-weight: 600;">{{ plugin.name }}</h3>
+                        <div style="font-size: 12px; opacity: 0.9;">版本 {{ plugin.version or '1.0.0' }}</div>
+                    </div>
+                    <div>
+                        {% if plugin.is_active %}
+                        <el-tag size="small" type="success">已激活</el-tag>
+                        {% else %}
+                        <el-tag size="small" type="info">未激活</el-tag>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 插件内容 -->
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <div style="color: #606266; font-size: 14px; line-height: 1.5; margin-bottom: 12px;">
+                        {{ plugin.description or '暂无描述' }}
+                    </div>
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                        {% if plugin.author %}
+                        <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #909399;">
+                            <i class="el-icon-user"></i>
+                            <span>{{ plugin.author }}</span>
+                        </div>
+                        {% endif %}
+                        {% if plugin.website %}
+                        <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #909399;">
+                            <i class="el-icon-link"></i>
+                            <a href="{{ plugin.website }}" target="_blank" style="color: #409eff; text-decoration: none;">官网</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div style="display: flex; gap: 8px;">
+                    {% if plugin.is_active %}
+                    <el-button size="small" type="warning" @click="deactivatePlugin('{{ plugin.name }}')" style="flex: 1;">
+                        <i class="el-icon-video-pause"></i> 停用
+                    </el-button>
+                    {% else %}
+                    <el-button size="small" type="success" @click="activatePlugin('{{ plugin.name }}')" style="flex: 1;">
+                        <i class="el-icon-video-play"></i> 激活
+                    </el-button>
+                    {% endif %}
+                    <el-button size="small" @click="configurePlugin('{{ plugin.name }}')" style="flex: 1;">
+                        <i class="el-icon-setting"></i> 配置
+                    </el-button>
+                    <el-button size="small" type="danger" @click="uninstallPlugin('{{ plugin.name }}', '{{ plugin.display_name or plugin.name }}')">
+                        <i class="el-icon-delete"></i>
+                    </el-button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 空状态 -->
+    {% if not plugins %}
+    <div style="text-align: center; padding: 60px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <i class="el-icon-s-grid" style="font-size: 64px; color: #c0c4cc; margin-bottom: 20px; display: block;"></i>
+        <h3 style="margin: 0 0 10px 0; color: #303133;">暂无插件</h3>
+        <p style="margin: 0 0 20px 0; color: #909399;">安装插件来扩展博客功能</p>
+        <el-button type="primary" @click="installPlugin">
+            <i class="el-icon-download"></i> 安装插件
+        </el-button>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const { createApp } = Vue;
+const app = createApp({
+    methods: {
+        activatePlugin(pluginName) {
+            // 创建表单提交激活请求
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/plugins/${pluginName}/activate`;
+            
+            document.body.appendChild(form);
+            form.submit();
+        },
+        deactivatePlugin(pluginName) {
+            this.$confirm('确定要停用此插件吗？', '确认停用', {
+                confirmButtonText: '确定停用',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/plugins/${pluginName}/deactivate`;
+                
+                document.body.appendChild(form);
+                form.submit();
+            }).catch(() => {
+                this.$message.info('已取消停用');
+            });
+        },
+        configurePlugin(pluginName) {
+            this.$message.info('插件配置功能开发中...');
+        },
+        uninstallPlugin(pluginName, displayName) {
+            this.$confirm(`确定要卸载插件 "${displayName}" 吗？此操作不可恢复。`, '确认卸载', {
+                confirmButtonText: '确定卸载',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$message.info('卸载插件功能开发中...');
+            }).catch(() => {
+                this.$message.info('已取消卸载');
+            });
+        },
+        installPlugin() {
+            this.$message.info('安装插件功能开发中...');
+        }
+    }
+});
+
+// 注册Element Plus
+app.use(ElementPlus);
+app.mount('.admin-plugins');
+</script>
+{% endblock %}

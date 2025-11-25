@@ -1,0 +1,159 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div id="posts-app">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #303133;">文章管理</h2>
+        <a href="/admin/posts/create" style="padding: 8px 16px; background: #409eff; color: white; text-decoration: none; border-radius: 4px;">
+            + 新建文章
+        </a>
+    </div>
+
+    <!-- 筛选器 -->
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="color: #606266; font-size: 14px;">状态筛选：</label>
+                <select id="statusFilter" style="padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="">全部</option>
+                    <option value="published" {% if status == 'published' %}selected{% endif %}>已发布</option>
+                    <option value="draft" {% if status == 'draft' %}selected{% endif %}>草稿</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="color: #606266; font-size: 14px;">分类筛选：</label>
+                <select id="categoryFilter" style="padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="">全部分类</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category_id == category.id|string %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文章列表 -->
+    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f5f7fa;">
+                <tr>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">标题</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">分类</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">作者</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">状态</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">发布时间</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5; width: 200px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts.items %}
+                <tr style="border-bottom: 1px solid #ebeef5;">
+                    <td style="padding: 12px;">
+                        <div style="line-height: 1.5;">
+                            <div style="font-weight: 500; color: #303133; margin-bottom: 4px;">
+                                {{ post.title }}
+                            </div>
+                            <div style="color: #606266; font-size: 14px;">
+                                {{ post.excerpt[:100] if post.excerpt else post.content[:100] }}{% if (post.excerpt or post.content)|length > 100 %}...{% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 12px; color: #606266;">
+                        {{ post.category.name if post.category else '未分类' }}
+                    </td>
+                    <td style="padding: 12px; color: #606266;">
+                        {{ post.author.username if post.author else '未知' }}
+                    </td>
+                    <td style="padding: 12px;">
+                        {% if post.status == 'published' %}
+                        <span style="padding: 4px 8px; background: #f0f9ff; color: #67c23a; border-radius: 4px; font-size: 12px;">已发布</span>
+                        {% else %}
+                        <span style="padding: 4px 8px; background: #fdf6ec; color: #e6a23c; border-radius: 4px; font-size: 12px;">草稿</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px; color: #606266; font-size: 13px;">
+                        {{ post.published_at.strftime('%Y-%m-%d %H:%M') if post.published_at else '' }}
+                    </td>
+                    <td style="padding: 12px;">
+                        <a href="/admin/posts/{{ post.id }}/edit" style="padding: 5px 10px; background: #409eff; color: white; text-decoration: none; border-radius: 4px; margin-right: 5px; display: inline-block;">
+                            编辑
+                        </a>
+                        <button onclick="deletePost({{ post.id }}, '{{ post.title }}')" style="padding: 5px 10px; background: #f56c6c; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            删除
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if not posts.items %}
+        <div style="text-align: center; padding: 60px;">
+            <div style="font-size: 64px; color: #c0c4cc; margin-bottom: 20px;">📄</div>
+            <h3 style="margin: 0 0 10px 0; color: #303133;">暂无文章</h3>
+            <p style="margin: 0 0 20px 0; color: #909399;">还没有创建任何文章</p>
+            <a href="/admin/posts/create" style="padding: 8px 16px; background: #409eff; color: white; text-decoration: none; border-radius: 4px;">
+                创建第一篇文章
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- 分页 -->
+        <div style="padding: 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="color: #606266; font-size: 14px;">
+                共 {{ posts.total }} 条记录
+            </div>
+            <div style="display: flex; gap: 5px;">
+                {% if posts.has_prev %}
+                <a href="?page={{ posts.prev_num }}{% if status %}&status={{ status }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}" style="padding: 5px 10px; border: 1px solid #dcdfe6; border-radius: 4px; text-decoration: none; color: #606266;">上一页</a>
+                {% endif %}
+                
+                <span style="padding: 5px 10px; background: #409eff; color: white; border-radius: 4px;">{{ posts.page }}</span>
+                
+                {% if posts.has_next %}
+                <a href="?page={{ posts.next_num }}{% if status %}&status={{ status }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}" style="padding: 5px 10px; border: 1px solid #dcdfe6; border-radius: 4px; text-decoration: none; color: #606266;">下一页</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 状态筛选
+document.getElementById('statusFilter').addEventListener('change', function() {
+    const status = this.value;
+    const url = new URL(window.location);
+    if (status) {
+        url.searchParams.set('status', status);
+    } else {
+        url.searchParams.delete('status');
+    }
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+});
+
+// 分类筛选
+document.getElementById('categoryFilter').addEventListener('change', function() {
+    const categoryId = this.value;
+    const url = new URL(window.location);
+    if (categoryId) {
+        url.searchParams.set('category_id', categoryId);
+    } else {
+        url.searchParams.delete('category_id');
+    }
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+});
+
+// 删除文章
+function deletePost(postId, postTitle) {
+    if (confirm('确定要删除文章 "' + postTitle + '" 吗？\n\n此操作不可恢复。')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/posts/' + postId + '/delete';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

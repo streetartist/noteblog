@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% set _admin_page = true %}
+
+{% block title %}{{ site_title or 'Noteblog' }} - 管理后台{% endblock %}
+
+{% block content %}
+<div class="admin-layout" style="display: flex; min-height: calc(100vh - 200px);">
+    <!-- 管理后台侧边栏 -->
+    <aside class="admin-sidebar" style="width: 250px; background: #f5f7fa; border-right: 1px solid #e4e7ed; padding: 20px 0;">
+        <div class="admin-logo" style="padding: 0 20px 20px; border-bottom: 1px solid #e4e7ed; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: #303133; font-size: 18px;">管理后台</h3>
+        </div>
+        
+        <nav class="admin-nav">
+            <ul style="list-style: none; margin: 0; padding: 0;">
+                <li style="margin-bottom: 2px;">
+                    <a href="/admin" style="display: block; padding: 12px 20px; color: #606266; text-decoration: none; transition: all 0.3s; {% if request.endpoint == 'admin.dashboard' %}background: #409eff; color: white;{% endif %}" 
+                       onmouseover="this.style.background='{% if request.endpoint == 'admin.dashboard' %}#409eff{% else %}#ecf5ff{% endif %}'" 
+                       onmouseout="this.style.background='{% if request.endpoint == 'admin.dashboard' %}#409eff{% else %}transparent{% endif %}'">
+                        <i class="el-icon-s-home" style="margin-right: 8px;"></i>仪表板
+                    </a>
+                </li>
+                
+                <li style="margin-bottom: 2px;">
+                    <div style="padding: 8px 20px; color: #909399; font-size: 12px; font-weight: bold;">内容管理</div>
+                </li>
+                <li style="margin-bottom: 2px;">
+                    <a href="/admin/posts" style="display: block; padding: 12px 20px; color: #606266; text-decoration: none; transition: all 0.3s; {% if request.endpoint == 'admin.posts' %}background: #409eff; color: white;{% endif %}" 
+                       onmouseover="this.style.background='{% if request.endpoint == 'admin.posts' %}#409eff{% else %}#ecf5ff{% endif %}'" 
+                       onmouseout="this.style.background='{% if request.endpoint == 'admin.posts' %}#409eff{% else %}transparent{% endif %}'">
+                        <i class="el-icon-document" style="margin-right: 8px;"></i>文章管理
+                    </a>
+                </li>
+                <li style="margin-bottom: 2px;">
+                    <a href="/admin/categories" style="display: block; padding: 12px 20px; color: #606266; text-decoration: none; transition: all 0.3s; {% if request.endpoint == 'admin.categories' %}background: #409eff; color: white;{% endif %}" 
+                       onmouseover="this.style.background='{% if request.endpoint == 'admin.categories' %}#409eff{% else %}#ecf5ff{% endif %}'" 
+                       onmouseout="this.style.background='{% if request.endpoint == 'admin.categories' %}#409eff{% else %}transparent{% endif %}'">
+                        <i class="el-icon-folder" style="margin-right: 8px;"></i>分类管理
+                    </a>
+                </li>
+                <li style="margin-bottom: 2px;">
+                    <a href="/admin/comments" style="display: block; padding: 12px 20px; color: #606266; text-decoration: none; transition: all 0.3s; {% if request.endpoint == 'admin.comments' %}background: #409eff; color: white;{% endif %}" 
+                       onmouseover="this.style.background='{% if request.endpoint == 'admin.comments' %}#409eff{% else %}#ecf5ff{% endif %}'" 
+                       onmouseout="this.style.background='{% if request.endpoint == 'admin.comments' %}#409eff{% else %}transparent{% endif %}'">
+                        <i class="el-icon-chat-dot-round" style="margin-right: 8px;"></i>评论管理
+                    </a>
+                </li>
+                
+                <li style="margin-bottom: 2px; margin-top: 10px;">
+                    <div style="padding: 8px 20px; color: #909399; font-size: 12px; font-weight: bold;">用户管理</div>
+                </li>
+                <li style="margin-bottom: 2px;">
+                    <a href="/admin/users" style="display: block; padding: 12px 20px; color: #606266; text-decoration: none; transition: all 0.3s; {% if request.endpoint == 'admin.users' %}background: #409eff; color: white;{% endif %}" 
+                       onmouseover="this.style.background='{% if request.endpoint == 'admin.users' %}#409eff{% else %}#ecf5ff{% endif %}'" 
+                       onmouseout="this.style.background='{% if request.endpoint == 'admin.users' %}#409eff{% else %}transparent{% endif %}'">
+                        <i class="el-icon-user" style="margin-right: 8px;"></i>用户管理
+                    </a>
+                </li>
+                
+                <li style="margin-bottom: 2px; margin-top: 10px;">
+                    <div style="padding: 8px 20px; color: #909399; font-size: 12px; font-weight: bold;">外观与扩展</div>
+                </li>
+                <li style="margin-bottom: 2px;">
+                    <a href="/admin/themes" style="display: block; padding: 12px 20px; color: #606266; text-decoration: none; transition: all 0.3s; {% if request.endpoint == 'admin.themes' %}background: #409eff; color: white;{% endif %}" 
+                       onmouseover="this.style.background='{% if request.endpoint == 'admin.themes' %}#409eff{% else %}#ecf5ff{% endif %}'" 
+                       onmouseout="this.style.background='{% if request.endpoint == 'admin.themes' %}#409eff{% else %}transparent{% endif %}'">
+                        <i class="el-icon-picture" style="margin-right: 8px;"></i>主题管理
+                    </a>
+                </li>
+                <li style="margin-bottom: 2px;">
+                    <a href="/admin/plugins" style="display: block; padding: 12px 20px; color: #606266; text-decoration: none; transition: all 0.3s; {% if request.endpoint == 'admin.plugins' %}background: #409eff; color: white;{% endif %}" 
+                       onmouseover="this.style.background='{% if request.endpoint == 'admin.plugins' %}#409eff{% else %}#ecf5ff{% endif %}'" 
+                       onmouseout="this.style.background='{% if request.endpoint == 'admin.plugins' %}#409eff{% else %}transparent{% endif %}'">
+                        <i class="el-icon-s-grid" style="margin-right: 8px;"></i>插件管理
+                    </a>
+                </li>
+                
+                <li style="margin-bottom: 2px; margin-top: 10px;">
+                    <div style="padding: 8px 20px; color: #909399; font-size: 12px; font-weight: bold;">系统设置</div>
+                </li>
+                <li style="margin-bottom: 2px;">
+                    <a href="/admin/settings" style="display: block; padding: 12px 20px; color: #606266; text-decoration: none; transition: all 0.3s; {% if request.endpoint == 'admin.settings' %}background: #409eff; color: white;{% endif %}" 
+                       onmouseover="this.style.background='{% if request.endpoint == 'admin.settings' %}#409eff{% else %}#ecf5ff{% endif %}'" 
+                       onmouseout="this.style.background='{% if request.endpoint == 'admin.settings' %}#409eff{% else %}transparent{% endif %}'">
+                        <i class="el-icon-setting" style="margin-right: 8px;"></i>系统设置
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="admin-main" style="flex: 1; padding: 20px; background: #fff;">
+        {% block admin_content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 后台特定的JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // 高亮当前菜单项
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.admin-nav a');
+    
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.style.background = '#409eff';
+            link.style.color = 'white';
+        }
+    });
+});
+</script>
+{% endblock %}

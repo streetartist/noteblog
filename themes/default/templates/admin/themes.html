@@ -1,0 +1,148 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="admin-themes">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #303133;">主题管理</h2>
+        <div>
+            <el-button type="primary" @click="installTheme">
+                <i class="el-icon-download"></i> 安装主题
+            </el-button>
+        </div>
+    </div>
+
+    <!-- 主题列表 -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+        {% for theme in themes %}
+        <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; position: relative;" 
+             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.15)'" 
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">
+            
+            <!-- 当前主题标识 -->
+            {% if theme.is_active %}
+            <div style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                <el-tag type="success" size="small">当前主题</el-tag>
+            </div>
+            {% endif %}
+            
+            <!-- 主题预览图 -->
+            <div style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                {% if theme.screenshot %}
+                <img src="{{ theme.screenshot }}" alt="{{ theme.name }} 预览" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <div style="text-align: center; color: white;">
+                    <i class="el-icon-picture" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
+                    <div style="font-size: 14px;">{{ theme.name }}</div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- 主题信息 -->
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <h3 style="margin: 0 0 8px 0; color: #303133; font-size: 18px; font-weight: 600;">{{ theme.name }}</h3>
+                    <div style="color: #909399; font-size: 12px; margin-bottom: 8px;">版本 {{ theme.version or '1.0.0' }}</div>
+                    <div style="color: #606266; font-size: 14px; line-height: 1.5; margin-bottom: 12px;">
+                        {{ theme.description or '暂无描述' }}
+                    </div>
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                        {% if theme.author %}
+                        <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #909399;">
+                            <i class="el-icon-user"></i>
+                            <span>{{ theme.author }}</span>
+                        </div>
+                        {% endif %}
+                        {% if theme.website %}
+                        <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #909399;">
+                            <i class="el-icon-link"></i>
+                            <a href="{{ theme.website }}" target="_blank" style="color: #409eff; text-decoration: none;">官网</a>
+                        </div>
+                        {% endif %}
+                        <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #909399;">
+                            <i class="el-icon-folder"></i>
+                            <span>{{ theme.name }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div style="display: flex; gap: 8px;">
+                    {% if theme.is_active %}
+                    <el-button size="small" @click="customizeTheme('{{ theme.name }}')" style="flex: 1;">
+                        <i class="el-icon-setting"></i> 自定义
+                    </el-button>
+                    {% else %}
+                    <el-button size="small" type="primary" @click="activateTheme('{{ theme.name }}')" style="flex: 1;">
+                        <i class="el-icon-check"></i> 激活
+                    </el-button>
+                    {% endif %}
+                    <el-button size="small" @click="previewTheme('{{ theme.name }}')" style="flex: 1;">
+                        <i class="el-icon-view"></i> 预览
+                    </el-button>
+                    {% if not theme.is_active %}
+                    <el-button size="small" type="danger" @click="deleteTheme('{{ theme.name }}', '{{ theme.display_name or theme.name }}')">
+                        <i class="el-icon-delete"></i>
+                    </el-button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 空状态 -->
+    {% if not themes %}
+    <div style="text-align: center; padding: 60px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <i class="el-icon-picture" style="font-size: 64px; color: #c0c4cc; margin-bottom: 20px; display: block;"></i>
+        <h3 style="margin: 0 0 10px 0; color: #303133;">暂无主题</h3>
+        <p style="margin: 0 0 20px 0; color: #909399;">安装主题来改变博客的外观</p>
+        <el-button type="primary" @click="installTheme">
+            <i class="el-icon-download"></i> 安装主题
+        </el-button>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const { createApp } = Vue;
+const app = createApp({
+    methods: {
+        activateTheme(themeName) {
+            // 创建表单提交激活请求
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/themes/${themeName}/activate`;
+            
+            document.body.appendChild(form);
+            form.submit();
+        },
+        customizeTheme(themeName) {
+            this.$message.info('主题自定义功能开发中...');
+        },
+        previewTheme(themeName) {
+            // 在新窗口中预览主题
+            window.open(`/?theme=${themeName}`, '_blank');
+        },
+        deleteTheme(themeName, displayName) {
+            this.$confirm(`确定要删除主题 "${displayName}" 吗？此操作不可恢复。`, '确认删除', {
+                confirmButtonText: '确定删除',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$message.info('删除主题功能开发中...');
+            }).catch(() => {
+                this.$message.info('已取消删除');
+            });
+        },
+        installTheme() {
+            this.$message.info('安装主题功能开发中...');
+        }
+    }
+});
+
+// 注册Element Plus
+app.use(ElementPlus);
+app.mount('.admin-themes');
+</script>
+{% endblock %}

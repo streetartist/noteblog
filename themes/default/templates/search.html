@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_title or '搜索' }}{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <h2>搜索结果</h2>
+    <form action="/search" method="get">
+        <el-input v-model="query" name="q" placeholder="输入关键字" clearable></el-input>
+        <el-button type="primary" native-type="submit">搜索</el-button>
+    </form>
+
+    {% if query and posts.items %}
+    <div class="posts-list">
+        {% for post in posts.items %}
+        <article class="post-item">
+            <h3><a href="/post/{{ post.slug }}">{{ post.title }}</a></h3>
+            <p>{{ post.get_excerpt_html(200)|safe }}</p>
+        </article>
+        {% endfor %}
+
+        <div class="pagination">
+            <el-pagination
+                @current-change="handlePageChange"
+                :current-page="{{ posts.page }}"
+                :page-size="{{ posts.per_page }}"
+                :total="{{ posts.total }}"
+                layout="prev, pager, next, jumper">
+            </el-pagination>
+        </div>
+    </div>
+    {% else %}
+        {% if query %}
+            <p>未找到相关结果</p>
+        {% else %}
+            <p>请输入搜索关键词</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

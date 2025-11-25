@@ -1,0 +1,196 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="admin-create-post">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #303133;">创建文章</h2>
+        <div>
+            <el-button onclick="window.location.href='/admin/posts'">
+                <i class="el-icon-back"></i> 返回列表
+            </el-button>
+        </div>
+    </div>
+
+    <form method="POST" id="postForm">
+        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
+            <!-- 主要内容区 -->
+            <div>
+                <!-- 基本信息 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">基本信息</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章标题 <span style="color: #f56c6c;">*</span></label>
+                        <input type="text" name="title" placeholder="请输入文章标题" required 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章别名 (Slug)</label>
+                        <input type="text" name="slug" id="slug" placeholder="自动生成，可手动修改" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                        <div style="font-size: 12px; color: #909399; margin-top: 4px;">用于URL的友好地址，留空将自动生成</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章摘要</label>
+                        <textarea name="excerpt" rows="3" placeholder="请输入文章摘要" 
+                                  style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;"></textarea>
+                        <div style="font-size: 12px; color: #909399; margin-top: 4px;">留空将自动从文章内容中提取</div>
+                    </div>
+                </div>
+
+                <!-- 文章内容 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">文章内容 <span style="color: #f56c6c;">*</span></h3>
+                    <textarea name="content" rows="15" placeholder="请输入文章内容，支持Markdown格式" required 
+                              style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;"></textarea>
+                </div>
+
+                <!-- SEO设置 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">SEO设置</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">SEO标题</label>
+                        <input type="text" name="seo_title" placeholder="留空将使用文章标题" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">SEO描述</label>
+                        <textarea name="seo_description" rows="2" placeholder="留空将使用文章摘要" 
+                                  style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">SEO关键词</label>
+                        <input type="text" name="seo_keywords" placeholder="多个关键词用逗号分隔" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div>
+                <!-- 发布设置 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">发布设置</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">状态</label>
+                        <select name="status" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <option value="draft">草稿</option>
+                            <option value="published">已发布</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章类型</label>
+                        <select name="post_type" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <option value="post">文章</option>
+                            <option value="page">页面</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">评论状态</label>
+                        <select name="comment_status" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <option value="open">开放</option>
+                            <option value="closed">关闭</option>
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">特色图片</label>
+                        <input type="text" name="featured_image" placeholder="请输入图片URL" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                    </div>
+                </div>
+
+                <!-- 分类和标签 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">分类和标签</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">分类</label>
+                        <select name="category_id" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <option value="">选择分类</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">标签</label>
+                        <input type="text" name="tags" placeholder="多个标签用逗号分隔" 
+                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                        <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+                            现有标签：
+                            {% for tag in tags[:5] %}
+                            <span style="display: inline-block; padding: 2px 6px; margin: 2px; background: #f0f0f0; border-radius: 3px; font-size: 12px;">{{ tag.name }}</span>
+                            {% endfor %}
+                            {% if tags|length > 5 %}...{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button type="submit" style="width: 100%; padding: 10px; background: #409eff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            <i class="el-icon-check"></i> 发布文章
+                        </button>
+                        <button type="button" onclick="saveDraft()" style="width: 100%; padding: 10px; background: #909399; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            <i class="el-icon-document"></i> 保存草稿
+                        </button>
+                        <button type="button" onclick="window.location.href='/admin/posts'" style="width: 100%; padding: 10px; background: #f56c6c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                            <i class="el-icon-close"></i> 取消
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// 简单的JavaScript功能，不依赖Vue
+function generateSlug() {
+    const titleInput = document.querySelector('input[name="title"]');
+    const slugInput = document.getElementById('slug');
+    
+    if (titleInput.value && !slugInput.value) {
+        const slug = titleInput.value
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        
+        slugInput.value = slug;
+    }
+}
+
+function saveDraft() {
+    const form = document.getElementById('postForm');
+    const statusInput = form.querySelector('select[name="status"]');
+    statusInput.value = 'draft';
+    form.submit();
+}
+
+// 监听标题变化自动生成slug
+document.addEventListener('DOMContentLoaded', function() {
+    const titleInput = document.querySelector('input[name="title"]');
+    const slugInput = document.getElementById('slug');
+    
+    if (titleInput) {
+        titleInput.addEventListener('input', function() {
+            if (!slugInput.value) {
+                generateSlug();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

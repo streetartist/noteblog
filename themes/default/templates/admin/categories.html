@@ -1,0 +1,77 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div id="categories-app">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #303133;">分类管理</h2>
+        <a href="/admin/categories/create" style="padding: 8px 16px; background: #409eff; color: white; text-decoration: none; border-radius: 4px;">
+            + 新建分类
+        </a>
+    </div>
+
+    <!-- 分类列表 -->
+    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f5f7fa;">
+                <tr>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">分类名称</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">描述</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">文章数量</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5;">创建时间</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ebeef5; width: 200px;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr style="border-bottom: 1px solid #ebeef5;">
+                    <td style="padding: 12px;">
+                        <div style="font-weight: 500; color: #303133;">{{ category.name }}</div>
+                    </td>
+                    <td style="padding: 12px; color: #606266; font-size: 14px;">
+                        {{ category.description or '-' }}
+                    </td>
+                    <td style="padding: 12px; color: #606266;">
+                        {{ category.post_count or 0 }}
+                    </td>
+                    <td style="padding: 12px; color: #606266; font-size: 13px;">
+                        {{ category.created_at.strftime('%Y-%m-%d %H:%M') if category.created_at else '' }}
+                    </td>
+                    <td style="padding: 12px;">
+                        <a href="/admin/categories/{{ category.id }}/edit" style="padding: 5px 10px; background: #409eff; color: white; text-decoration: none; border-radius: 4px; margin-right: 5px; display: inline-block;">
+                            编辑
+                        </a>
+                        <button onclick="deleteCategory({{ category.id }}, '{{ category.name }}')" style="padding: 5px 10px; background: #f56c6c; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            删除
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if not categories %}
+        <div style="text-align: center; padding: 60px;">
+            <div style="font-size: 64px; color: #c0c4cc; margin-bottom: 20px;">📁</div>
+            <h3 style="margin: 0 0 10px 0; color: #303133;">暂无分类</h3>
+            <p style="margin: 0 0 20px 0; color: #909399;">还没有创建任何分类</p>
+            <a href="/admin/categories/create" style="padding: 8px 16px; background: #409eff; color: white; text-decoration: none; border-radius: 4px;">
+                创建第一个分类
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// 删除分类
+function deleteCategory(categoryId, categoryName) {
+    if (confirm('确定要删除分类 "' + categoryName + '" 吗？\n\n注意：删除分类不会删除相关文章，但文章将失去分类归属。')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/categories/' + categoryId + '/delete';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
