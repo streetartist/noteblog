@@ -99,6 +99,14 @@ def create_app(config_name='default'):
         # send_from_directory 会处理路径安全性
         return send_from_directory(static_dir, filename)
     
+    # 提供插件静态文件（/static/plugins/<plugin>/...）的路由，便于插件资源加载
+    @app.route('/static/plugins/<plugin_name>/<path:filename>')
+    def plugin_static(plugin_name, filename):
+        plugins_dir = os.path.join(os.getcwd(), 'plugins')
+        static_dir = os.path.join(plugins_dir, plugin_name, 'static')
+        # send_from_directory 会处理路径安全性
+        return send_from_directory(static_dir, filename)
+    
     # 全局错误处理器
     @app.errorhandler(404)
     def not_found(error):

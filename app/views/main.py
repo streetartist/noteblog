@@ -39,7 +39,9 @@ def index():
         'site_description': SettingManager.get('site_description', ''),
         'current_user': current_user,
         'plugin_hooks': {
-            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
+            'head_assets': plugin_manager.get_template_hooks('head_assets'),
+            'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
         }
     }
     
@@ -70,7 +72,9 @@ def post_detail(slug):
         'site_title': f"{post.title} - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {
-            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
+            'head_assets': plugin_manager.get_template_hooks('head_assets'),
+            'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
         }
     }
     
@@ -98,7 +102,9 @@ def category(slug):
         'site_title': f"{category.name} - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {
-            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
+            'head_assets': plugin_manager.get_template_hooks('head_assets'),
+            'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
         }
     }
     
@@ -124,7 +130,9 @@ def tag(slug):
         'site_title': f"{tag.name} - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {
-            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
+            'head_assets': plugin_manager.get_template_hooks('head_assets'),
+            'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
         }
     }
     
@@ -161,7 +169,9 @@ def search():
         'site_title': f"搜索: {query} - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {
-            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
+            'head_assets': plugin_manager.get_template_hooks('head_assets'),
+            'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
         }
     }
     
@@ -252,7 +262,9 @@ def archives():
         'site_title': f"归档 - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {
-            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
+            'head_assets': plugin_manager.get_template_hooks('head_assets'),
+            'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
         }
     }
     
@@ -268,7 +280,9 @@ def categories_list():
         'site_title': f"分类 - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {
-            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
+            'head_assets': plugin_manager.get_template_hooks('head_assets'),
+            'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
         }
     }
     return theme_manager.render_template('categories.html', **context)
@@ -283,7 +297,9 @@ def tags_list():
         'site_title': f"标签 - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {
-            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
+            'head_assets': plugin_manager.get_template_hooks('head_assets'),
+            'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
         }
     }
     return theme_manager.render_template('tags.html', **context)
@@ -301,7 +317,9 @@ def page(slug):
         'site_title': f"{page.title} - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {
-            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
+            'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
+            'head_assets': plugin_manager.get_template_hooks('head_assets'),
+            'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
         }
     }
     

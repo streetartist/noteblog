@@ -98,6 +98,31 @@
         font-size: 11px;
         padding-left: 20px;
     }
+    
+    .friend-link-logo {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        max-width: 24px;
+        max-height: 24px;
+        margin-right: 6px;
+        padding: 1px;
+    }
+    
+    .friend-link-logo[src*="svg"] {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .friend-link-default-icon {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        margin-right: 6px;
+        font-size: 12px;
+    }
 }
 
 /* 暗色主题支持 */
@@ -156,11 +181,67 @@
 }
 
 .friend-link-logo {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    max-width: 32px;
+    max-height: 32px;
     margin-right: 8px;
-    border-radius: 2px;
-    object-fit: cover;
+    border-radius: 4px;
+    object-fit: contain;
+    object-position: center;
+    background-color: #f8f9fa;
+    padding: 2px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.friend-link-logo:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 针对不同尺寸的logo进行优化 */
+.friend-link-logo[src*="svg"] {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+}
+
+/* 默认图标样式 */
+.friend-link-default-icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-right: 8px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.friend-link-default-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 暗色主题下的logo背景 */
+@media (prefers-color-scheme: dark) {
+    .friend-link-logo {
+        background-color: #34495e;
+    }
+    
+    .friend-link-default-icon {
+        background-color: #34495e;
+        color: #ecf0f1;
+    }
 }
 
 /* 特殊链接样式 */

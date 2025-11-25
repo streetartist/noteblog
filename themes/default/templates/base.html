@@ -20,6 +20,13 @@
     
     {% block head %}{% endblock %}
     
+    <!-- 插件资源钩子：头部CSS -->
+    {% if plugin_hooks and plugin_hooks.head_assets %}
+        {% for asset_content in plugin_hooks.head_assets %}
+            {{ asset_content|safe }}
+        {% endfor %}
+    {% endif %}
+    
     <!-- 主题色 -->
     <style>
         :root {
@@ -1124,6 +1131,13 @@
     </script>
 
     {% block scripts %}{% endblock %}
+    
+    <!-- 插件资源钩子：JavaScript -->
+    {% if plugin_hooks and plugin_hooks.scripts_assets %}
+        {% for asset_content in plugin_hooks.scripts_assets %}
+            {{ asset_content|safe }}
+        {% endfor %}
+    {% endif %}
     
     <!-- 统计代码 -->
     {% if get_theme_config().analytics_code %}

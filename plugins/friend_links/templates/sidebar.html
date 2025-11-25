@@ -16,7 +16,12 @@
                {% if link.description %}title="{{ link.description }}"{% endif %}
                class="friend-link">
                 {% if link.logo %}
-                <img src="{{ link.logo }}" alt="{{ link.name }}" class="friend-link-logo">
+                <img src="{{ link.logo }}" 
+                     alt="{{ link.name }}" 
+                     class="friend-link-logo"
+                     loading="lazy"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="friend-link-default-icon" style="display:none;">🔗</div>
                 {% endif %}
                 <span class="friend-link-name">{{ link.name }}</span>
             </a>
@@ -27,4 +32,5 @@
         {% endfor %}
     </div>
 </div>
+
 {% endif %}

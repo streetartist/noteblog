@@ -365,6 +365,35 @@ class PluginManager:
         
         return hooks
     
+    def render_plugin_template(self, plugin_name: str, template_content: str, context: dict = None):
+        """渲染插件模板，提供Flask模板上下文"""
+        if context is None:
+            context = {}
+        
+        try:
+            from flask import url_for, request
+            from jinja2 import Template
+            
+            # 创建模板并添加Flask上下文
+            template = Template(template_content)
+            
+            # 添加Flask模板函数到上下文
+            flask_context = {
+                'url_for': url_for,
+                'request': request,
+                'config': current_app.config,
+                'static_url': f"/static/plugins/{plugin_name}"
+            }
+            
+            # 合并上下文
+            template_context = {**flask_context, **context}
+            
+            return template.render(**template_context)
+            
+        except Exception as e:
+            current_app.logger.error(f"渲染插件模板失败: {e}")
+            return f"模板渲染错误: {str(e)}"
+    
     def install_plugin(self, plugin_name: str):
         """安装插件"""
         try:
@@ -461,6 +490,10 @@ class PluginManager:
         """获取激活的插件"""
         plugins = Plugin.query.filter_by(is_active=True).all()
         return [plugin.to_dict() for plugin in plugins]
+    
+    def get_plugin(self, plugin_name: str):
+        """获取插件实例"""
+        return self.plugins.get(plugin_name)
 
 # 创建全局插件管理器实例
 plugin_manager = PluginManager()

@@ -104,9 +104,6 @@ class FriendLinksPlugin(PluginBase):
         with open(template_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
         
-        from jinja2 import Template
-        template = Template(template_content)
-        
         context = {
             'friend_links': {
                 'title': config.get('title', '友情链接'),
@@ -116,7 +113,84 @@ class FriendLinksPlugin(PluginBase):
             }
         }
         
-        return template.render(**context)
+        # 使用插件管理器的模板渲染方法，提供Flask上下文
+        html_content = current_app.plugin_manager.render_plugin_template(
+            self.name, template_content, context
+        )
+        
+        # 注册 JavaScript 和 CSS 加载钩子
+        self._register_assets()
+        
+        return html_content
+    
+    def _register_assets(self):
+        """注册资源文件（CSS 和 JavaScript）"""
+        # 注册 CSS 到 head 钩子
+        if hasattr(current_app, 'plugin_manager'):
+            current_app.plugin_manager.register_template_hook(
+                'head_assets',
+                lambda: f'<link rel="stylesheet" href="/static/plugins/friend_links/css/friend_links.css">',
+                priority=10,
+                plugin_name=self.name
+            )
+            
+            # 注册 JavaScript 到 scripts 钩子
+            current_app.plugin_manager.register_template_hook(
+                'scripts_assets',
+                self._get_script_content,
+                priority=10,
+                plugin_name=self.name
+            )
+    
+    def _get_script_content(self):
+        """获取 JavaScript 内容"""
+        # 等待 Vue 应用初始化完成后再加载友情链接功能
+        return '''
+<script>
+// 等待Vue应用初始化完成后再加载友情链接功能
+(function() {
+    // 检查Vue应用是否已经挂载
+    function waitForVueApp() {
+        if (window._noteblog_app && document.getElementById('app').__vue__) {
+            // Vue应用已挂载，加载友情链接功能
+            loadFriendLinksScript();
+        } else {
+            // Vue应用未挂载，等待一段时间后重试
+            setTimeout(waitForVueApp, 100);
+        }
+    }
+    
+    // 动态加载友情链接脚本
+    function loadFriendLinksScript() {
+        // 检查是否已经加载过
+        if (document.getElementById('friend-links-script')) {
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.id = 'friend-links-script';
+        script.src = '/static/plugins/friend_links/js/friend_links.js';
+        script.onload = function() {
+            // 脚本加载完成后初始化友情链接功能
+            if (window.FriendLinks && typeof window.FriendLinks.init === 'function') {
+                window.FriendLinks.init();
+                window.FriendLinks.adjustLayout();
+                window.FriendLinks.watchTheme();
+                window.FriendLinks.initLazyLoading();
+            }
+        };
+        document.head.appendChild(script);
+    }
+    
+    // 开始等待Vue应用
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', waitForVueApp);
+    } else {
+        waitForVueApp();
+    }
+})();
+</script>
+        '''
     
     def register_hooks(self):
         """注册插件钩子"""
@@ -142,198 +216,358 @@ friend_links_bp = Blueprint('friend_links', __name__,
                            static_folder='static')
 
 
-@friend_links_bp.route('/admin/friend_links')
+@friend_links_bp.route('/plugins/friend_links/admin')
 def admin_page():
     """插件的管理页面"""
     from flask import render_template_string
     
     template = """
-    <div class="el-container">
-        <el-card class="box-card">
-            <div slot="header" class="clearfix">
-                <span>友情链接管理</span>
-                <el-button style="float: right; padding: 3px 0" type="text" @click="showAddDialog">添加链接</el-button>
+    <div class="friend-links-admin" id="friend-links-admin">
+        <div class="el-card box-card is-always-shadow">
+            <div class="el-card__header">
+                <div class="clearfix">
+                    <span>友情链接管理</span>
+                    <button type="button" class="el-button el-button--text" style="float: right; padding: 3px 0" onclick="showAddDialog()">
+                        <span>添加链接</span>
+                    </button>
+                </div>
             </div>
-            
-            <!-- 配置选项 -->
-            <el-form :model="config" label-width="120px" style="margin-bottom: 20px;">
-                <el-form-item label="模块标题">
-                    <el-input v-model="config.title" placeholder="友情链接"></el-input>
-                </el-form-item>
-                <el-form-item label="显示在侧边栏">
-                    <el-switch v-model="config.show_in_sidebar"></el-switch>
-                </el-form-item>
-                <el-form-item label="最大显示数量">
-                    <el-input-number v-model="config.max_links" :min="1" :max="50"></el-input-number>
-                </el-form-item>
-                <el-form-item label="新窗口打开">
-                    <el-switch v-model="config.open_new_window"></el-switch>
-                </el-form-item>
-                <el-form-item label="显示描述">
-                    <el-switch v-model="config.show_description"></el-switch>
-                </el-form-item>
-                <el-form-item>
-                    <el-button type="primary" @click="saveConfig">保存配置</el-button>
-                </el-form-item>
-            </el-form>
-            
-            <!-- 链接列表 -->
-            <el-table :data="links" style="width: 100%">
-                <el-table-column prop="name" label="网站名称" width="150"></el-table-column>
-                <el-table-column prop="url" label="链接地址">
-                    <template #default="scope">
-                        <el-link :href="scope.row.url" target="_blank" type="primary">{{ scope.row.url }}</el-link>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="description" label="描述"></el-table-column>
-                <el-table-column label="操作" width="150">
-                    <template #default="scope">
-                        <el-button size="mini" @click="editLink(scope.row)">编辑</el-button>
-                        <el-button size="mini" type="danger" @click="deleteLink(scope.row)">删除</el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </el-card>
+            <div class="el-card__body">
+                <!-- 配置选项 -->
+                <form id="config-form" class="el-form" label-width="120px" style="margin-bottom: 20px;">
+                    <div class="el-form-item">
+                        <label class="el-form-item__label" style="width: 120px;">模块标题</label>
+                        <div class="el-form-item__content" style="margin-left: 120px;">
+                            <div class="el-input">
+                                <input type="text" id="config-title" class="el-input__inner" placeholder="友情链接" value="{{ config.title or '友情链接' }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="el-form-item">
+                        <label class="el-form-item__label" style="width: 120px;">显示在侧边栏</label>
+                        <div class="el-form-item__content" style="margin-left: 120px;">
+                            <label class="el-switch">
+                                <input type="checkbox" id="config-show-in-sidebar" class="el-switch__input" {{ 'checked' if config.show_in_sidebar != False else '' }}>
+                                <span class="el-switch__core"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="el-form-item">
+                        <label class="el-form-item__label" style="width: 120px;">最大显示数量</label>
+                        <div class="el-form-item__content" style="margin-left: 120px;">
+                            <div class="el-input-number">
+                                <input type="number" id="config-max-links" class="el-input__inner" value="{{ config.max_links or 10 }}" min="1" max="50">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="el-form-item">
+                        <label class="el-form-item__label" style="width: 120px;">新窗口打开</label>
+                        <div class="el-form-item__content" style="margin-left: 120px;">
+                            <label class="el-switch">
+                                <input type="checkbox" id="config-open-new-window" class="el-switch__input" {{ 'checked' if config.open_new_window != False else '' }}>
+                                <span class="el-switch__core"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="el-form-item">
+                        <label class="el-form-item__label" style="width: 120px;">显示描述</label>
+                        <div class="el-form-item__content" style="margin-left: 120px;">
+                            <label class="el-switch">
+                                <input type="checkbox" id="config-show-description" class="el-switch__input" {{ 'checked' if config.show_description else '' }}>
+                                <span class="el-switch__core"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="el-form-item">
+                        <div class="el-form-item__content" style="margin-left: 120px;">
+                            <button type="button" class="el-button el-button--primary" onclick="saveConfig()">
+                                <span>保存配置</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- 链接列表 -->
+                <div class="el-table el-table--fit el-table--enable-row-hover el-table--enable-row-transition" style="width: 100%;">
+                    <div class="el-table__header-wrapper">
+                        <table class="el-table__header" cellspacing="0" cellpadding="0" border="0">
+                            <thead>
+                                <tr>
+                                    <th class="el-table_1_column_1 is-leaf"><div class="cell">网站名称</div></th>
+                                    <th class="el-table_1_column_2 is-leaf"><div class="cell">链接地址</div></th>
+                                    <th class="el-table_1_column_3 is-leaf"><div class="cell">描述</div></th>
+                                    <th class="el-table_1_column_4 is-leaf"><div class="cell">操作</div></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <div class="el-table__body-wrapper">
+                        <table class="el-table__body" cellspacing="0" cellpadding="0" border="0">
+                            <tbody id="links-tbody">
+                                <!-- 链接数据将通过JavaScript动态插入 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- 添加/编辑链接对话框 -->
-        <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
-            <el-form :model="linkForm" label-width="80px">
-                <el-form-item label="网站名称" required>
-                    <el-input v-model="linkForm.name" placeholder="请输入网站名称"></el-input>
-                </el-form-item>
-                <el-form-item label="链接地址" required>
-                    <el-input v-model="linkForm.url" placeholder="请输入链接地址"></el-input>
-                </el-form-item>
-                <el-form-item label="描述">
-                    <el-input v-model="linkForm.description" placeholder="请输入网站描述"></el-input>
-                </el-form-item>
-                <el-form-item label="Logo">
-                    <el-input v-model="linkForm.logo" placeholder="请输入Logo URL（可选）"></el-input>
-                </el-form-item>
-                <el-form-item label="排序权重">
-                    <el-input-number v-model="linkForm.sort_order" :min="0" :max="999"></el-input-number>
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="dialogVisible = false">取消</el-button>
-                    <el-button type="primary" @click="saveLink">确定</el-button>
-                </span>
-            </template>
-        </el-dialog>
+        <div class="el-dialog__wrapper" id="link-dialog" style="display: none;">
+            <div class="el-dialog" style="width: 500px; margin-top: 15vh;">
+                <div class="el-dialog__header">
+                    <span class="el-dialog__title" id="dialog-title">添加链接</span>
+                    <button type="button" class="el-dialog__headerbtn" onclick="hideDialog()">
+                        <i class="el-dialog__close el-icon el-icon-close"></i>
+                    </button>
+                </div>
+                <div class="el-dialog__body">
+                    <form id="link-form" class="el-form" label-width="80px">
+                        <div class="el-form-item is-required">
+                            <label class="el-form-item__label" style="width: 80px;">网站名称</label>
+                            <div class="el-form-item__content" style="margin-left: 80px;">
+                                <div class="el-input">
+                                    <input type="text" id="link-name" class="el-input__inner" placeholder="请输入网站名称" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="el-form-item is-required">
+                            <label class="el-form-item__label" style="width: 80px;">链接地址</label>
+                            <div class="el-form-item__content" style="margin-left: 80px;">
+                                <div class="el-input">
+                                    <input type="url" id="link-url" class="el-input__inner" placeholder="请输入链接地址" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="el-form-item">
+                            <label class="el-form-item__label" style="width: 80px;">描述</label>
+                            <div class="el-form-item__content" style="margin-left: 80px;">
+                                <div class="el-input">
+                                    <input type="text" id="link-description" class="el-input__inner" placeholder="请输入网站描述">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="el-form-item">
+                            <label class="el-form-item__label" style="width: 80px;">Logo</label>
+                            <div class="el-form-item__content" style="margin-left: 80px;">
+                                <div class="el-input">
+                                    <input type="url" id="link-logo" class="el-input__inner" placeholder="请输入Logo URL（可选）">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="el-form-item">
+                            <label class="el-form-item__label" style="width: 80px;">排序权重</label>
+                            <div class="el-form-item__content" style="margin-left: 80px;">
+                                <div class="el-input-number">
+                                    <input type="number" id="link-sort-order" class="el-input__inner" value="0" min="0" max="999">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="el-dialog__footer">
+                    <span class="dialog-footer">
+                        <button type="button" class="el-button" onclick="hideDialog()">
+                            <span>取消</span>
+                        </button>
+                        <button type="button" class="el-button el-button--primary" onclick="saveLink()">
+                            <span>确定</span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script>
-    new Vue({
-        el: '.el-container',
-        data: {
-            config: {
-                title: '{{ config.title or "友情链接" }}',
-                show_in_sidebar: {{ 'true' if config.show_in_sidebar != False else 'false' }},
-                max_links: {{ config.max_links or 10 }},
-                open_new_window: {{ 'true' if config.open_new_window != False else 'false' }},
-                show_description: {{ 'true' if config.show_description else 'false' }}
-            },
-            links: {{ links|tojson }},
-            dialogVisible: false,
-            dialogTitle: '添加链接',
-            linkForm: {
-                name: '',
-                url: '',
-                description: '',
-                logo: '',
-                sort_order: 0
-            },
-            editingId: null
-        },
-        methods: {
-            saveConfig() {
-                fetch('/friend_links/api/config', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(this.config)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.$message.success('配置保存成功');
-                    } else {
-                        this.$message.error('配置保存失败');
-                    }
-                });
-            },
-            showAddDialog() {
-                this.dialogTitle = '添加链接';
-                this.linkForm = { name: '', url: '', description: '', logo: '', sort_order: 0 };
-                this.editingId = null;
-                this.dialogVisible = true;
-            },
-            editLink(link) {
-                this.dialogTitle = '编辑链接';
-                this.linkForm = { ...link };
-                this.editingId = link.id;
-                this.dialogVisible = true;
-            },
-            saveLink() {
-                if (!this.linkForm.name || !this.linkForm.url) {
-                    this.$message.error('请填写网站名称和链接地址');
-                    return;
-                }
-                
-                const url = this.editingId ? `/friend_links/api/links/${this.editingId}` : '/friend_links/api/links';
-                const method = this.editingId ? 'PUT' : 'POST';
-                
-                fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(this.linkForm)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.$message.success(this.editingId ? '链接更新成功' : '链接添加成功');
-                        this.loadLinks();
-                        this.dialogVisible = false;
-                    } else {
-                        this.$message.error(data.message || '操作失败');
-                    }
-                });
-            },
-            deleteLink(link) {
-                this.$confirm('确定要删除这个链接吗？', '确认删除', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    fetch(`/friend_links/api/links/${link.id}`, {
-                        method: 'DELETE'
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            this.$message.success('链接删除成功');
-                            this.loadLinks();
-                        } else {
-                            this.$message.error(data.message || '删除失败');
-                        }
-                    });
-                });
-            },
-            loadLinks() {
-                fetch('/friend_links/api/links')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.links = data.data;
-                    }
-                });
-            }
-        }
+    // 全局变量
+    let links = {{ links|tojson }};
+    let editingId = null;
+    
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+        renderLinksTable();
     });
+    
+    // 渲染链接表格
+    function renderLinksTable() {
+        const tbody = document.getElementById('links-tbody');
+        tbody.innerHTML = '';
+        
+        links.forEach(function(link) {
+            const tr = document.createElement('tr');
+            tr.className = 'el-table__row';
+            tr.innerHTML = `
+                <td class="el-table_1_column_1"><div class="cell">${link.name}</div></td>
+                <td class="el-table_1_column_2">
+                    <div class="cell">
+                        <a href="${link.url}" target="_blank" class="el-link el-link--primary">${link.url}</a>
+                    </div>
+                </td>
+                <td class="el-table_1_column_3"><div class="cell">${link.description || ''}</div></td>
+                <td class="el-table_1_column_4">
+                    <div class="cell">
+                        <button type="button" class="el-button el-button--mini" onclick="editLink(${link.id})">编辑</button>
+                        <button type="button" class="el-button el-button--mini el-button--danger" onclick="deleteLink(${link.id})">删除</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+    
+    // 显示添加对话框
+    function showAddDialog() {
+        document.getElementById('dialog-title').textContent = '添加链接';
+        document.getElementById('link-form').reset();
+        document.getElementById('link-sort-order').value = '0';
+        editingId = null;
+        document.getElementById('link-dialog').style.display = 'block';
+    }
+    
+    // 隐藏对话框
+    function hideDialog() {
+        document.getElementById('link-dialog').style.display = 'none';
+    }
+    
+    // 编辑链接
+    function editLink(id) {
+        const link = links.find(l => l.id === id);
+        if (link) {
+            document.getElementById('dialog-title').textContent = '编辑链接';
+            document.getElementById('link-name').value = link.name;
+            document.getElementById('link-url').value = link.url;
+            document.getElementById('link-description').value = link.description || '';
+            document.getElementById('link-logo').value = link.logo || '';
+            document.getElementById('link-sort-order').value = link.sort_order || 0;
+            editingId = id;
+            document.getElementById('link-dialog').style.display = 'block';
+        }
+    }
+    
+    // 保存链接
+    function saveLink() {
+        const name = document.getElementById('link-name').value.trim();
+        const url = document.getElementById('link-url').value.trim();
+        
+        if (!name || !url) {
+            showMessage('请填写网站名称和链接地址', 'error');
+            return;
+        }
+        
+        const data = {
+            name: name,
+            url: url,
+            description: document.getElementById('link-description').value.trim(),
+            logo: document.getElementById('link-logo').value.trim(),
+            sort_order: parseInt(document.getElementById('link-sort-order').value) || 0
+        };
+        
+        const apiUrl = editingId ? `/plugins/friend_links/api/links/${editingId}` : '/plugins/friend_links/api/links';
+        const method = editingId ? 'PUT' : 'POST';
+        
+        fetch(apiUrl, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(editingId ? '链接更新成功' : '链接添加成功', 'success');
+                loadLinks();
+                hideDialog();
+            } else {
+                showMessage(data.message || '操作失败', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('网络错误', 'error');
+        });
+    }
+    
+    // 删除链接
+    function deleteLink(id) {
+        if (confirm('确定要删除这个链接吗？')) {
+            fetch(`/plugins/friend_links/api/links/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('链接删除成功', 'success');
+                    loadLinks();
+                } else {
+                    showMessage(data.message || '删除失败', 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('网络错误', 'error');
+            });
+        }
+    }
+    
+    // 保存配置
+    function saveConfig() {
+        const config = {
+            title: document.getElementById('config-title').value.trim(),
+            show_in_sidebar: document.getElementById('config-show-in-sidebar').checked,
+            max_links: parseInt(document.getElementById('config-max-links').value) || 10,
+            open_new_window: document.getElementById('config-open-new-window').checked,
+            show_description: document.getElementById('config-show-description').checked
+        };
+        
+        fetch('/plugins/friend_links/api/config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(config)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage('配置保存成功', 'success');
+            } else {
+                showMessage('配置保存失败', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('网络错误', 'error');
+        });
+    }
+    
+    // 加载链接列表
+    function loadLinks() {
+        fetch('/plugins/friend_links/api/links')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                links = data.data;
+                renderLinksTable();
+            }
+        })
+        .catch(error => {
+            console.error('加载链接失败:', error);
+        });
+    }
+    
+    // 显示消息（简单的实现，如果Element UI的message不可用）
+    function showMessage(message, type) {
+        // 尝试使用Element UI的message
+        if (typeof ELEMENT !== 'undefined' && ELEMENT.Message) {
+            ELEMENT.Message({
+                message: message,
+                type: type,
+                duration: 3000
+            });
+        } else {
+            // 回退到alert
+            alert(message);
+        }
+    }
     </script>
     """
     
@@ -351,7 +585,7 @@ def admin_page():
         return f"插件加载失败: {str(e)}", 500
 
 
-@friend_links_bp.route('/api/config', methods=['POST'])
+@friend_links_bp.route('/plugins/friend_links/api/config', methods=['POST'])
 def api_config():
     """API：保存配置"""
     try:
@@ -367,7 +601,7 @@ def api_config():
         return jsonify({'success': False, 'message': str(e)})
 
 
-@friend_links_bp.route('/api/links', methods=['GET', 'POST'])
+@friend_links_bp.route('/plugins/friend_links/api/links', methods=['GET', 'POST'])
 def api_links():
     """API：管理链接"""
     try:
@@ -400,7 +634,7 @@ def api_links():
         return jsonify({'success': False, 'message': str(e)})
 
 
-@friend_links_bp.route('/api/links/<int:link_id>', methods=['PUT', 'DELETE'])
+@friend_links_bp.route('/plugins/friend_links/api/links/<int:link_id>', methods=['PUT', 'DELETE'])
 def api_link_detail(link_id):
     """API：管理单个链接"""
     try:
