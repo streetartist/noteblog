@@ -10,7 +10,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 # 设置环境变量以跳过插件初始化（避免在serverless环境中出现问题）
-os.environ.setdefault('SKIP_PLUGIN_INIT', '1')
+# os.environ.setdefault('SKIP_PLUGIN_INIT', '1')
 
 # 为 Vercel 环境设置可写的临时目录
 temp_dir = tempfile.gettempdir()
