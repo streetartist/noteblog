@@ -181,7 +181,7 @@
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/pinyin-slug@0.8.0/dist/pinyin-slug.min.js"></script>
+<script src="https://unpkg.com/pinyin-pro"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const titleInput = document.querySelector('input[name="title"]');
@@ -201,10 +201,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function generateSlug() {
         if (!slugManuallyEdited && titleInput.value) {
-            slugInput.value = pinyin(titleInput.value, {
-                separator: '-',
-                lower: true
+            const { pinyin } = pinyinPro;
+            let slug = pinyin(titleInput.value, { 
+                toneType: 'none',
+                nonZh: 'consecutive',
+                v: true 
             });
+            
+            slug = slug.toLowerCase()
+                      .replace(/\s+/g, '-')
+                      .replace(/[^a-z0-9-]/g, '')
+                      .replace(/-+/g, '-')
+                      .replace(/^-|-$/g, '');
+            
+            slugInput.value = slug;
             updateSlugPreview();
         }
     }
@@ -215,6 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
         slugManuallyEdited = true;
         if (slugInput.value === '') {
             slugManuallyEdited = false;
+            generateSlug();
         }
         updateSlugPreview();
     });

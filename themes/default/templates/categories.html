@@ -3,19 +3,51 @@
 {% block title %}{{ site_title or '分类' }}{% endblock %}
 
 {% block content %}
-<div class="category-list">
-    <h2>所有分类</h2>
+<div class="categories-container">
+    <div class="page-header">
+        <h1 class="page-title">文章分类</h1>
+        <p class="page-subtitle">按主题浏览文章</p>
+    </div>
+    
     {% if categories %}
-    <ul>
-        {% for category in categories %}
-        <li>
-            <a href="/category/{{ category.slug }}">{{ category.name }}</a>
-            <span>({{ category.post_count }})</span>
-        </li>
-        {% endfor %}
-    </ul>
+        <div class="categories-grid">
+            {% for category in categories %}
+            <div class="category-card">
+                <div class="category-icon">
+                    <i class="el-icon-folder"></i>
+                </div>
+                <div class="category-content">
+                    <h3 class="category-name">
+                        <a href="/category/{{ category.slug }}">{{ category.name }}</a>
+                    </h3>
+                    {% if category.description %}
+                    <p class="category-description">{{ category.description }}</p>
+                    {% endif %}
+                    <div class="category-stats">
+                        <span class="post-count">
+                            <i class="el-icon-document"></i>
+                            {{ category.post_count }} 篇文章
+                        </span>
+                        {% if category.slug %}
+                        <span class="category-slug">#{{ category.slug }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="category-actions">
+                    <a href="/category/{{ category.slug }}" class="view-all-btn">
+                        查看全部
+                        <i class="el-icon-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     {% else %}
-    <p>暂无分类</p>
+        <div class="empty-state">
+            <i class="el-icon-folder"></i>
+            <h3>暂无分类</h3>
+            <p>还没有创建任何分类，开始组织您的内容吧！</p>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

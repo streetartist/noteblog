@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSlugPreview() {
         const slug = slugInput.value;
         if (slug) {
-            slugPreview.textContent = `{{ url_for('main.category_posts', slug='', _external=True) }}${slug}`;
+            slugPreview.textContent = `{{ url_for('main.category', slug='', _external=True) }}${slug}`;
             slugPreview.style.display = 'block';
         } else {
             slugPreview.style.display = 'none';

@@ -158,7 +158,7 @@
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/pinyin-slug@0.8.0/dist/pinyin-slug.min.js"></script>
+<script src="https://unpkg.com/pinyin-pro"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const titleInput = document.querySelector('input[name="title"]');
@@ -178,10 +178,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function generateSlug() {
         if (!slugManuallyEdited && titleInput.value) {
-            slugInput.value = pinyin(titleInput.value, {
-                separator: '-',
-                lower: true
+            const { pinyin } = pinyinPro;
+            // 获取无声调拼音
+            let slug = pinyin(titleInput.value, { 
+                toneType: 'none',
+                nonZh: 'consecutive',
+                v: true 
             });
+            
+            // 处理 slug：转小写，空格变横杠，移除特殊字符
+            slug = slug.toLowerCase()
+                      .replace(/\s+/g, '-')
+                      .replace(/[^a-z0-9-]/g, '')
+                      .replace(/-+/g, '-')
+                      .replace(/^-|-$/g, '');
+            
+            slugInput.value = slug;
             updateSlugPreview();
         }
     }
@@ -199,6 +211,8 @@ document.addEventListener('DOMContentLoaded', function() {
         slugManuallyEdited = true;
         if (slugInput.value === '') {
             slugManuallyEdited = false;
+            // 如果清空了，尝试重新生成
+            generateSlug();
         }
         updateSlugPreview();
     });

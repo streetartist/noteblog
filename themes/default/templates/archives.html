@@ -3,24 +3,61 @@
 {% block title %}{{ site_title or '归档' }}{% endblock %}
 
 {% block content %}
-<div class="archives">
-    <h2>文章归档</h2>
+<div class="archives-container">
+    <div class="page-header">
+        <h1 class="page-title">文章归档</h1>
+        <p class="page-subtitle">按年份浏览所有文章</p>
+    </div>
+    
     {% if archives %}
-        {% for year, posts in archives|dictsort(true) %}
-        <section class="archive-year">
-            <h3>{{ year }}</h3>
-            <ul>
-                {% for post in posts %}
-                <li>
-                    <a href="/post/{{ post.slug }}">{{ post.title }}</a>
-                    <span class="meta">{{ post.published_at.strftime('%Y-%m-%d') if post.published_at else post.created_at.strftime('%Y-%m-%d') }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-        </section>
-        {% endfor %}
+        <div class="archives-timeline">
+            {% for year, posts in archives|dictsort(true) %}
+            <div class="archive-year-section">
+                <div class="year-header">
+                    <h2 class="year-title">{{ year }}</h2>
+                    <span class="year-count">{{ posts|length }} 篇文章</span>
+                </div>
+                <div class="year-posts">
+                    {% for post in posts %}
+                    <article class="archive-post-item">
+                        <div class="post-content">
+                            <h3 class="post-title">
+                                <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+                            </h3>
+                            {% if post.excerpt %}
+                            <p class="post-excerpt">{{ post.excerpt|truncate(120) }}</p>
+                            {% endif %}
+                            <div class="post-meta">
+                                <span class="post-date">
+                                    <i class="el-icon-time"></i>
+                                    {{ post.published_at.strftime('%Y-%m-%d') if post.published_at else post.created_at.strftime('%Y-%m-%d') }}
+                                </span>
+                                {% if post.category %}
+                                <span class="post-category">
+                                    <i class="el-icon-folder"></i>
+                                    <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
+                                </span>
+                                {% endif %}
+                                {% if post.author %}
+                                <span class="post-author">
+                                    <i class="el-icon-user"></i>
+                                    {{ post.author.display_name or post.author.username }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     {% else %}
-        <p>暂无归档内容</p>
+        <div class="empty-state">
+            <i class="el-icon-document"></i>
+            <h3>暂无归档内容</h3>
+            <p>还没有发布任何文章，开始写作吧！</p>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

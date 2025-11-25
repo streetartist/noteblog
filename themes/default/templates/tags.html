@@ -3,18 +3,49 @@
 {% block title %}{{ site_title or '标签' }}{% endblock %}
 
 {% block content %}
-<div class="tag-list">
-    <h2>所有标签</h2>
-    {% if tags %}
-    <div class="tag-cloud">
-        {% for tag in tags %}
-        <el-tag size="small" style="margin:4px;">
-            <a href="/tag/{{ tag.slug }}">{{ tag.name }}</a>
-        </el-tag>
-        {% endfor %}
+<div class="tags-container">
+    <div class="page-header">
+        <h1 class="page-title">文章标签</h1>
+        <p class="page-subtitle">按标签浏览文章</p>
     </div>
+    
+    {% if tags %}
+        <div class="tags-content">
+            <div class="tags-stats">
+                <span class="total-tags">共 {{ tags|length }} 个标签</span>
+            </div>
+            
+            <div class="tags-cloud">
+                {% for tag in tags %}
+                <a href="/tag/{{ tag.slug }}" class="tag-item" 
+                   style="font-size: {{ 12 + (tag.post_count * 2) }}px; 
+                          opacity: {{ 0.7 + (tag.post_count * 0.1) }}">
+                    <span class="tag-name">{{ tag.name }}</span>
+                    <span class="tag-count">{{ tag.post_count }}</span>
+                </a>
+                {% endfor %}
+            </div>
+            
+            <div class="tags-alphabetical">
+                <h3 class="section-title">按字母排序</h3>
+                <div class="tags-list">
+                    {% for tag in tags|sort(attribute='name') %}
+                    <div class="tag-list-item">
+                        <a href="/tag/{{ tag.slug }}" class="tag-link">
+                            <span class="tag-name">{{ tag.name }}</span>
+                            <span class="tag-count">{{ tag.post_count }}</span>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     {% else %}
-    <p>暂无标签</p>
+        <div class="empty-state">
+            <i class="el-icon-collection-tag"></i>
+            <h3>暂无标签</h3>
+            <p>还没有创建任何标签，开始为您的文章添加标签吧！</p>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

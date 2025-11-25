@@ -3,38 +3,135 @@
 {% block title %}{{ site_title or '搜索' }}{% endblock %}
 
 {% block content %}
-<div class="search-page">
-    <h2>搜索结果</h2>
-    <form action="/search" method="get">
-        <el-input v-model="query" name="q" placeholder="输入关键字" clearable></el-input>
-        <el-button type="primary" native-type="submit">搜索</el-button>
-    </form>
+<div class="search-container">
+    <div class="page-header">
+        <h1 class="page-title">搜索文章</h1>
+        <p class="page-subtitle">输入关键词查找您感兴趣的内容</p>
+    </div>
+    
+    <div class="search-form-container">
+        <form action="/search" method="get" class="search-form">
+            <div class="search-input-group">
+                <el-input 
+                    v-model="query" 
+                    name="q" 
+                    placeholder="输入关键字搜索文章..." 
+                    clearable
+                    size="large"
+                    class="search-input">
+                    <template #prefix>
+                        <i class="el-icon-search"></i>
+                    </template>
+                </el-input>
+                <el-button 
+                    type="primary" 
+                    native-type="submit" 
+                    size="large"
+                    class="search-btn">
+                    搜索
+                </el-button>
+            </div>
+        </form>
+        
+        {% if query %}
+        <div class="search-info">
+            <span class="search-query">搜索关键词: "<strong>{{ query }}</strong>"</span>
+            {% if posts.items %}
+            <span class="search-results-count">找到 {{ posts.total }} 个结果</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
 
     {% if query and posts.items %}
-    <div class="posts-list">
-        {% for post in posts.items %}
-        <article class="post-item">
-            <h3><a href="/post/{{ post.slug }}">{{ post.title }}</a></h3>
-            <p>{{ post.get_excerpt_html(200)|safe }}</p>
-        </article>
-        {% endfor %}
+    <div class="search-results">
+        <div class="results-header">
+            <h2 class="results-title">搜索结果</h2>
+            <div class="results-stats">
+                <span>第 {{ posts.page }} 页，共 {{ (posts.total / posts.per_page)|round(0, 'ceil')|int }} 页</span>
+            </div>
+        </div>
+        
+        <div class="posts-list">
+            {% for post in posts.items %}
+            <article class="search-result-item">
+                <div class="result-content">
+                    <h3 class="result-title">
+                        <a href="/post/{{ post.slug }}">{{ post.title }}</a>
+                    </h3>
+                    <div class="result-meta">
+                        <span class="meta-item">
+                            <i class="el-icon-time"></i>
+                            {{ post.published_at.strftime('%Y-%m-%d') if post.published_at else post.created_at.strftime('%Y-%m-%d') }}
+                        </span>
+                        {% if post.category %}
+                        <span class="meta-item">
+                            <i class="el-icon-folder"></i>
+                            <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
+                        </span>
+                        {% endif %}
+                        {% if post.author %}
+                        <span class="meta-item">
+                            <i class="el-icon-user"></i>
+                            {{ post.author.display_name or post.author.username }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="result-excerpt">
+                        {{ post.get_excerpt_html(200)|safe }}
+                    </div>
+                    {% if post.tags %}
+                    <div class="result-tags">
+                        {% for tag in post.tags %}
+                        <el-tag size="small" type="info">
+                            <a href="/tag/{{ tag.slug }}">{{ tag.name }}</a>
+                        </el-tag>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
 
+        {% if posts.total > posts.per_page %}
         <div class="pagination">
             <el-pagination
                 @current-change="handlePageChange"
                 :current-page="{{ posts.page }}"
                 :page-size="{{ posts.per_page }}"
                 :total="{{ posts.total }}"
-                layout="prev, pager, next, jumper">
+                layout="prev, pager, next, jumper"
+                background>
             </el-pagination>
         </div>
-    </div>
-    {% else %}
-        {% if query %}
-            <p>未找到相关结果</p>
-        {% else %}
-            <p>请输入搜索关键词</p>
         {% endif %}
+    </div>
+    {% elif query %}
+        <div class="no-results">
+            <div class="no-results-icon">
+                <i class="el-icon-search"></i>
+            </div>
+            <h3>未找到相关结果</h3>
+            <p>抱歉，没有找到与 "<strong>{{ query }}</strong>" 相关的内容。</p>
+            <div class="search-suggestions">
+                <h4>搜索建议：</h4>
+                <ul>
+                    <li>检查关键词拼写是否正确</li>
+                    <li>尝试使用更简单的关键词</li>
+                    <li>尝试使用同义词或相关词汇</li>
+                    <li>浏览<a href="/archives">文章归档</a>或<a href="/categories">分类</a></li>
+                </ul>
+            </div>
+        </div>
+    {% else %}
+        <div class="search-welcome">
+            <div class="welcome-icon">
+                <i class="el-icon-search"></i>
+            </div>
+            <h3>开始搜索</h3>
+            <p>在上方输入框中输入关键词，开始探索精彩内容。</p>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

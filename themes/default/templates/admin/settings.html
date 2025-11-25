@@ -21,29 +21,29 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">网站标题 <span style="color: #f56c6c;">*</span></label>
-                        <el-input name="site_title" value="{{ settings.site_title.value if settings.site_title else '' }}" placeholder="请输入网站标题" required></el-input>
+                        <el-input name="site_title" value="{{ settings.site_title if settings.site_title else '' }}" placeholder="请输入网站标题" required></el-input>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">网站描述</label>
-                        <el-input name="site_description" type="textarea" :rows="3" placeholder="请输入网站描述">{{ settings.site_description.value if settings.site_description else '' }}</el-input>
+                        <el-input name="site_description" type="textarea" :rows="3" placeholder="请输入网站描述">{{ settings.site_description if settings.site_description else '' }}</el-input>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">用于SEO，建议150字符以内</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">网站关键词</label>
-                        <el-input name="site_keywords" placeholder="多个关键词用逗号分隔">{{ settings.site_keywords.value if settings.site_keywords else '' }}</el-input>
+                        <el-input name="site_keywords" placeholder="多个关键词用逗号分隔">{{ settings.site_keywords if settings.site_keywords else '' }}</el-input>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">用于SEO，多个关键词用英文逗号分隔</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">网站地址</label>
-                        <el-input name="site_url" placeholder="https://example.com">{{ settings.site_url.value if settings.site_url else '' }}</el-input>
+                        <el-input name="site_url" placeholder="https://example.com">{{ settings.site_url if settings.site_url else '' }}</el-input>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">管理员邮箱</label>
-                        <el-input name="admin_email" type="email" placeholder="admin@example.com">{{ settings.admin_email.value if settings.admin_email else '' }}</el-input>
+                        <el-input name="admin_email" type="email" placeholder="admin@example.com">{{ settings.admin_email if settings.admin_email else '' }}</el-input>
                     </div>
                 </div>
 
@@ -53,12 +53,12 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">每页文章数</label>
-                        <el-input-number name="posts_per_page" :min="5" :max="50" value="{{ settings.posts_per_page.value if settings.posts_per_page else 10 }}" style="width: 200px;"></el-input-number>
+                        <el-input-number name="posts_per_page" :min="5" :max="50" value="{{ settings.posts_per_page if settings.posts_per_page else 10 }}" style="width: 200px;"></el-input-number>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">时区</label>
-                        <el-select name="timezone" placeholder="选择时区" style="width: 200px;" value="{{ settings.timezone.value if settings.timezone else 'Asia/Shanghai' }}">
+                        <el-select name="timezone" placeholder="选择时区" style="width: 200px;" value="{{ settings.timezone if settings.timezone else 'Asia/Shanghai' }}">
                             <el-option label="北京时间 (UTC+8)" value="Asia/Shanghai"></el-option>
                             <el-option label="东京时间 (UTC+9)" value="Asia/Tokyo"></el-option>
                             <el-option label="纽约时间 (UTC-5)" value="America/New_York"></el-option>
@@ -68,7 +68,7 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">日期格式</label>
-                        <el-select name="date_format" placeholder="选择日期格式" style="width: 200px;" value="{{ settings.date_format.value if settings.date_format else '%Y-%m-%d' }}">
+                        <el-select name="date_format" placeholder="选择日期格式" style="width: 200px;" value="{{ settings.date_format if settings.date_format else '%Y-%m-%d' }}">
                             <el-option label="2024-01-01" value="%Y-%m-%d"></el-option>
                             <el-option label="2024/01/01" value="%Y/%m/%d"></el-option>
                             <el-option label="01/01/2024" value="%m/%d/%Y"></el-option>
@@ -82,14 +82,14 @@
                     <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">评论设置</h3>
                     
                     <div style="margin-bottom: 15px;">
-                        <el-checkbox name="comment_moderation" {% if settings.comment_moderation.value == 'true' %}checked{% endif %}>
+                        <el-checkbox name="comment_moderation" {% if settings.comment_moderation == 'true' %}checked{% endif %}>
                             评论需要审核
                         </el-checkbox>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">新评论需要管理员审核后才能显示</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
-                        <el-checkbox name="comment_registration" {% if settings.comment_registration.value == 'true' %}checked{% endif %}>
+                        <el-checkbox name="comment_registration" {% if settings.comment_registration == 'true' %}checked{% endif %}>
                             仅注册用户可评论
                         </el-checkbox>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">只有注册用户才能发表评论</div>
@@ -97,7 +97,7 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">评论审核关键词</label>
-                        <el-input name="comment_blacklist" type="textarea" :rows="3" placeholder="每行一个关键词">{{ settings.comment_blacklist.value if settings.comment_blacklist else '' }}</el-input>
+                        <el-input name="comment_blacklist" type="textarea" :rows="3" placeholder="每行一个关键词">{{ settings.comment_blacklist if settings.comment_blacklist else '' }}</el-input>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">包含这些关键词的评论将自动标记为垃圾评论</div>
                     </div>
                 </div>
@@ -143,7 +143,7 @@
                             <strong>数据库：</strong>MySQL
                         </div>
                         <div>
-                            <strong>最后更新：</strong>{{ moment().format('YYYY-MM-DD HH:mm:ss') }}
+                            <strong>最后更新：</strong>{{ settings.updated_at if settings.updated_at else '刚刚' }}
                         </div>
                     </div>
                 </div>

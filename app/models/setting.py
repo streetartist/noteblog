@@ -140,7 +140,13 @@ class SettingManager:
             ('posts_per_page', '10', 'integer', '每页文章数量', 'general', True),
             ('default_category', '1', 'integer', '默认分类ID', 'general', False),
             ('allow_comments', 'true', 'boolean', '允许评论', 'general', True),
-            ('comment_moderation', 'true', 'boolean', '评论需要审核', 'general', False),
+            ('comment_moderation', 'true', 'boolean', '评论需要审核', 'comment', False),
+            ('comment_registration', 'false', 'boolean', '仅注册用户可评论', 'comment', False),
+            ('comment_blacklist', '', 'string', '评论审核关键词', 'comment', False),
+            
+            # 显示设置
+            ('timezone', 'Asia/Shanghai', 'string', '时区', 'general', False),
+            ('date_format', '%Y-%m-%d', 'string', '日期格式', 'general', False),
             
             # 用户设置
             ('allow_registration', 'true', 'boolean', '允许用户注册', 'general', True),

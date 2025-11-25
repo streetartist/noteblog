@@ -623,10 +623,21 @@ def activate_theme(theme_name):
 @admin_required
 def settings():
     """系统设置"""
-    settings = SettingManager.get_category('general')
+    # 获取所有设置，按分类分组
+    general_settings = SettingManager.get_category('general')
+    comment_settings = SettingManager.get_category('comment')
+    
+    # 合并所有设置
+    all_settings = {**general_settings, **comment_settings}
+    
+    # 确保必需的评论设置存在
+    if 'comment_registration' not in all_settings:
+        all_settings['comment_registration'] = 'false'
+    if 'comment_blacklist' not in all_settings:
+        all_settings['comment_blacklist'] = ''
     
     context = {
-        'settings': settings,
+        'settings': all_settings,
         'site_title': f"系统设置 - {SettingManager.get('site_title', 'Noteblog')} 管理后台",
         'current_user': current_user
     }
@@ -638,15 +649,26 @@ def settings():
 @admin_required
 def save_settings():
     """保存设置"""
+    # 基本设置
     general_settings = [
         'site_title', 'site_description', 'site_keywords', 
-        'site_url', 'admin_email'
+        'site_url', 'admin_email', 'posts_per_page', 'timezone', 'date_format'
     ]
     
     for key in general_settings:
         value = request.form.get(key, '').strip()
         if value:
             SettingManager.set(key, value)
+    
+    # 评论设置
+    comment_settings = {
+        'comment_moderation': request.form.get('comment_moderation', 'false'),
+        'comment_registration': request.form.get('comment_registration', 'false'),
+        'comment_blacklist': request.form.get('comment_blacklist', '').strip()
+    }
+    
+    for key, value in comment_settings.items():
+        SettingManager.set(key, value, category='comment')
     
     flash('设置保存成功', 'success')
     return redirect(url_for('admin.settings'))
