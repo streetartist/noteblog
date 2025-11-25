@@ -54,7 +54,7 @@
     "footer_text": {
       "type": "textarea",
       "label": "页脚文本",
-      "default": "© 2024 Noteblog. All rights reserved."
+      "default": "© 2025 Noteblog. All rights reserved."
     },
     "analytics_code": {
       "type": "textarea",
