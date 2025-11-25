@@ -113,7 +113,14 @@ def create_post():
         
         # 生成 slug
         import re
-        slug = re.sub(r'[^\w\s-]', '', title).strip().lower()
+        from pypinyin import lazy_pinyin, Style
+        
+        # 转换为拼音
+        pinyin_list = lazy_pinyin(title, style=Style.NORMAL)
+        slug = '-'.join(pinyin_list)
+        
+        # 清理特殊字符
+        slug = re.sub(r'[^\w\s-]', '', slug).strip().lower()
         slug = re.sub(r'[-\s]+', '-', slug)
         
         # 确保 slug 唯一
@@ -310,7 +317,14 @@ def create_category():
         
         if not slug:
             import re
-            slug = re.sub(r'[^\w\s-]', '', name).strip().lower()
+            from pypinyin import lazy_pinyin, Style
+            
+            # 转换为拼音
+            pinyin_list = lazy_pinyin(name, style=Style.NORMAL)
+            slug = '-'.join(pinyin_list)
+            
+            # 清理特殊字符
+            slug = re.sub(r'[^\w\s-]', '', slug).strip().lower()
             slug = re.sub(r'[-\s]+', '-', slug)
         
         # 检查 slug 是否已存在
@@ -342,6 +356,84 @@ def create_category():
     
     return theme_manager.render_template('admin/create_category.html', **context)
 
+@bp.route('/categories/<int:category_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_category(category_id):
+    """编辑分类"""
+    category = Category.query.get_or_404(category_id)
+    
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        slug = request.form.get('slug', '').strip()
+        description = request.form.get('description', '').strip()
+        parent_id = request.form.get('parent_id', type=int)
+        sort_order = request.form.get('sort_order', 0, type=int)
+        
+        if not name:
+            flash('分类名称不能为空', 'error')
+            return theme_manager.render_template('admin/edit_category.html', category=category)
+        
+        if not slug:
+            import re
+            from pypinyin import lazy_pinyin, Style
+            
+            # 转换为拼音
+            pinyin_list = lazy_pinyin(name, style=Style.NORMAL)
+            slug = '-'.join(pinyin_list)
+            
+            # 清理特殊字符
+            slug = re.sub(r'[^\w\s-]', '', slug).strip().lower()
+            slug = re.sub(r'[-\s]+', '-', slug)
+        
+        # 检查 slug 是否已存在（排除当前分类）
+        existing_category = Category.query.filter(Category.slug == slug, Category.id != category_id).first()
+        if existing_category:
+            flash('分类别名已存在', 'error')
+            return theme_manager.render_template('admin/edit_category.html', category=category)
+        
+        # 更新分类
+        category.name = name
+        category.slug = slug
+        category.description = description
+        category.parent_id = parent_id
+        category.sort_order = sort_order
+        
+        db.session.commit()
+        
+        flash('分类更新成功', 'success')
+        return redirect(url_for('admin.categories'))
+    
+    categories = Category.query.filter_by(parent_id=None).all()
+    
+    context = {
+        'category': category,
+        'categories': categories,
+        'site_title': f"编辑分类 - {SettingManager.get('site_title', 'Noteblog')} 管理后台",
+        'current_user': current_user
+    }
+    
+    return theme_manager.render_template('admin/edit_category.html', **context)
+
+@bp.route('/categories/<int:category_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_category(category_id):
+    """删除分类"""
+    category = Category.query.get_or_404(category_id)
+    
+    # 将该分类下的文章的分类ID设为空
+    Post.query.filter_by(category_id=category_id).update({'category_id': None})
+    
+    # 将子分类的父级ID设为空
+    Category.query.filter_by(parent_id=category_id).update({'parent_id': None})
+    
+    db.session.delete(category)
+    db.session.commit()
+    
+    flash('分类删除成功', 'success')
+    return redirect(url_for('admin.categories'))
+
 # 评论管理
 @bp.route('/comments')
 @login_required
@@ -353,9 +445,9 @@ def comments():
     
     query = Comment.query
     if status == 'approved':
-        query = query.filter_by(is_approved=True)
+        query = query.filter_by(is_approved=True, is_spam=False)
     elif status == 'pending':
-        query = query.filter_by(is_approved=False)
+        query = query.filter_by(is_approved=False, is_spam=False)
     elif status == 'spam':
         query = query.filter_by(is_spam=True)
     
@@ -400,6 +492,23 @@ def mark_comment_spam(comment_id):
     comment = Comment.query.get_or_404(comment_id)
     comment.mark_as_spam()
     flash('评论已标记为垃圾', 'success')
+    return redirect(url_for('admin.comments'))
+
+@bp.route('/comments/<int:comment_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_comment(comment_id):
+    """删除评论"""
+    comment = Comment.query.get_or_404(comment_id)
+    
+    # 删除该评论的所有回复
+    Comment.query.filter_by(parent_id=comment_id).delete()
+    
+    # 删除评论本身
+    db.session.delete(comment)
+    db.session.commit()
+    
+    flash('评论删除成功', 'success')
     return redirect(url_for('admin.comments'))
 
 # 用户管理

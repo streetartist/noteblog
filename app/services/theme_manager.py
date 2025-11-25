@@ -28,7 +28,7 @@ class ThemeManager:
     
     def discover_themes(self):
         """发现主题"""
-        themes_dir = os.path.join(current_app.root_path, '..', 'themes')
+        themes_dir = os.path.join(os.getcwd(), 'themes')
         
         if not os.path.exists(themes_dir):
             os.makedirs(themes_dir)
@@ -392,7 +392,7 @@ class ThemeManager:
     
     def create_theme(self, theme_name: str, theme_config: Dict):
         """创建新主题"""
-        themes_dir = os.path.join(current_app.root_path, '..', 'themes')
+        themes_dir = os.path.join(os.getcwd(), 'themes')
         theme_path = os.path.join(themes_dir, theme_name)
         
         if os.path.exists(theme_path):

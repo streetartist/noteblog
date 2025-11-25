@@ -31,7 +31,7 @@ class PluginManager:
     
     def discover_plugins(self):
         """发现插件"""
-        plugins_dir = os.path.join(current_app.root_path, '..', 'plugins')
+        plugins_dir = os.path.join(os.getcwd(), 'plugins')
         
         if not os.path.exists(plugins_dir):
             os.makedirs(plugins_dir)

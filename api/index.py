@@ -170,6 +170,20 @@ def before_request():
         _db_initialized = False
         ensure_database_initialized()
 
+# 添加URL解码中间件来处理中文字符
+@app.before_request
+def handle_url_encoding():
+    """处理URL编码问题"""
+    from urllib.parse import unquote
+    from flask import request
+    
+    # 解码URL路径
+    if request.path and '%' in request.path:
+        decoded_path = unquote(request.path)
+        if decoded_path != request.path:
+            # 修改请求对象的路径
+            request.environ['PATH_INFO'] = decoded_path
+
 # 初始化数据库（如果可能）
 ensure_database_initialized()
 

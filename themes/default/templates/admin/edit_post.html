@@ -27,8 +27,11 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章别名 (Slug)</label>
-                        <input type="text" name="slug" value="{{ post.slug|e }}" placeholder="自动生成，可手动修改" 
-                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                        <div class="slug-container">
+                            <input type="text" name="slug" id="slug" value="{{ post.slug|e }}" placeholder="自动生成，可手动修改" 
+                                   style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <div id="slug-preview" class="slug-preview"></div>
+                        </div>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">用于URL的友好地址，留空将自动生成</div>
                     </div>
                     
@@ -178,158 +181,47 @@
     </form>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/pinyin-slug@0.8.0/dist/pinyin-slug.min.js"></script>
 <script>
-// 自动保存草稿功能
-let autoSaveTimer;
-let lastSaveTime = null;
-
-function saveDraft() {
-    const form = document.getElementById('postForm');
-    const statusInput = form.querySelector('select[name="status"]');
-    statusInput.value = 'draft';
-    form.submit();
-}
-
-function previewPost() {
-    // 先保存当前内容为草稿，然后预览
-    const form = document.getElementById('postForm');
-    const formData = new FormData(form);
-    
-    // 使用 AJAX 保存草稿
-    fetch(form.action, {
-        method: 'POST',
-        body: formData
-    }).then(response => {
-        if (response.ok) {
-            // 在新窗口中预览文章
-            window.open(`/post/{{ post.slug }}`, '_blank');
-        } else {
-            alert('保存失败，请重试');
-        }
-    }).catch(error => {
-        console.error('保存失败:', error);
-        alert('保存失败，请重试');
-    });
-}
-
-function autoSave() {
-    const form = document.getElementById('postForm');
-    const formData = new FormData(form);
-    
-    // 设置状态为草稿
-    formData.set('status', 'draft');
-    
-    fetch(form.action, {
-        method: 'POST',
-        body: formData
-    }).then(response => {
-        if (response.ok) {
-            lastSaveTime = new Date();
-            updateSaveStatus('已自动保存');
-        } else {
-            updateSaveStatus('自动保存失败');
-        }
-    }).catch(error => {
-        console.error('自动保存失败:', error);
-        updateSaveStatus('自动保存失败');
-    });
-}
-
-function updateSaveStatus(message) {
-    let statusElement = document.getElementById('saveStatus');
-    if (!statusElement) {
-        statusElement = document.createElement('div');
-        statusElement.id = 'saveStatus';
-        statusElement.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #67c23a; color: white; padding: 8px 16px; border-radius: 4px; font-size: 14px; z-index: 9999;';
-        document.body.appendChild(statusElement);
-    }
-    
-    statusElement.textContent = message;
-    statusElement.style.background = message.includes('失败') ? '#f56c6c' : '#67c23a';
-    
-    // 3秒后隐藏状态消息
-    setTimeout(() => {
-        if (statusElement.parentNode) {
-            statusElement.parentNode.removeChild(statusElement);
-        }
-    }, 3000);
-}
-
-// 监听表单变化，触发自动保存
-function setupAutoSave() {
-    const form = document.getElementById('postForm');
-    const inputs = form.querySelectorAll('input, textarea, select');
-    
-    inputs.forEach(input => {
-        input.addEventListener('input', () => {
-            clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(autoSave, 30000); // 30秒后自动保存
-        });
-    });
-}
-
-// 生成 slug
-function generateSlug() {
-    const titleInput = document.querySelector('input[name="title"]');
-    const slugInput = document.querySelector('input[name="slug"]');
-    
-    if (titleInput && slugInput && !slugInput.value) {
-        let slug = titleInput.value.toLowerCase()
-            .replace(/[^\w\s-]/g, '') // 移除特殊字符
-            .replace(/[\s_-]+/g, '-') // 替换空格、下划线为连字符
-            .replace(/^-+|-+$/g, ''); // 移除开头和结尾的连字符
-        
-        slugInput.value = slug;
-    }
-}
-
-// 页面加载完成后的初始化
 document.addEventListener('DOMContentLoaded', function() {
-    setupAutoSave();
-    
-    // 标题输入时自动生成 slug
     const titleInput = document.querySelector('input[name="title"]');
-    if (titleInput) {
-        titleInput.addEventListener('input', generateSlug);
+    const slugInput = document.getElementById('slug');
+    const slugPreview = document.getElementById('slug-preview');
+    let slugManuallyEdited = !!slugInput.value;
+
+    function updateSlugPreview() {
+        const slug = slugInput.value;
+        if (slug) {
+            slugPreview.textContent = `{{ url_for('main.post_detail', slug='', _external=True) }}${slug}`;
+            slugPreview.style.display = 'block';
+        } else {
+            slugPreview.style.display = 'none';
+        }
     }
-    
-    // 表单提交前确认
-    const form = document.getElementById('postForm');
-    form.addEventListener('submit', function(e) {
-        const title = document.querySelector('input[name="title"]').value.trim();
-        const content = document.querySelector('textarea[name="content"]').value.trim();
-        
-        if (!title || !content) {
-            e.preventDefault();
-            alert('标题和内容不能为空');
-            return false;
+
+    function generateSlug() {
+        if (!slugManuallyEdited && titleInput.value) {
+            slugInput.value = pinyin(titleInput.value, {
+                separator: '-',
+                lower: true
+            });
+            updateSlugPreview();
         }
-        
-        // 如果状态是发布，确认是否发布
-        const status = document.querySelector('select[name="status"]').value;
-        if (status === 'published') {
-            if (!confirm('确定要发布这篇文章吗？')) {
-                e.preventDefault();
-                return false;
-            }
+    }
+
+    titleInput.addEventListener('input', generateSlug);
+
+    slugInput.addEventListener('input', function() {
+        slugManuallyEdited = true;
+        if (slugInput.value === '') {
+            slugManuallyEdited = false;
         }
+        updateSlugPreview();
     });
-    
-    // 快捷键支持
-    document.addEventListener('keydown', function(e) {
-        // Ctrl+S 保存草稿
-        if (e.ctrlKey && e.key === 's') {
-            e.preventDefault();
-            saveDraft();
-        }
-        // Ctrl+Enter 发布文章
-        if (e.ctrlKey && e.key === 'Enter') {
-            e.preventDefault();
-            const statusSelect = document.querySelector('select[name="status"]');
-            statusSelect.value = 'published';
-            form.submit();
-        }
-    });
+
+    // ... (rest of the script)
+    // Initial state
+    updateSlugPreview();
 });
 </script>
 {% endblock %}

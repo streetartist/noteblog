@@ -312,25 +312,3 @@ def feed():
 </rss>"""
     
     return Response(xml, mimetype='application/rss+xml')
-
-# 错误处理
-@bp.errorhandler(404)
-def not_found(error):
-    """404 错误"""
-    context = {
-        'error': error,
-        'site_title': f"页面未找到 - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
-    }
-    return theme_manager.render_template('404.html', **context), 404
-
-@bp.errorhandler(500)
-def internal_error(error):
-    """500 错误"""
-    db.session.rollback()
-    context = {
-        'error': error,
-        'site_title': f"服务器错误 - {SettingManager.get('site_title', 'Noteblog')}",
-        'current_user': current_user
-    }
-    return theme_manager.render_template('500.html', **context), 500

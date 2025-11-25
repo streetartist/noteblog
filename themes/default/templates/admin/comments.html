@@ -39,7 +39,7 @@
                     <td style="padding: 12px;">
                         <div style="line-height: 1.5;">
                             <div style="font-weight: 500; color: #303133; margin-bottom: 4px;">
-                                {{ comment.author_name }}
+                                {{ comment.get_display_name() }}
                             </div>
                             <div style="color: #606266; font-size: 14px; margin-bottom: 8px;">
                                 {{ comment.content[:150] }}{% if comment.content|length > 150 %}...{% endif %}
@@ -51,7 +51,7 @@
                         </div>
                     </td>
                     <td style="padding: 12px; color: #606266; font-size: 13px;">
-                        {{ comment.author_email }}
+                        {{ comment.get_display_email() }}
                     </td>
                     <td style="padding: 12px; color: #606266; font-size: 13px;">
                         {{ comment.author_ip or '-' }}
@@ -115,16 +115,21 @@
 
 <script>
 // 状态筛选
-document.getElementById('statusFilter').addEventListener('change', function() {
-    const status = this.value;
-    const url = new URL(window.location);
-    if (status) {
-        url.searchParams.set('status', status);
-    } else {
-        url.searchParams.delete('status');
+document.addEventListener('DOMContentLoaded', function() {
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            const status = this.value;
+            const url = new URL(window.location);
+            if (status) {
+                url.searchParams.set('status', status);
+            } else {
+                url.searchParams.delete('status');
+            }
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        });
     }
-    url.searchParams.delete('page');
-    window.location.href = url.toString();
 });
 
 // 审核通过

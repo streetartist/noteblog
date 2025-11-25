@@ -27,8 +27,11 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章别名 (Slug)</label>
-                        <input type="text" name="slug" id="slug" placeholder="自动生成，可手动修改" 
-                               style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                        <div class="slug-container">
+                            <input type="text" name="slug" id="slug" placeholder="自动生成，可手动修改" 
+                                   style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                            <div id="slug-preview" class="slug-preview"></div>
+                        </div>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">用于URL的友好地址，留空将自动生成</div>
                     </div>
                     
@@ -155,42 +158,53 @@
     </form>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/pinyin-slug@0.8.0/dist/pinyin-slug.min.js"></script>
 <script>
-// 简单的JavaScript功能，不依赖Vue
-function generateSlug() {
-    const titleInput = document.querySelector('input[name="title"]');
-    const slugInput = document.getElementById('slug');
-    
-    if (titleInput.value && !slugInput.value) {
-        const slug = titleInput.value
-            .toLowerCase()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/[\s_-]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-        
-        slugInput.value = slug;
-    }
-}
-
-function saveDraft() {
-    const form = document.getElementById('postForm');
-    const statusInput = form.querySelector('select[name="status"]');
-    statusInput.value = 'draft';
-    form.submit();
-}
-
-// 监听标题变化自动生成slug
 document.addEventListener('DOMContentLoaded', function() {
     const titleInput = document.querySelector('input[name="title"]');
     const slugInput = document.getElementById('slug');
-    
-    if (titleInput) {
-        titleInput.addEventListener('input', function() {
-            if (!slugInput.value) {
-                generateSlug();
-            }
-        });
+    const slugPreview = document.getElementById('slug-preview');
+    let slugManuallyEdited = !!slugInput.value;
+
+    function updateSlugPreview() {
+        const slug = slugInput.value;
+        if (slug) {
+            slugPreview.textContent = `{{ url_for('main.post_detail', slug='', _external=True) }}${slug}`;
+            slugPreview.style.display = 'block';
+        } else {
+            slugPreview.style.display = 'none';
+        }
     }
+
+    function generateSlug() {
+        if (!slugManuallyEdited && titleInput.value) {
+            slugInput.value = pinyin(titleInput.value, {
+                separator: '-',
+                lower: true
+            });
+            updateSlugPreview();
+        }
+    }
+
+    function saveDraft() {
+        const form = document.getElementById('postForm');
+        const statusInput = form.querySelector('select[name="status"]');
+        statusInput.value = 'draft';
+        form.submit();
+    }
+
+    titleInput.addEventListener('input', generateSlug);
+
+    slugInput.addEventListener('input', function() {
+        slugManuallyEdited = true;
+        if (slugInput.value === '') {
+            slugManuallyEdited = false;
+        }
+        updateSlugPreview();
+    });
+
+    // Initial state
+    updateSlugPreview();
 });
 </script>
 {% endblock %}

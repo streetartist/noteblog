@@ -1,9 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block admin_content %}
-<div class="admin-create-category">
+<div class="admin-edit-category">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="margin: 0; color: #303133;">创建分类</h2>
+        <h2 style="margin: 0; color: #303133;">编辑分类</h2>
         <div>
             <button type="button" onclick="window.location.href='/admin/categories'" style="padding: 8px 16px; background: #909399; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
                 <i class="el-icon-back"></i> 返回列表
@@ -21,14 +21,14 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">分类名称 <span style="color: #f56c6c;">*</span></label>
-                        <input type="text" name="name" id="name" placeholder="请输入分类名称" required 
+                        <input type="text" name="name" id="name" value="{{ category.name }}" placeholder="请输入分类名称" required 
                                style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">分类别名 (Slug)</label>
                         <div class="slug-container">
-                            <input type="text" name="slug" id="slug" placeholder="自动生成，可手动修改" 
+                            <input type="text" name="slug" id="slug" value="{{ category.slug }}" placeholder="自动生成，可手动修改" 
                                    style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
                             <div id="slug-preview" class="slug-preview"></div>
                         </div>
@@ -38,7 +38,7 @@
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">分类描述</label>
                         <textarea name="description" rows="4" placeholder="请输入分类描述" 
-                                  style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;"></textarea>
+                                  style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;">{{ category.description or '' }}</textarea>
                     </div>
                 </div>
             </div>
@@ -53,15 +53,17 @@
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">父级分类</label>
                         <select name="parent_id" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
                             <option value="">无（顶级分类）</option>
-                            {% for category in categories %}
-                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% for cat in categories %}
+                                {% if cat.id != category.id %}
+                                <option value="{{ cat.id }}" {% if category.parent_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                                {% endif %}
                             {% endfor %}
                         </select>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">排序</label>
-                        <input type="number" name="sort_order" min="0" max="999" value="0" placeholder="0" 
+                        <input type="number" name="sort_order" min="0" max="999" value="{{ category.sort_order or 0 }}" placeholder="0" 
                                style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">数字越小排序越靠前</div>
                     </div>
@@ -71,7 +73,7 @@
                 <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <button type="submit" style="width: 100%; padding: 10px; background: #409eff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                            <i class="el-icon-check"></i> 创建分类
+                            <i class="el-icon-check"></i> 更新分类
                         </button>
                         <button type="button" onclick="window.location.href='/admin/categories'" style="width: 100%; padding: 10px; background: #f56c6c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
                             <i class="el-icon-close"></i> 取消

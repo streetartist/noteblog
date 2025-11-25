@@ -74,9 +74,87 @@ def create_app(config_name='default'):
     # 提供主题静态文件（/themes/<theme>/static/...）的路由，便于主题资源加载
     @app.route('/themes/<theme_name>/static/<path:filename>')
     def theme_static(theme_name, filename):
-        themes_dir = os.path.join(app.root_path, '..', 'themes')
+        themes_dir = os.path.join(os.getcwd(), 'themes')
         static_dir = os.path.join(themes_dir, theme_name, 'static')
         # send_from_directory 会处理路径安全性
         return send_from_directory(static_dir, filename)
+    
+    # 全局错误处理器
+    @app.errorhandler(404)
+    def not_found(error):
+        """404 错误处理"""
+        from app.models.setting import SettingManager
+        from flask_login import current_user
+        
+        context = {
+            'error': error,
+            'site_title': f"页面未找到 - {SettingManager.get('site_title', 'Noteblog')}",
+            'current_user': current_user
+        }
+        
+        # 使用主题管理器渲染404模板
+        if hasattr(app, 'theme_manager') and app.theme_manager.current_theme:
+            return app.theme_manager.render_template('404.html', **context), 404
+        else:
+            # 如果主题管理器不可用，返回简单的404页面
+            return """
+            <!DOCTYPE html>
+            <html lang="zh-CN">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>页面未找到</title>
+                <style>
+                    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                    h1 { color: #666; }
+                </style>
+            </head>
+            <body>
+                <h1>404 - 页面未找到</h1>
+                <p>抱歉，您访问的页面不存在。</p>
+                <a href="/">返回首页</a>
+            </body>
+            </html>
+            """, 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        """500 错误处理"""
+        from app.models.setting import SettingManager
+        from flask_login import current_user
+        
+        # 回滚数据库会话
+        db.session.rollback()
+        
+        context = {
+            'error': error,
+            'site_title': f"服务器错误 - {SettingManager.get('site_title', 'Noteblog')}",
+            'current_user': current_user
+        }
+        
+        # 使用主题管理器渲染500模板
+        if hasattr(app, 'theme_manager') and app.theme_manager.current_theme:
+            return app.theme_manager.render_template('500.html', **context), 500
+        else:
+            # 如果主题管理器不可用，返回简单的500页面
+            return """
+            <!DOCTYPE html>
+            <html lang="zh-CN">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>服务器错误</title>
+                <style>
+                    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                    h1 { color: #666; }
+                </style>
+            </head>
+            <body>
+                <h1>500 - 服务器内部错误</h1>
+                <p>抱歉，服务器遇到了一个错误，请稍后再试。</p>
+                <a href="/">返回首页</a>
+            </body>
+            </html>
+            """, 500
     
     return app
