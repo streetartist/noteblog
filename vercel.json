@@ -18,10 +18,5 @@
     "DATABASE_URL": "sqlite:///:memory:",
     "USE_MEMORY_DB": "true",
     "PYTHONPATH": "/var/task"
-  },
-  "functions": {
-    "api/index.py": {
-      "runtime": "python3.9"
-    }
   }
 }
