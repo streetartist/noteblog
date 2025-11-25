@@ -21,7 +21,12 @@ cors = CORS()
 
 def create_app(config_name='default'):
     """应用工厂函数"""
-    app = Flask(__name__)
+    # 检查是否有自定义实例路径（用于 Vercel 部署）
+    instance_path = os.getenv('FLASK_INSTANCE_PATH')
+    if instance_path:
+        app = Flask(__name__, instance_path=instance_path)
+    else:
+        app = Flask(__name__)
     
     # 配置
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
