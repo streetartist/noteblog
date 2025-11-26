@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}登录 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>用户登录</h2>
+                <p>欢迎回来！请登录您的账户</p>
+            </div>
+            
+            <form method="POST" class="auth-form" @submit.prevent="handleLoginSubmit">
+                <!-- Flash messages will be handled by the theme manager -->
+                
+                <div class="form-group">
+                    <el-form-item label="用户名或邮箱" required :error="errors.username">
+                        <el-input
+                            v-model="loginForm.username"
+                            placeholder="请输入用户名或邮箱"
+                            clearable
+                            required>
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="密码" required :error="errors.password">
+                        <el-input
+                            v-model="loginForm.password"
+                            type="password"
+                            placeholder="请输入密码"
+                            show-password
+                            required
+                            @keyup.enter="handleLoginSubmit">
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-checkbox v-model="loginForm.remember_me">
+                        记住我
+                    </el-checkbox>
+                </div>
+                
+                <div class="form-actions">
+                    <el-button type="primary" @click="handleLoginSubmit" size="large" style="width: 100%;" :loading="isSubmitting">
+                        登录
+                    </el-button>
+                </div>
+            </form>
+            
+            <div class="auth-footer">
+                <p>
+                    还没有账户？
+                    <a href="{{ url_for('main.register') }}" class="auth-link">立即注册</a>
+                </p>
+                <p>
+                    <a href="{{ url_for('main.forgot_password') }}" class="auth-link">忘记密码？</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 登录页面专用的Vue应用
+document.addEventListener('DOMContentLoaded', function() {
+    // 如果全局Vue应用已存在，扩展它
+    if (window._noteblog_app) {
+        const app = window._noteblog_app;
+        
+        // 添加登录页面特定的数据和方法
+        app.config.globalProperties.loginForm = {
+            username: '',
+            password: '',
+            remember_me: false
+        };
+        
+        app.config.globalProperties.errors = {
+            username: '',
+            password: ''
+        };
+        
+        app.config.globalProperties.isSubmitting = false;
+        
+        app.config.globalProperties.handleLoginSubmit = function() {
+            const ElMessage = ElementPlus.ElMessage || ElementPlus;
+            
+            // 清除之前的错误
+            this.errors.username = '';
+            this.errors.password = '';
+            
+            // 验证表单
+            if (!this.loginForm.username.trim()) {
+                this.errors.username = '请输入用户名或邮箱';
+                return;
+            }
+            
+            if (!this.loginForm.password) {
+                this.errors.password = '请输入密码';
+                return;
+            }
+            
+            // 设置提交状态
+            this.isSubmitting = true;
+            
+            // 创建表单数据并提交
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/auth/login';
+            
+            const usernameInput = document.createElement('input');
+            usernameInput.type = 'hidden';
+            usernameInput.name = 'username';
+            usernameInput.value = this.loginForm.username;
+            form.appendChild(usernameInput);
+            
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'hidden';
+            passwordInput.name = 'password';
+            passwordInput.value = this.loginForm.password;
+            form.appendChild(passwordInput);
+            
+            const rememberInput = document.createElement('input');
+            rememberInput.type = 'hidden';
+            rememberInput.name = 'remember_me';
+            rememberInput.value = this.loginForm.remember_me ? 'on' : '';
+            form.appendChild(rememberInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        };
+    }
+});
+</script>
+
+<style>
+.auth-page {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-header h2 {
+    color: #303133;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.auth-header p {
+    color: #909399;
+    margin: 0;
+    font-size: 14px;
+}
+
+.auth-form {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-actions {
+    margin-top: 30px;
+}
+
+.auth-footer {
+    text-align: center;
+    border-top: 1px solid #ebeef5;
+    padding-top: 20px;
+}
+
+.auth-footer p {
+    margin: 8px 0;
+    color: #909399;
+    font-size: 14px;
+}
+
+.auth-link {
+    color: var(--primary-color, #409EFF);
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 20px;
+    }
+    
+    .auth-header h2 {
+        font-size: 20px;
+    }
+}
+</style>
+{% endblock %}

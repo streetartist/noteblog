@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}注册 - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>用户注册</h2>
+                <p>创建您的账户，开始您的博客之旅</p>
+            </div>
+            
+            <form method="POST" class="auth-form" @submit.prevent="handleRegisterSubmit">
+                <!-- Flash messages will be handled by theme manager -->
+                
+                <div class="form-group">
+                    <el-form-item label="用户名" required :error="errors.username">
+                        <el-input
+                            v-model="registerForm.username"
+                            placeholder="请输入用户名"
+                            clearable
+                            required>
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="邮箱" required :error="errors.email">
+                        <el-input
+                            v-model="registerForm.email"
+                            type="email"
+                            placeholder="请输入邮箱地址"
+                            clearable
+                            required>
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="显示名称">
+                        <el-input
+                            v-model="registerForm.display_name"
+                            placeholder="请输入显示名称（可选）"
+                            clearable>
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="密码" required :error="errors.password">
+                        <el-input
+                            v-model="registerForm.password"
+                            type="password"
+                            placeholder="请输入密码（至少6位）"
+                            show-password
+                            required>
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-group">
+                    <el-form-item label="确认密码" required :error="errors.confirm_password">
+                        <el-input
+                            v-model="registerForm.confirm_password"
+                            type="password"
+                            placeholder="请再次输入密码"
+                            show-password
+                            required
+                            @keyup.enter="handleRegisterSubmit">
+                        </el-input>
+                    </el-form-item>
+                </div>
+                
+                <div class="form-actions">
+                    <el-button type="primary" @click="handleRegisterSubmit" size="large" style="width: 100%;" :loading="isSubmitting">
+                        注册
+                    </el-button>
+                </div>
+            </form>
+            
+            <div class="auth-footer">
+                <p>
+                    已有账户？
+                    <a href="{{ url_for('main.login') }}" class="auth-link">立即登录</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.auth-page {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-header h2 {
+    color: #303133;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.auth-header p {
+    color: #909399;
+    margin: 0;
+    font-size: 14px;
+}
+
+.auth-form {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-actions {
+    margin-top: 30px;
+}
+
+.auth-footer {
+    text-align: center;
+    border-top: 1px solid #ebeef5;
+    padding-top: 20px;
+}
+
+.auth-footer p {
+    margin: 8px 0;
+    color: #909399;
+    font-size: 14px;
+}
+
+.auth-link {
+    color: var(--primary-color, #409EFF);
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 20px;
+    }
+    
+    .auth-header h2 {
+        font-size: 20px;
+    }
+}
+</style>
+
+<script>
+// 注册页面专用的Vue应用
+document.addEventListener('DOMContentLoaded', function() {
+    // 如果全局Vue应用已存在，扩展它
+    if (window._noteblog_app) {
+        const app = window._noteblog_app;
+        
+        // 添加注册页面特定的数据和方法
+        app.config.globalProperties.registerForm = {
+            username: '',
+            email: '',
+            display_name: '',
+            password: '',
+            confirm_password: ''
+        };
+        
+        app.config.globalProperties.errors = {
+            username: '',
+            email: '',
+            password: '',
+            confirm_password: ''
+        };
+        
+        app.config.globalProperties.isSubmitting = false;
+        
+        app.config.globalProperties.handleRegisterSubmit = function() {
+            const ElMessage = ElementPlus.ElMessage || ElementPlus;
+            
+            // 清除之前的错误
+            this.errors.username = '';
+            this.errors.email = '';
+            this.errors.password = '';
+            this.errors.confirm_password = '';
+            
+            // 验证表单
+            if (!this.registerForm.username.trim()) {
+                this.errors.username = '请输入用户名';
+                return;
+            }
+            
+            if (this.registerForm.username.length < 3) {
+                this.errors.username = '用户名长度至少为3位';
+                return;
+            }
+            
+            if (!this.registerForm.email.trim()) {
+                this.errors.email = '请输入邮箱地址';
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(this.registerForm.email)) {
+                this.errors.email = '请输入有效的邮箱地址';
+                return;
+            }
+            
+            if (!this.registerForm.password) {
+                this.errors.password = '请输入密码';
+                return;
+            }
+            
+            if (this.registerForm.password.length < 6) {
+                this.errors.password = '密码长度至少为6位';
+                return;
+            }
+            
+            if (!this.registerForm.confirm_password) {
+                this.errors.confirm_password = '请确认密码';
+                return;
+            }
+            
+            if (this.registerForm.password !== this.registerForm.confirm_password) {
+                this.errors.confirm_password = '两次输入的密码不一致';
+                return;
+            }
+            
+            // 设置提交状态
+            this.isSubmitting = true;
+            
+            // 创建表单数据并提交
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/auth/register';
+            
+            const usernameInput = document.createElement('input');
+            usernameInput.type = 'hidden';
+            usernameInput.name = 'username';
+            usernameInput.value = this.registerForm.username;
+            form.appendChild(usernameInput);
+            
+            const emailInput = document.createElement('input');
+            emailInput.type = 'hidden';
+            emailInput.name = 'email';
+            emailInput.value = this.registerForm.email;
+            form.appendChild(emailInput);
+            
+            const displayNameInput = document.createElement('input');
+            displayNameInput.type = 'hidden';
+            displayNameInput.name = 'display_name';
+            displayNameInput.value = this.registerForm.display_name;
+            form.appendChild(displayNameInput);
+            
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'hidden';
+            passwordInput.name = 'password';
+            passwordInput.value = this.registerForm.password;
+            form.appendChild(passwordInput);
+            
+            const confirmPasswordInput = document.createElement('input');
+            confirmPasswordInput.type = 'hidden';
+            confirmPasswordInput.name = 'confirm_password';
+            confirmPasswordInput.value = this.registerForm.confirm_password;
+            form.appendChild(confirmPasswordInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        };
+    }
+});
+</script>
+{% endblock %}
