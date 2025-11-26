@@ -76,6 +76,12 @@ class Comment(db.Model):
         if self.author_id and self.author:
             return self.author.website
         return self.author_website
+
+    def get_display_avatar(self):
+        """获取显示头像"""
+        if self.author_id and self.author:
+            return self.author.avatar
+        return None
     
     def is_reply(self):
         """是否为回复"""
@@ -101,7 +107,7 @@ class Comment(db.Model):
             'author_name': self.get_display_name(),
             'author_email': self.get_display_email(),
             'author_website': self.get_display_website(),
-            'author_avatar': self.author.avatar if self.author_id and self.author else None,
+            'author_avatar': self.get_display_avatar(),
             'is_approved': self.is_approved,
             'is_spam': self.is_spam,
             'parent_id': self.parent_id,

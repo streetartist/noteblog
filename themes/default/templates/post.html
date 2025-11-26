@@ -71,7 +71,7 @@
         </div>
         
         <div class="post-navigation">
-            {% if prev_post %}
+            {% if prev_post and prev_post.slug %}
             <div class="nav-prev">
                 <el-link :underline="false" href="/post/{{ prev_post.slug }}">
                     <i class="el-icon-arrow-left"></i>
@@ -79,7 +79,7 @@
                 </el-link>
             </div>
             {% endif %}
-            {% if next_post %}
+            {% if next_post and next_post.slug %}
             <div class="nav-next">
                 <el-link :underline="false" href="/post/{{ next_post.slug }}">
                     {{ next_post.title }}
@@ -142,25 +142,25 @@
     <div class="comments-list">
         {% if comments %}
             {% for comment in comments %}
-            <div class="comment-item" :class="{ 'comment-reply': {{ comment.parent_id is not none }} }">
+            <div class="comment-item" :class="{ 'comment-reply': {{ (comment.parent_id is not none)|tojson }} }">
                 <div class="comment-avatar">
-                    <el-avatar :size="40" src="{{ comment.author_avatar }}">
-                        {{ comment.author_name }}
+                    <el-avatar :size="40" src="{{ comment.get_display_avatar() or '' }}">
+                        {{ comment.get_display_name() }}
                     </el-avatar>
                 </div>
                 <div class="comment-content">
                     <div class="comment-header">
-                        <span class="comment-author">{{ comment.author_name }}</span>
+                        <span class="comment-author">{{ comment.get_display_name() }}</span>
                         <span class="comment-date">{{ comment.created_at.strftime('%Y-%m-%d %H:%M:%S') if comment.created_at else '' }}</span>
-                        {% if comment.author_website %}
-                        <a href="{{ comment.author_website }}" target="_blank" class="comment-website">
+                        {% if comment.get_display_website() %}
+                        <a href="{{ comment.get_display_website() }}" target="_blank" class="comment-website">
                             <i class="el-icon-link"></i>
                         </a>
                         {% endif %}
                     </div>
                     <div class="comment-text">{{ comment.get_content_html()|safe }}</div>
                     <div class="comment-actions">
-                        <el-button size="small" text @click="replyComment({{ comment.id }}, '{{ comment.author_name }}')">
+                        <el-button size="small" text @click='replyComment({{ comment.id }}, {{ comment.get_display_name()|tojson }})'>
                             回复
                         </el-button>
                     </div>
@@ -182,7 +182,7 @@
                                     v-model="replyForm.content"
                                     :rows="3"
                                     size="small"
-                                    placeholder="回复 {{ comment.author_name }}，支持Markdown格式">
+                                    placeholder="回复 {{ comment.get_display_name() }}，支持Markdown格式">
                                 </el-input>
                                 <div style="font-size: 12px; color: #909399; margin-top: 4px;">
                                     支持Markdown语法：**粗体** *斜体* `代码` [链接](url) >引用
@@ -199,17 +199,17 @@
                     {% for reply in comment.get_replies() %}
                     <div class="comment-item comment-reply">
                         <div class="comment-avatar">
-                            <el-avatar :size="32" src="{{ reply.author_avatar }}">
-                                {{ reply.author_name }}
+                            <el-avatar :size="32" src="{{ reply.get_display_avatar() or '' }}">
+                                {{ reply.get_display_name() }}
                             </el-avatar>
                         </div>
                         <div class="comment-content">
                             <div class="comment-header">
-                                <span class="comment-author">{{ reply.author_name }}</span>
+                                <span class="comment-author">{{ reply.get_display_name() }}</span>
                                 <span class="comment-date">{{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') if reply.created_at else '' }}</span>
                             </div>
                             <div class="comment-text">
-                                <span class="reply-to">@{{ comment.author_name }}:</span>
+                                <span class="reply-to">@{{ comment.get_display_name() }}:</span>
                                 {{ reply.get_content_html()|safe }}
                             </div>
                         </div>

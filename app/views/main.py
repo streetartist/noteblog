@@ -62,6 +62,35 @@ def post_detail(slug):
     # 获取评论
     comments = post.get_approved_comments()
     
+    # 计算上一条和下一条文章用于导航
+    post_time = post.published_at or post.created_at
+    prev_post = None
+    next_post = None
+    if post_time:
+        time_expr = db.func.coalesce(Post.published_at, Post.created_at)
+        prev_post = (
+            Post.query.filter(
+                Post.status == 'published',
+                Post.id != post.id,
+                time_expr < post_time,
+                Post.slug.isnot(None),
+                Post.slug != ''
+            )
+            .order_by(time_expr.desc())
+            .first()
+        )
+        next_post = (
+            Post.query.filter(
+                Post.status == 'published',
+                Post.id != post.id,
+                time_expr > post_time,
+                Post.slug.isnot(None),
+                Post.slug != ''
+            )
+            .order_by(time_expr.asc())
+            .first()
+        )
+
     # 触发钩子
     plugin_manager.do_action('before_post_render', post=post)
     
@@ -69,6 +98,8 @@ def post_detail(slug):
     context = {
         'post': post,
         'comments': comments,
+        'prev_post': prev_post if prev_post and prev_post.slug else None,
+        'next_post': next_post if next_post and next_post.slug else None,
         'site_title': f"{post.title} - {SettingManager.get('site_title', 'Noteblog')}",
         'current_user': current_user,
         'plugin_hooks': {

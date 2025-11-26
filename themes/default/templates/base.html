@@ -65,7 +65,7 @@
                     
                     <div class="user-menu">
                         {% if current_user.is_authenticated %}
-                        <el-dropdown>
+                        <el-dropdown ref="profileDropdown" @visible-change="handleProfileDropdownVisibleChange">
                             <span class="el-dropdown-link">
                                 {{ current_user.display_name or current_user.username }}
                                 <el-icon class="el-icon--right" :size="dropdownIcon.size" :color="dropdownIcon.color">
@@ -532,6 +532,29 @@
                     window.scrollTo({
                         top: 0,
                         behavior: 'smooth'
+                    });
+                },
+                handleProfileDropdownVisibleChange(visible) {
+                    if (visible) {
+                        return;
+                    }
+                    requestAnimationFrame(() => {
+                        const active = document.activeElement;
+                        if (!active) {
+                            return;
+                        }
+                        const hiddenAncestor = active.closest('[aria-hidden="true"]');
+                        if (!hiddenAncestor) {
+                            return;
+                        }
+                        const trigger = this.$refs.profileDropdown?.$el?.querySelector('.el-dropdown-link');
+                        if (trigger && typeof trigger.focus === 'function') {
+                            trigger.focus();
+                            return;
+                        }
+                        if (typeof active.blur === 'function') {
+                            active.blur();
+                        }
                     });
                 },
                 updateBackToTopVisibility() {

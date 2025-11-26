@@ -89,7 +89,7 @@
                     {% for comment in latest_comments %}
                     <div style="padding: 12px 0; border-bottom: 1px solid #f5f5f5;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                            <div style="font-weight: 500; color: #303133;">{{ comment.author_name }}</div>
+                            <div style="font-weight: 500; color: #303133;">{{ comment.get_display_name() }}</div>
                             <div>
                                 {% if comment.is_approved %}
                                 <el-tag size="small" type="success">已通过</el-tag>
