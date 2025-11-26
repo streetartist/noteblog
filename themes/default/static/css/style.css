@@ -1,5 +1,44 @@
 /* Noteblog 默认主题样式 */
 
+/*
+    Theme Required Classes (必需样式类)
+    - 主题必须实现以下类以保证 Noteblog 前端功能和插件样式正常：
+        - `.container`             : 页面宽度容器
+        - `.site-header`           : 站点头部
+        - `.site-branding`         : 品牌/Logo 区域
+        - `.site-logo`             : Logo 图片
+        - `.site-title`            : 站点标题
+        - `.site-description`      : 站点描述
+        - `.main-navigation`       : 主导航容器
+        - `.user-menu`             : 用户菜单容器
+        - `.site-main`             : 主要内容容器
+        - `.content-wrapper`       : 主内容 + 侧边栏 外层
+        - `.main-content`          : 文章/页面主内容区
+        - `.with-sidebar`          : 当页面有侧边栏时附加到主内容区
+        - `.sidebar`               : 侧边栏
+        - `.widget`                : 侧边栏小工具容器
+        - `.widget-title`          : 小工具标题
+        - `.posts-list`            : 列表页文章列表容器
+        - `.post-item`             : 列表页单篇文章项
+        - `.post-thumbnail`        : 文章缩略图容器
+        - `.post-content`          : 文章内容 / 摘要 / 正文（用于 markdown.css）
+        - `.post-title`            : 文章标题
+        - `.post-meta`             : 文章元信息（作者/时间/分类/阅读/评论）
+        - `.post-excerpt`          : 摘要文本
+        - `.post-tags`             : 标签容器
+        - `.post-detail`           : 文章详情容器
+        - `.post-featured-image`   : 文章头图容器
+        - `.post-footer`           : 文章页底部（操作/导航）
+        - `.comments-section`      : 评论区域外壳
+        - `.comments-list`         : 评论列表
+        - `.comment-item`          : 单条评论
+        - `.comment-reply`         : 子评论样式（缩进/标识）
+        - `.back-to-top`           : 返回顶部按钮
+        - `.site-footer`           : 页脚
+
+    说明：主题应至少保证这些类存在且有合理的布局/颜色/响应式处理。
+*/
+
 /* 基础样式 */
 * {
     margin: 0;

@@ -36,6 +36,13 @@
                 {{ post.comment_count }} 评论
             </span>
         </div>
+
+    <!-- 插件钩子：文章元信息（插件可在此插入额外元信息/按钮） -->
+    {% if plugin_hooks and plugin_hooks.post_meta %}
+        {% for hook_content in plugin_hooks.post_meta %}
+            {{ hook_content|safe }}
+        {% endfor %}
+    {% endif %}
         
         {% if post.tags %}
         <div class="post-tags">
@@ -89,6 +96,13 @@
             {% endif %}
         </div>
     </footer>
+
+    <!-- 插件钩子：文章底部（如社交按钮、扩展操作等） -->
+    {% if plugin_hooks and plugin_hooks.post_footer %}
+        {% for hook_content in plugin_hooks.post_footer %}
+            {{ hook_content|safe }}
+        {% endfor %}
+    {% endif %}
 </article>
 
 <!-- 评论区 -->
@@ -97,6 +111,12 @@
     
     {% if post.comment_status == 'open' %}
     <!-- 评论表单 -->
+    <!-- 插件钩子：评论表单上方 -->
+    {% if plugin_hooks and plugin_hooks.comment_form_top %}
+        {% for hook_content in plugin_hooks.comment_form_top %}
+            {{ hook_content|safe }}
+        {% endfor %}
+    {% endif %}
     <div class="comment-form">
         <h4>发表评论</h4>
         <!-- 隐藏的post_id字段 -->
@@ -129,6 +149,12 @@
             </el-form-item>
         </el-form>
     </div>
+    <!-- 插件钩子：评论表单下方 -->
+    {% if plugin_hooks and plugin_hooks.comment_form_bottom %}
+        {% for hook_content in plugin_hooks.comment_form_bottom %}
+            {{ hook_content|safe }}
+        {% endfor %}
+    {% endif %}
     {% else %}
     <el-alert
         title="评论已关闭"
