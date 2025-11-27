@@ -72,3 +72,74 @@
     {% endif %}
 </section>
 {% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% if query %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rawQuery = {{ query|tojson }};
+    if (!rawQuery) {
+        return;
+    }
+    const escaped = rawQuery.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (!escaped) {
+        return;
+    }
+    const pattern = new RegExp(escaped, 'gi');
+
+    const highlightNode = (root) => {
+        const walker = document.createTreeWalker(
+            root,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode(node) {
+                    if (!node.nodeValue.trim()) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    if (node.parentElement && node.parentElement.closest('.search-highlight')) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+
+        const pending = [];
+        while (walker.nextNode()) {
+            pending.push(walker.currentNode);
+        }
+
+        pending.forEach(textNode => {
+            const value = textNode.nodeValue;
+            pattern.lastIndex = 0;
+            if (!pattern.test(value)) {
+                return;
+            }
+            pattern.lastIndex = 0;
+            const fragment = document.createDocumentFragment();
+            let lastIndex = 0;
+            let match;
+            while ((match = pattern.exec(value)) !== null) {
+                const start = match.index;
+                if (start > lastIndex) {
+                    fragment.appendChild(document.createTextNode(value.slice(lastIndex, start)));
+                }
+                const mark = document.createElement('mark');
+                mark.className = 'search-highlight';
+                mark.textContent = match[0];
+                fragment.appendChild(mark);
+                lastIndex = start + match[0].length;
+            }
+            if (lastIndex < value.length) {
+                fragment.appendChild(document.createTextNode(value.slice(lastIndex)));
+            }
+            textNode.parentNode.replaceChild(fragment, textNode);
+        });
+    };
+
+    document.querySelectorAll('.search-card h2, .search-card-excerpt').forEach(el => highlightNode(el));
+});
+</script>
+{% endif %}
+{% endblock %}

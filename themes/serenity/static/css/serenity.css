@@ -1051,6 +1051,16 @@ button.serenity-link:focus-visible {
     color: var(--serenity-muted);
 }
 
+.search-highlight,
+.search-card-excerpt mark,
+.search-card h2 mark {
+    background: linear-gradient(135deg, rgba(248, 180, 0, 0.35), rgba(248, 180, 0, 0.15));
+    padding: 0.05rem 0.25rem;
+    border-radius: 0.35rem;
+    color: inherit;
+    font-weight: 600;
+}
+
 .search-card-meta {
     font-size: 0.9rem;
     color: var(--serenity-muted);
