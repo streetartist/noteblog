@@ -719,5 +719,53 @@ class ThemeManager:
             return False, f"创建主题失败: {e}"
 
 
+class ThemeExtensionBase:
+    """Simple helper so theme extensions can mirror the plugin-style API."""
+
+    def __init__(
+        self,
+        theme_name: str,
+        *,
+        display_name: Optional[str] = None,
+        version: str = "1.0.0",
+        description: str = "",
+        supports_customizer: bool = True,
+    ):
+        self.theme_name = theme_name
+        self.display_name = display_name or theme_name.title()
+        self.version = version
+        self.description = description
+        self.supports_customizer = supports_customizer
+        self._blueprints: List[Any] = []
+        self._custom_pages: List[Dict[str, Any]] = []
+
+    def get_info(self) -> Dict[str, Any]:
+        """Expose a consistent info payload for admin/status endpoints."""
+        return {
+            'name': self.theme_name,
+            'display_name': self.display_name,
+            'version': self.version,
+            'description': self.description,
+            'supports_customizer': self.supports_customizer,
+        }
+
+    def add_blueprint(self, blueprint: Any) -> None:
+        if blueprint:
+            self._blueprints.append(blueprint)
+
+    def add_custom_page(self, page_definition: Dict[str, Any]) -> None:
+        if page_definition:
+            self._custom_pages.append(page_definition)
+
+    def get_blueprints(self) -> List[Any]:
+        return list(self._blueprints)
+
+    def get_custom_pages(self) -> List[Dict[str, Any]]:
+        return list(self._custom_pages)
+
+    def register(self, app, theme_manager, theme) -> None:  # pragma: no cover - optional hook
+        """Allow subclasses to perform imperative setup when ThemeManager loads them."""
+
+
 # 创建全局主题管理器实例
 theme_manager = ThemeManager()
