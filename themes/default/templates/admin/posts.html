@@ -75,10 +75,10 @@
                         {{ post.published_at.strftime('%Y-%m-%d %H:%M') if post.published_at else '' }}
                     </td>
                     <td style="padding: 12px;">
-                        <a href="/admin/posts/{{ post.id }}/edit" style="padding: 5px 10px; background: #409eff; color: white; text-decoration: none; border-radius: 4px; margin-right: 5px; display: inline-block;">
+                        <a href="/admin/posts/{{ post.id }}/edit" class="admin-action-btn admin-action-btn-edit">
                             编辑
                         </a>
-                        <button onclick="deletePost({{ post.id }}, '{{ post.title }}')" style="padding: 5px 10px; background: #f56c6c; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        <button type="button" class="admin-action-btn admin-action-btn-delete" onclick="deletePost({{ post.id }}, '{{ post.title }}')">
                             删除
                         </button>
                     </td>

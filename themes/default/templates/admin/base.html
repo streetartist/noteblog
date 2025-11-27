@@ -4,6 +4,54 @@
 
 {% block title %}{{ site_title or 'Noteblog' }} - 管理后台{% endblock %}
 
+{% block head %}
+{{ super() }}
+<style>
+.admin-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    min-width: 80px;
+    height: 34px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.admin-action-btn:focus-visible {
+    outline: 2px solid #cfe5ff;
+    outline-offset: 1px;
+}
+
+.admin-action-btn + .admin-action-btn {
+    margin-left: 6px;
+}
+
+.admin-action-btn-edit {
+    background: #409eff;
+}
+
+.admin-action-btn-edit:hover {
+    background: #66b1ff;
+}
+
+.admin-action-btn-delete {
+    background: #f56c6c;
+}
+
+.admin-action-btn-delete:hover {
+    background: #f78989;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="admin-layout" style="display: flex; min-height: calc(100vh - 200px);">
     <!-- 管理后台侧边栏 -->

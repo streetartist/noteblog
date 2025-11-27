@@ -250,7 +250,7 @@
             {% if tag.recent_posts %}
             <div class="tag-posts">
                 {% for post in tag.recent_posts[:3] %}
-                <a href="{{ url_for('main.post', slug=post.slug) }}" class="tag-post" title="{{ post.title }}">
+                <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="tag-post" title="{{ post.title }}">
                     {{ post.title }}
                 </a>
                 {% endfor %}

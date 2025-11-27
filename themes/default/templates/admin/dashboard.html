@@ -5,7 +5,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0; color: #303133;">仪表板</h2>
         <div>
-            <el-button type="primary" @click="goToAdmin">
+            <el-button type="primary" @click="goToCreatePost">
                 <i class="el-icon-plus"></i> 新建文章
             </el-button>
         </div>
@@ -64,7 +64,7 @@
                             </div>
                         </div>
                         <div>
-                            <el-button size="small" @click="window.location.href='/admin/posts/{{ post.id }}/edit'">编辑</el-button>
+                            <el-button size="small" @click="navigateTo('/admin/posts/{{ post.id }}/edit')">编辑</el-button>
                         </div>
                     </div>
                     {% endfor %}
@@ -124,23 +124,31 @@
             <h3 style="margin: 0; color: #303133; font-size: 16px;">快速操作</h3>
         </div>
         <div style="padding: 20px;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
-                <el-button type="primary" plain @click="goToAdmin" style="height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <i class="el-icon-plus" style="font-size: 24px; margin-bottom: 8px;"></i>
-                    新建文章
-                </el-button>
-                <el-button type="success" plain @click="window.location.href='/admin/posts'" style="height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <i class="el-icon-document" style="font-size: 24px; margin-bottom: 8px;"></i>
-                    文章管理
-                </el-button>
-                <el-button type="warning" plain @click="window.location.href='/admin/comments'" style="height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <i class="el-icon-chat-dot-round" style="font-size: 24px; margin-bottom: 8px;"></i>
-                    评论审核
-                </el-button>
-                <el-button type="info" plain @click="window.location.href='/admin/users'" style="height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <i class="el-icon-user" style="font-size: 24px; margin-bottom: 8px;"></i>
-                    用户管理
-                </el-button>
+            <div class="admin-quick-actions-grid">
+                <button type="button" class="admin-quick-action-button admin-quick-action-primary" @click="goToCreatePost">
+                    <span class="admin-quick-action-content">
+                        <i class="el-icon-plus"></i>
+                        <span>新建文章</span>
+                    </span>
+                </button>
+                <button type="button" class="admin-quick-action-button admin-quick-action-success" @click="navigateTo('/admin/posts')">
+                    <span class="admin-quick-action-content">
+                        <i class="el-icon-document"></i>
+                        <span>文章管理</span>
+                    </span>
+                </button>
+                <button type="button" class="admin-quick-action-button admin-quick-action-warning" @click="navigateTo('/admin/comments')">
+                    <span class="admin-quick-action-content">
+                        <i class="el-icon-chat-dot-round"></i>
+                        <span>评论审核</span>
+                    </span>
+                </button>
+                <button type="button" class="admin-quick-action-button admin-quick-action-info" @click="navigateTo('/admin/users')">
+                    <span class="admin-quick-action-content">
+                        <i class="el-icon-user"></i>
+                        <span>用户管理</span>
+                    </span>
+                </button>
             </div>
         </div>
     </div>

@@ -37,10 +37,10 @@
                         {{ category.created_at.strftime('%Y-%m-%d %H:%M') if category.created_at else '' }}
                     </td>
                     <td style="padding: 12px;">
-                        <a href="/admin/categories/{{ category.id }}/edit" style="padding: 5px 10px; background: #409eff; color: white; text-decoration: none; border-radius: 4px; margin-right: 5px; display: inline-block;">
+                        <a href="/admin/categories/{{ category.id }}/edit" class="admin-action-btn admin-action-btn-edit">
                             编辑
                         </a>
-                        <button onclick="deleteCategory({{ category.id }}, '{{ category.name }}')" style="padding: 5px 10px; background: #f56c6c; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        <button type="button" class="admin-action-btn admin-action-btn-delete" onclick="deleteCategory({{ category.id }}, '{{ category.name }}')">
                             删除
                         </button>
                     </td>

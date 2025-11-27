@@ -1314,3 +1314,69 @@ body {
         padding: 1.5rem;
     }
 }
+
+/* 管理后台 - 快速操作按钮 */
+.admin-quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.admin-quick-action-button {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    box-shadow: 0 8px 18px rgba(64, 63, 76, 0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    appearance: none;
+}
+
+.admin-quick-action-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.admin-quick-action-content .el-icon,
+.admin-quick-action-content i {
+    font-size: 24px;
+}
+
+.admin-quick-action-button:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 3px;
+}
+
+.admin-quick-action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(64, 63, 76, 0.25);
+}
+
+.admin-quick-action-primary {
+    background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
+}
+
+.admin-quick-action-success {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.admin-quick-action-warning {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.admin-quick-action-info {
+    background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+}

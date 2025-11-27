@@ -328,7 +328,7 @@
                 {% for post in posts %}
                 <article class="archive-post">
                     <div class="archive-post-header">
-                        <a href="{{ url_for('main.post', slug=post.slug) }}" class="archive-post-title">
+                        <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="archive-post-title">
                             {{ post.title }}
                         </a>
                         <time class="archive-post-date" datetime="{{ post.created_at }}">
