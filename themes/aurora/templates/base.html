@@ -87,7 +87,7 @@
                             </div>
                             <div class="user-menu-dropdown">
                                 <a href="/auth/profile">个人资料</a>
-                                <a href="/auth/edit">编辑资料</a>
+                                <a href="/?modal=edit_profile" data-modal-trigger="edit_profile">编辑资料</a>
                                 {% if current_user.is_admin %}
                                 <a href="/admin">管理后台</a>
                                 {% endif %}
@@ -285,12 +285,88 @@
             </div>
         </div>
         {% endif %}
+
+        {% if current_user.is_authenticated %}
+        <!-- 编辑资料模态框（登录后可用） -->
+        <div class="auth-modal" data-modal="edit_profile" aria-hidden="true" role="dialog" aria-modal="true">
+            <div class="auth-modal-content" role="document">
+                <div class="auth-modal-header">
+                    <h3>编辑资料</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="关闭编辑资料弹窗">&times;</button>
+                </div>
+                <form class="modal-form" action="{{ url_for('auth.edit_profile') }}" method="POST" enctype="multipart/form-data">
+                    <div class="form-field">
+                        <label for="edit-display">显示名称</label>
+                        <input type="text" id="edit-display" name="display_name" value="{{ current_user.display_name or current_user.username }}" placeholder="用于展示的昵称">
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-email">邮箱</label>
+                        <input type="email" id="edit-email" name="email" value="{{ current_user.email or '' }}" placeholder="请输入邮箱" required autocomplete="email">
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-website">个人网站（可选）</label>
+                        <input type="url" id="edit-website" name="website" value="{{ current_user.website or '' }}" placeholder="https://example.com">
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-location">所在城市（可选）</label>
+                        <input type="text" id="edit-location" name="location" value="{{ current_user.location or '' }}" placeholder="例如：上海">
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-bio">个人简介（可选）</label>
+                        <textarea id="edit-bio" name="bio" rows="3" placeholder="一句话介绍自己">{{ current_user.bio or '' }}</textarea>
+                    </div>
+                    <div class="form-field">
+                        <label for="edit-avatar">头像（可选）</label>
+                        <input type="file" id="edit-avatar" name="avatar" accept="image/png,image/jpeg,image/gif,image/webp">
+                    </div>
+                    <button type="submit" class="modal-submit">保存修改</button>
+                </form>
+                <div class="modal-footer-links">
+                    <a href="{{ url_for('auth.change_password') }}" class="modal-link">修改密码</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- JavaScript -->
     <script src="/themes/aurora/static/js/aurora.js"></script>
     <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+    (function() {
+        const renderOptions = {
+            delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '$', right: '$', display: false },
+                { left: '\\[', right: '\\]', display: true },
+                { left: '\\(', right: '\\)', display: false }
+            ],
+            throwOnError: false
+        };
+
+        function renderAuroraMath(root) {
+            if (typeof katex === 'undefined' || typeof renderMathInElement === 'undefined') {
+                return;
+            }
+            const target = root || document.body;
+            if (target) {
+                renderMathInElement(target, renderOptions);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderAuroraMath();
+        });
+
+        window.addEventListener('aurora:content-updated', function(event) {
+            const root = event && event.detail && event.detail.root;
+            renderAuroraMath(root || document.body);
+        });
+
+        window.auroraRenderMath = renderAuroraMath;
+    })();
+    </script>
     
     {% block scripts %}{% endblock %}
     

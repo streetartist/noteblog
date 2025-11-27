@@ -125,7 +125,8 @@
 
 <!-- 文章导航 -->
 {% if prev_post or next_post %}
-<nav class="post-navigation">
+{% set has_both = prev_post and next_post %}
+<nav class="post-navigation{% if not has_both %} single-link{% endif %}">
     {% if prev_post %}
     <div class="nav-prev">
         <h4>上一篇</h4>
@@ -168,6 +169,13 @@
         <h4>发表评论</h4>
         <form id="commentForm" class="comment-form-content">
             <input type="hidden" name="post_id" value="{{ post.id }}">
+            <input type="hidden" name="parent_id" value="">
+            <div class="comment-reply-info" data-reply-info>
+                <div class="reply-target">
+                    正在回复 <span data-reply-name></span>
+                </div>
+                <button type="button" class="cancel-reply-btn" data-cancel-reply>取消</button>
+            </div>
             {% if not current_user.is_authenticated %}
             <div class="comment-fields">
                 <input type="text" name="author_name" placeholder="昵称" required>
@@ -207,7 +215,7 @@
                 {% endif %}
             </div>
             
-            <div class="comment-content">
+            <div class="comment-content" data-comment-id="{{ comment.id }}">
                 <div class="comment-header">
                     <span class="comment-author">{{ display_name }}</span>
                     <span class="comment-date">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
@@ -222,12 +230,12 @@
                 
                 <div class="comment-actions">
                     {% if post.comment_status == 'open' %}
-                    <button class="reply-btn" data-comment-id="{{ comment.id }}" data-author-name="{{ display_name }}">
+                    <button class="reply-btn" data-comment-id="{{ comment.id }}" data-author-name="{{ display_name|e }}">
                         回复
                     </button>
                     {% endif %}
                     {% if current_user and (current_user.id == comment.author_id or current_user.is_admin) %}
-                    <button class="edit-comment-btn" data-comment-id="{{ comment.id }}" data-comment-text="{{ comment.content }}">
+                    <button class="edit-comment-btn" data-comment-id="{{ comment.id }}" data-comment-text="{{ comment.content|e }}">
                         编辑
                     </button>
                     {% endif %}
@@ -249,7 +257,7 @@
                             </div>
                             {% endif %}
                         </div>
-                        <div class="comment-content">
+                        <div class="comment-content" data-comment-id="{{ reply.id }}">
                             <div class="comment-header">
                                 <span class="comment-author">{{ reply_name }}</span>
                                 <span class="comment-date">{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
@@ -323,9 +331,12 @@ if (commentFormElement) {
         submitBtn.textContent = '提交中...';
         const resolvedPostId = window.postData.id || fallbackPostId;
         
+        const parentIdValue = formData.get('parent_id');
+        const resolvedParentId = parentIdValue ? Number(parentIdValue) : null;
         const commentData = {
             post_id: resolvedPostId,
             content: formData.get('content'),
+            parent_id: Number.isFinite(resolvedParentId) ? resolvedParentId : null,
             author_name: formData.get('author_name'),
             author_email: formData.get('author_email'),
             author_website: formData.get('author_website')

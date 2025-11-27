@@ -4,6 +4,10 @@
 class AuroraTheme {
     constructor() {
         this.init();
+        window.addEventListener('aurora:content-updated', () => {
+            this.initCommentReply();
+            this.initCommentEdit();
+        });
     }
 
     init() {
@@ -19,20 +23,19 @@ class AuroraTheme {
         this.initDarkMode();
     }
 
-    // 主题切换功能
     initThemeToggle() {
         const themeToggle = document.querySelector('.theme-toggle');
         if (!themeToggle) return;
 
-        // 检查本地存储的主题设置
-        const savedTheme = localStorage.getItem('aurora-theme') || 'light';
-        this.setTheme(savedTheme);
+        const savedTheme = localStorage.getItem('aurora-theme');
+        const initialTheme = savedTheme || document.documentElement.getAttribute('data-theme') || 'light';
+        this.setTheme(initialTheme);
 
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            this.setTheme(newTheme);
-            localStorage.setItem('aurora-theme', newTheme);
+            const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
+            this.setTheme(nextTheme);
+            localStorage.setItem('aurora-theme', nextTheme);
         });
     }
 
@@ -343,71 +346,213 @@ class AuroraTheme {
                 submitBtn.textContent = originalText;
                 this.showNotification('评论提交成功！', 'success');
                 commentForm.reset();
+                this.dispatchContentUpdated('.comments-section');
             }, 1500);
         });
     }
 
     initCommentReply() {
         const replyButtons = document.querySelectorAll('.reply-btn');
+        if (!replyButtons.length) return;
+
+        const commentForm = document.getElementById('commentForm');
+        const replyInfo = commentForm ? commentForm.querySelector('[data-reply-info]') : null;
+        const replyNameTarget = replyInfo ? replyInfo.querySelector('[data-reply-name]') : null;
+        const cancelReplyBtn = commentForm ? commentForm.querySelector('[data-cancel-reply]') : null;
+        const parentInput = commentForm ? commentForm.querySelector('input[name="parent_id"]') : null;
+        const textarea = commentForm ? commentForm.querySelector('textarea[name="content"]') : null;
+        const formWrapper = commentForm ? commentForm.closest('.comment-form') : null;
+
+        const clearReplyState = () => {
+            if (parentInput) {
+                parentInput.value = '';
+            }
+            if (replyInfo) {
+                replyInfo.classList.remove('active');
+            }
+            if (replyNameTarget) {
+                replyNameTarget.textContent = '';
+            }
+            if (textarea && textarea.dataset.replyPrefill) {
+                if (textarea.value.trim() === textarea.dataset.replyPrefill.trim()) {
+                    textarea.value = '';
+                }
+                delete textarea.dataset.replyPrefill;
+            }
+        };
+
         replyButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const commentId = btn.dataset.commentId;
-                const authorName = btn.dataset.authorName;
-                const replyForm = document.querySelector('.reply-form');
-                
-                if (replyForm) {
-                    replyForm.classList.remove('hidden');
-                    const replyInput = replyForm.querySelector('textarea');
-                    if (replyInput) {
-                        replyInput.value = `@${authorName} `;
-                        replyInput.focus();
+            if (btn.dataset.replyBound === 'true') {
+                return;
+            }
+            btn.dataset.replyBound = 'true';
+            btn.addEventListener('click', (event) => {
+                event.preventDefault();
+
+                if (!commentForm || !parentInput) {
+                    this.showNotification('当前页面不可回复评论', 'error');
+                    return;
+                }
+
+                const authorName = btn.dataset.authorName || '';
+                const commentId = btn.dataset.commentId || '';
+
+                parentInput.value = commentId;
+
+                if (replyInfo) {
+                    replyInfo.classList.add('active');
+                }
+                if (replyNameTarget) {
+                    replyNameTarget.textContent = authorName || '该评论';
+                }
+
+                if (textarea) {
+                    if (authorName) {
+                        const mentionText = `@${authorName} `;
+                        const onlyAutoFilled = textarea.dataset.replyPrefill && textarea.value.trim() === textarea.dataset.replyPrefill.trim();
+                        if (!textarea.value.trim() || onlyAutoFilled) {
+                            textarea.value = mentionText;
+                            textarea.dataset.replyPrefill = mentionText;
+                        }
                     }
+                    textarea.focus();
+                    if (typeof textarea.setSelectionRange === 'function') {
+                        const length = textarea.value.length;
+                        textarea.setSelectionRange(length, length);
+                    }
+                }
+
+                const target = formWrapper || commentForm;
+                if (target) {
+                    this.scrollToElement(target, 80);
                 }
             });
         });
+
+        if (cancelReplyBtn && cancelReplyBtn.dataset.replyBound !== 'true') {
+            cancelReplyBtn.dataset.replyBound = 'true';
+            cancelReplyBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                clearReplyState();
+            });
+        }
     }
 
     initCommentEdit() {
         const editButtons = document.querySelectorAll('.edit-comment-btn');
+        if (!editButtons.length) return;
+
         editButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
+            if (btn.dataset.editBound === 'true') {
+                return;
+            }
+            btn.dataset.editBound = 'true';
+            btn.addEventListener('click', (event) => {
+                event.preventDefault();
                 const commentId = btn.dataset.commentId;
-                const commentText = btn.dataset.commentText;
-                const commentContent = document.querySelector(`.comment-content[data-comment-id="${commentId}"]`);
-                
-                if (commentContent) {
-                    const currentText = commentContent.textContent.trim();
-                    const textarea = document.createElement('textarea');
-                    textarea.value = currentText;
-                    textarea.className = 'comment-edit-textarea';
-                    
-                    const saveBtn = document.createElement('button');
-                    saveBtn.textContent = '保存';
-                    saveBtn.className = 'comment-save-btn';
-                    
-                    const cancelBtn = document.createElement('button');
-                    cancelBtn.textContent = '取消';
-                    cancelBtn.className = 'comment-cancel-btn';
-                    
-                    commentContent.innerHTML = '';
-                    commentContent.appendChild(textarea);
-                    commentContent.appendChild(saveBtn);
-                    commentContent.appendChild(cancelBtn);
-                    
-                    textarea.focus();
-                    
-                    const saveEdit = () => {
-                        commentContent.textContent = textarea.value;
-                        this.showNotification('评论已更新', 'success');
-                    };
-                    
-                    const cancelEdit = () => {
-                        commentContent.textContent = currentText;
-                    };
-                    
-                    saveBtn.addEventListener('click', saveEdit);
-                    cancelBtn.addEventListener('click', cancelEdit);
+                if (!commentId) {
+                    return;
                 }
+
+                const commentContent = document.querySelector(`.comment-content[data-comment-id="${commentId}"]`);
+                if (!commentContent || commentContent.classList.contains('editing')) {
+                    return;
+                }
+
+                const textContainer = commentContent.querySelector('.comment-text');
+                if (!textContainer) {
+                    return;
+                }
+
+                const originalHTML = textContainer.innerHTML;
+                const originalText = (btn.dataset.commentText || '').trim() || textContainer.textContent.trim();
+
+                const textarea = document.createElement('textarea');
+                textarea.className = 'comment-edit-textarea';
+                textarea.value = originalText;
+
+                const actions = document.createElement('div');
+                actions.className = 'comment-edit-actions';
+
+                const saveBtn = document.createElement('button');
+                saveBtn.type = 'button';
+                saveBtn.textContent = '保存';
+                saveBtn.className = 'comment-save-btn';
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.type = 'button';
+                cancelBtn.textContent = '取消';
+                cancelBtn.className = 'comment-cancel-btn';
+
+                actions.appendChild(saveBtn);
+                actions.appendChild(cancelBtn);
+
+                textContainer.innerHTML = '';
+                textContainer.appendChild(textarea);
+                textContainer.appendChild(actions);
+                commentContent.classList.add('editing');
+                textarea.focus();
+
+                const exitEditMode = () => {
+                    textContainer.innerHTML = originalHTML;
+                    commentContent.classList.remove('editing');
+                };
+
+                cancelBtn.addEventListener('click', () => {
+                    exitEditMode();
+                });
+
+                saveBtn.addEventListener('click', async () => {
+                    const newContent = textarea.value.trim();
+                    if (!newContent) {
+                        this.showNotification('评论内容不能为空', 'error');
+                        textarea.focus();
+                        return;
+                    }
+
+                    saveBtn.disabled = true;
+                    saveBtn.textContent = '保存中...';
+
+                    try {
+                        const response = await fetch(`/api/comments/${commentId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ content: newContent })
+                        });
+                        const result = await response.json();
+
+                        if (response.ok && result.status === 200) {
+                            const responseMessage = result.message || '评论已更新';
+                            const isApproved = result.data ? result.data.is_approved !== false : true;
+                            let updatedHtml = newContent.replace(/\n/g, '<br>');
+                            if (result.data && result.data.content_html) {
+                                updatedHtml = result.data.content_html;
+                            }
+
+                            if (!isApproved) {
+                                updatedHtml = '<em class="comment-pending">评论已提交审核，审核通过后将重新显示。</em>';
+                            }
+
+                            textContainer.innerHTML = updatedHtml;
+                            commentContent.classList.remove('editing');
+                            btn.dataset.commentText = newContent;
+                            this.showNotification(responseMessage, isApproved ? 'success' : 'info');
+                            this.dispatchContentUpdated(`.comment-content[data-comment-id="${commentId}"]`);
+                        } else {
+                            this.showNotification(result.message || '更新失败', 'error');
+                            exitEditMode();
+                        }
+                    } catch (error) {
+                        console.error('更新评论失败', error);
+                        this.showNotification('更新失败，请稍后重试', 'error');
+                        exitEditMode();
+                    } finally {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = '保存';
+                    }
+                });
             });
         });
     }
@@ -554,6 +699,17 @@ class AuroraTheme {
             document.body.removeChild(textArea);
             this.showNotification('已复制到剪贴板', 'success');
         }
+    }
+
+    dispatchContentUpdated(selector) {
+        const detail = {};
+        if (selector) {
+            const root = document.querySelector(selector);
+            if (root) {
+                detail.root = root;
+            }
+        }
+        window.dispatchEvent(new CustomEvent('aurora:content-updated', { detail }));
     }
 }
 

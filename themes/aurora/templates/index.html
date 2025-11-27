@@ -68,7 +68,7 @@
                 
                 {% if get_theme_config().show_excerpt != false %}
                 <div class="post-excerpt">
-                    {{ post.excerpt or post.content[:200] + '...' if post.content else '' }}
+                    {{ post.get_excerpt_html(220)|safe }}
                 </div>
                 {% endif %}
                 
@@ -144,21 +144,4 @@
 {% endif %}
 {% endblock %}
 
-{% block scripts %}
-<script>
-// 渲染数学公式
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof renderMathInElement !== 'undefined' && typeof katex !== 'undefined') {
-        renderMathInElement(document.body, {
-            delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '$', right: '$', display: false},
-                {left: '\\[', right: '\\]', display: true},
-                {left: '\\(', right: '\\)', display: false}
-            ],
-            throwOnError: false
-        });
-    }
-});
-</script>
-{% endblock %}
+{% block scripts %}{% endblock %}

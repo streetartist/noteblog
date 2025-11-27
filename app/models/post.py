@@ -37,6 +37,11 @@ class Category(db.Model):
     def get_post_count(self):
         """获取该分类下的文章数量"""
         return self.posts.filter_by(status='published').count()
+
+    @property
+    def post_count(self):
+        """Template helper for published post count."""
+        return self.get_post_count()
     
     def get_children_count(self):
         """获取子分类数量"""
@@ -156,6 +161,11 @@ class Post(db.Model):
     def get_comment_count(self):
         """获取评论数量"""
         return self.comments.filter_by(is_approved=True).count()
+
+    @property
+    def comment_count(self):
+        """Template helper for approved comment count."""
+        return self.get_comment_count()
     
     def get_approved_comments(self):
         """获取已审核的评论"""

@@ -1,6 +1,7 @@
 """
 API 视图
 """
+from datetime import datetime
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from app import db
@@ -348,6 +349,42 @@ def api_create_comment():
         data=comment.to_dict() if comment.is_approved else None,
         message=message,
         status=201
+    )
+
+@bp.route('/comments/<int:comment_id>', methods=['PUT'])
+@login_required
+def api_update_comment(comment_id):
+    """更新评论内容"""
+    comment = Comment.query.get_or_404(comment_id)
+
+    if not current_user.is_admin and comment.author_id != current_user.id:
+        return api_response(message='没有权限编辑该评论', status=403)
+
+    data = request.get_json() or {}
+    content = (data.get('content') or '').strip()
+
+    if not content:
+        return api_response(message='内容不能为空', status=400)
+
+    requires_review = not current_user.is_admin
+
+    plugin_manager.do_action('before_comment_update', comment=comment)
+
+    comment.content = content
+    comment.updated_at = datetime.utcnow()
+    if requires_review:
+        comment.is_approved = False
+    db.session.commit()
+
+    plugin_manager.do_action('after_comment_update', comment=comment)
+
+    message = '评论已更新'
+    if requires_review:
+        message = '评论已更新，等待审核'
+
+    return api_response(
+        data=comment.to_dict(include_html=True),
+        message=message
     )
 
 # 用户 API
