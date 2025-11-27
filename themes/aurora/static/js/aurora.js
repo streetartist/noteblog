@@ -54,14 +54,23 @@ class AuroraTheme {
 
         let lastScrollY = window.scrollY;
         let ticking = false;
+        const HIDE_OFFSET = 150;
+        const SHOW_OFFSET = 50;
 
         const updateHeader = () => {
-            const scrollY = window.scrollY;
+            const scrollY = Math.max(0, window.scrollY);
+            const isScrollingDown = scrollY > lastScrollY;
             
             if (scrollY > 100) {
                 header.classList.add('scrolled');
             } else {
                 header.classList.remove('scrolled');
+            }
+
+            if (isScrollingDown && scrollY > HIDE_OFFSET) {
+                header.classList.add('header-hidden');
+            } else if (!isScrollingDown || scrollY <= SHOW_OFFSET) {
+                header.classList.remove('header-hidden');
             }
 
             lastScrollY = scrollY;
