@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}搜索{% if query %} - {{ query }}{% endif %} - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or ('搜索' ~ ((' - ' ~ query) if query else '') ~ ' - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 
 {% block content %}
 <section class="serenity-search">

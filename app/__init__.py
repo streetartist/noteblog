@@ -142,10 +142,11 @@ def create_app(config_name='default'):
         """404 错误处理"""
         from app.models.setting import SettingManager
         from flask_login import current_user
-        
+        site_brand = SettingManager.get('site_title', 'Noteblog')
         context = {
             'error': error,
-            'site_title': f"页面未找到 - {SettingManager.get('site_title', 'Noteblog')}",
+            'site_title': site_brand,
+            'page_title': f"页面未找到 - {site_brand}",
             'current_user': current_user
         }
         
@@ -182,10 +183,11 @@ def create_app(config_name='default'):
         
         # 回滚数据库会话
         db.session.rollback()
-        
+        site_brand = SettingManager.get('site_title', 'Noteblog')
         context = {
             'error': error,
-            'site_title': f"服务器错误 - {SettingManager.get('site_title', 'Noteblog')}",
+            'site_title': site_brand,
+            'page_title': f"服务器错误 - {site_brand}",
             'current_user': current_user
         }
         

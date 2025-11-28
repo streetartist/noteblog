@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}登录 - {{ config.title }}{% endblock %}
+{% block title %}{{ page_title or ('登录 - ' ~ (site_title or config.title or 'Noteblog')) }}{% endblock %}
 
 {% block head %}
 <style>

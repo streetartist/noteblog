@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}服务器开小差 - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or ('服务器开小差 - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 
 {% block content %}
 <section class="error-page">

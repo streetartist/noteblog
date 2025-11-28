@@ -2,7 +2,7 @@
 
 {% set _admin_page = true %}
 
-{% block title %}{{ site_title or 'Noteblog' }} - 管理后台{% endblock %}
+{% block title %}{{ page_title or ((site_title or 'Noteblog') ~ ' - 管理后台') }}{% endblock %}
 
 {% block head %}
 {{ super() }}

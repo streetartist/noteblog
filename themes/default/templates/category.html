@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}分类：{{ category.name }} - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or ('分类：' ~ category.name ~ ' - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 {% block description %}{{ category.description or site_description or '' }}{% endblock %}
 
 {% block content %}

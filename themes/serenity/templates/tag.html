@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}#{{ tag.name }} - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or ('#' ~ tag.name ~ ' - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 
 {% block content %}
 <section class="tag-overview">

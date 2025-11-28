@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ post.title }} - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or (post.title ~ ' - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 {% block description %}{{ post.excerpt or post.content[:150] }}{% endblock %}
 {% block keywords %}{{ post.seo_keywords or post.tags|map(attribute='name')|join(', ') }}{% endblock %}
 

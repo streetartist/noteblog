@@ -551,6 +551,15 @@ class ThemeManager:
             except Exception:
                 context['site_title'] = None
 
+        if 'page_title' not in context:
+            try:
+                base_title = context.get('site_title')
+                if not base_title:
+                    base_title = SettingManager.get('site_title', 'Noteblog') if SettingManager else 'Noteblog'
+                context['page_title'] = base_title
+            except Exception:
+                context['page_title'] = context.get('site_title') or 'Noteblog'
+
         if 'site_description' not in context:
             try:
                 context['site_description'] = SettingManager.get('site_description', '') if SettingManager else ''

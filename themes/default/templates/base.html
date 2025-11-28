@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ site_title or 'Noteblog' }}{% endblock %}</title>
+    <title>{% block title %}{{ page_title or (site_title or 'Noteblog') }}{% endblock %}</title>
     <meta name="description" content="{% block description %}{{ site_description or '' }}{% endblock %}">
     <meta name="keywords" content="{% block keywords %}{{ site_keywords or '' }}{% endblock %}">
     

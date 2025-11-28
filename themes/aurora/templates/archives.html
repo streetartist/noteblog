@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}归档 - {{ config.title }}{% endblock %}
+{% block title %}{{ page_title or ('归档 - ' ~ (site_title or config.title or 'Noteblog')) }}{% endblock %}
 
 {% block head %}
 <style>

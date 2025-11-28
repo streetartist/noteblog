@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}标签：{{ tag.name }} - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or ('标签：' ~ tag.name ~ ' - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 {% block description %}{{ tag.description or site_description or '' }}{% endblock %}
 
 {% block content %}

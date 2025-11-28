@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}管理后台{% endblock %} - {{ config.title }}</title>
+    <title>{% block title %}{{ page_title or ('管理后台 - ' ~ (site_title or config.title or 'Noteblog')) }}{% endblock %}</title>
     
     <!-- 主题CSS -->
     <link rel="stylesheet" href="{{ url_for('theme.static', filename='css/aurora.css') }}">

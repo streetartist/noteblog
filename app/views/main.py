@@ -31,11 +31,13 @@ def index():
     plugin_manager.do_action('before_index_render', posts=posts)
     
     # 准备模板上下文
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'posts': posts,
         'categories': categories,
         'tags': tags,
-        'site_title': SettingManager.get('site_title', 'Noteblog'),
+        'site_title': site_brand,
+        'page_title': site_brand,
         'site_description': SettingManager.get('site_description', ''),
         'current_user': current_user,
         'plugin_hooks': {
@@ -95,12 +97,14 @@ def post_detail(slug):
     plugin_manager.do_action('before_post_render', post=post)
     
     # 准备模板上下文
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'post': post,
         'comments': comments,
         'prev_post': prev_post if prev_post and prev_post.slug else None,
         'next_post': next_post if next_post and next_post.slug else None,
-        'site_title': f"{post.title} - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"{post.title} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
@@ -127,10 +131,12 @@ def category(slug):
         page=page, per_page=per_page, error_out=False
     )
     
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'category': category,
         'posts': posts,
-        'site_title': f"{category.name} - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"{category.name} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
@@ -155,10 +161,12 @@ def tag(slug):
     
     posts = posts_query.paginate(page=page, per_page=per_page, error_out=False)
     
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'tag': tag,
         'posts': posts,
-        'site_title': f"{tag.name} - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"{tag.name} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
@@ -195,12 +203,15 @@ def search():
         results = posts.items
         total = posts.total
     
+    site_brand = SettingManager.get('site_title', 'Noteblog')
+    title_prefix = f"搜索: {query}" if query else '搜索'
     context = {
         'query': query,
         'posts': posts,
         'results': results,
         'total': total,
-        'site_title': f"搜索: {query} - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"{title_prefix} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
@@ -296,13 +307,15 @@ def archives():
             archives[year] = []
         archives[year].append(post)
     
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'archives': archives,
         'total_posts': total_posts,
         'total_categories': total_categories,
         'total_tags': total_tags,
         'total_words': total_words,
-        'site_title': f"归档 - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"归档 - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
@@ -318,9 +331,11 @@ def archives():
 def categories_list():
     """分类列表页面"""
     categories = Category.query.filter_by(is_active=True).all()
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'categories': categories,
-        'site_title': f"分类 - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"分类 - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
@@ -346,9 +361,11 @@ def tags_list():
 
     for tag in tags:
         tag.post_count = tag_counts.get(tag.id, 0)
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'tags': tags,
-        'site_title': f"标签 - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"标签 - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
@@ -366,9 +383,11 @@ def page(slug):
     # 增加浏览量
     page.increment_view()
     
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'page': page,
-        'site_title': f"{page.title} - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"{page.title} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}标签 - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or ('标签 - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 
 {% block content %}
 <section class="tag-board">

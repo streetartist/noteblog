@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ site_title or '分类' }}{% endblock %}
+{% block title %}{{ page_title or ('分类 - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 
 {% block content %}
 <div class="categories-container">

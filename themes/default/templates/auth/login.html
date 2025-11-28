@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}登录 - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or ('登录 - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 
 {% block content %}
 <div class="auth-page">

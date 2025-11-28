@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Serenity 时间线 - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or ('Serenity 时间线 - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 
 {% block content %}
 <section class="timeline-page">

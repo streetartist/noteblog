@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or (site_title or 'Noteblog') }}{% endblock %}
 
 {% block hero %}
 <section class="serenity-hero">

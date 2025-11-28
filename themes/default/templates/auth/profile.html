@@ -2,7 +2,7 @@
 
 {% set _admin_page = true %}
 
-{% block title %}个人资料 - {{ site_title or 'Noteblog' }}{% endblock %}
+{% block title %}{{ page_title or ('个人资料 - ' ~ (site_title or 'Noteblog')) }}{% endblock %}
 
 {% block content %}
 <div class="post-detail">

@@ -133,9 +133,11 @@ def logout():
 @login_required
 def profile():
     """个人资料"""
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'user': current_user,
-        'site_title': f"个人资料 - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"个人资料 - {site_brand}",
         'current_user': current_user
     }
     
@@ -191,9 +193,11 @@ def edit_profile():
         flash('个人资料更新成功', 'success')
         return redirect(url_for('auth.profile'))
     
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
         'user': current_user,
-        'site_title': f"编辑资料 - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"编辑资料 - {site_brand}",
         'current_user': current_user
     }
     
@@ -238,8 +242,10 @@ def change_password():
         flash('密码修改成功', 'success')
         return redirect(url_for('auth.profile'))
     
+    site_brand = SettingManager.get('site_title', 'Noteblog')
     context = {
-        'site_title': f"修改密码 - {SettingManager.get('site_title', 'Noteblog')}",
+        'site_title': site_brand,
+        'page_title': f"修改密码 - {site_brand}",
         'current_user': current_user
     }
     
