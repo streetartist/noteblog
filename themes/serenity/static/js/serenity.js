@@ -166,24 +166,69 @@ class SerenityTheme {
         if (!form) return;
         const cancelBtn = form.querySelector('[data-cancel-reply]');
         const parentInput = form.querySelector('input[name="parent_id"]');
+        const replyInfo = form.querySelector('[data-reply-info]');
+        const replyNameTarget = form.querySelector('[data-reply-name]');
+        const textarea = form.querySelector('textarea[name="content"], textarea');
+
+        const toggleReplyInfo = (active, authorName = '') => {
+            if (!replyInfo) return;
+            if (active) {
+                replyInfo.removeAttribute('hidden');
+                replyInfo.classList.add('active');
+                if (replyNameTarget) {
+                    replyNameTarget.textContent = authorName || '该评论';
+                }
+            } else {
+                replyInfo.setAttribute('hidden', 'hidden');
+                replyInfo.classList.remove('active');
+                if (replyNameTarget) {
+                    replyNameTarget.textContent = '';
+                }
+            }
+        };
+
         const resetReply = () => {
             if (parentInput) {
                 parentInput.value = '';
             }
-            cancelBtn?.setAttribute('hidden', 'hidden');
+            toggleReplyInfo(false);
+            if (textarea) {
+                if (textarea.dataset.replyPrefill && textarea.value === textarea.dataset.replyPrefill) {
+                    textarea.value = '';
+                }
+                delete textarea.dataset.replyPrefill;
+            }
         };
 
         const bindReplyButtons = () => {
             document.querySelectorAll('.comment-reply-btn').forEach(btn => {
                 if (btn.dataset.serenityBound) return;
                 btn.dataset.serenityBound = '1';
-                btn.addEventListener('click', () => {
+                btn.addEventListener('click', (event) => {
+                    event.preventDefault();
                     if (!parentInput) return;
-                    parentInput.value = btn.dataset.commentId;
-                    cancelBtn?.removeAttribute('hidden');
+                    const commentId = btn.dataset.commentId;
+                    if (!commentId) return;
+
+                    parentInput.value = commentId;
+                    const authorName = btn.dataset.authorName || '';
+                    toggleReplyInfo(true, authorName);
+
+                    if (textarea && authorName) {
+                        const mentionText = `@${authorName} `;
+                        const onlyAutoFill = textarea.dataset.replyPrefill && textarea.value === textarea.dataset.replyPrefill;
+                        if (!textarea.value || onlyAutoFill) {
+                            textarea.value = mentionText;
+                            textarea.dataset.replyPrefill = mentionText;
+                        }
+                    }
+
                     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    const textarea = form.querySelector('textarea');
                     textarea?.focus();
+                    if (textarea && typeof textarea.setSelectionRange === 'function') {
+                        const length = textarea.value.length;
+                        textarea.setSelectionRange(length, length);
+                    }
                 });
             });
         };
@@ -191,7 +236,10 @@ class SerenityTheme {
         bindReplyButtons();
         window.addEventListener('serenity:content-updated', bindReplyButtons);
 
-        cancelBtn?.addEventListener('click', resetReply);
+        cancelBtn?.addEventListener('click', (event) => {
+            event.preventDefault();
+            resetReply();
+        });
 
         form.addEventListener('submit', (event) => {
             event.preventDefault();

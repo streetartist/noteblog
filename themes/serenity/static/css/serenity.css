@@ -792,6 +792,24 @@ button.serenity-link:focus-visible {
     font-weight: 600;
 }
 
+.comment-reply-state {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--serenity-border);
+    background: rgba(77, 108, 250, 0.08);
+    font-weight: 600;
+    color: var(--serenity-text);
+    margin-bottom: 1rem;
+}
+
+.comment-reply-state[hidden] {
+    display: none !important;
+}
+
 .comment-form textarea,
 .comment-form input {
     border-radius: 12px;

@@ -102,6 +102,10 @@
     <form class="comment-form" id="comment-form" data-post-id="{{ post.id }}">
         <input type="hidden" name="post_id" value="{{ post.id }}">
         <input type="hidden" name="parent_id" value="">
+        <div class="comment-reply-state" data-reply-info hidden>
+            <span>正在回复 <strong data-reply-name></strong></span>
+            <button type="button" class="serenity-ghost-button" data-cancel-reply>取消回复</button>
+        </div>
         {% if not current_user.is_authenticated %}
         <div class="comment-form-row">
             <label>昵称
@@ -120,7 +124,6 @@
         </label>
         <div class="comment-actions">
             <button type="submit" class="serenity-solid-button">提交评论</button>
-            <button type="button" class="serenity-ghost-button" data-cancel-reply hidden>取消回复</button>
         </div>
     </form>
     {% if plugin_hooks and plugin_hooks.comment_form_bottom %}
