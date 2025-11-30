@@ -9,11 +9,10 @@
 - 🎨 **主题系统**: 支持多主题切换和自定义主题
 - 👥 **用户管理**: 完整的用户认证和权限管理系统
 - 📝 **博客功能**: 文章、分类、标签、评论等完整功能
-- 🔍 **搜索功能**: 全文搜索和高级搜索
+- 🔍 **搜索功能**: 全文搜索和高级搜索（To do）
 - 📱 **响应式设计**: 支持移动端和桌面端
 - 🐳 **Docker支持**: 完整的Docker部署方案
-- 🔒 **安全性**: 内置安全防护机制
-- 📊 **统计分析**: 访问统计和数据分析
+- 📊 **统计分析**: 访问统计和数据分析（To do）
 
 ## 🚀 安装与部署
 
@@ -36,31 +35,7 @@ git clone https://github.com/streetartist/noteblog.git
 cd noteblog
 ```
 
-#### 3. 环境配置
-
-Docker Compose 使用 `.env` 文件来管理环境变量。你需要创建并配置这个文件。
-
-1.  **复制示例文件**:
-    ```bash
-    cp .env.example .env
-    ```
-
-2.  **编辑 `.env` 文件**:
-    打开 `.env` 文件并根据你的环境修改以下关键变量：
-
-    - `SECRET_KEY`: **必须修改**。运行以下命令生成一个安全的随机密钥，并将其粘贴到此处。
-      ```bash
-      openssl rand -hex 32
-      ```
-    - `DATABASE_URL`: 默认配置已链接到 Docker Compose 中的 MySQL 服务。**强烈建议**修改 `docker-compose.yml` 中 `db` 服务的 `MYSQL_ROOT_PASSWORD` 和 `MYSQL_PASSWORD` 的默认值，并在此处同步更新。
-      ```
-      # 示例 (如果修改了 docker-compose.yml 中的密码为 'your-strong-password')
-      DATABASE_URL=mysql+pymysql://noteblog:your-strong-password@db:3306/noteblog
-      ```
-    - `REDIS_URL`: 默认配置已链接到 Redis 服务，通常无需修改。
-    - `FLASK_ENV`: 保持 `production`。
-
-#### 4. 构建并启动服务
+#### 3. 构建并启动服务
 
 使用 Docker Compose 在后台构建并启动所有服务（Noteblog 应用, MySQL, Redis, Nginx）。
 
@@ -73,7 +48,7 @@ docker-compose up --build -d
 
 你可以使用 `docker-compose ps` 查看所有正在运行的服务状态。
 
-#### 5. 初始化应用
+#### 4. 初始化应用
 
 首次启动时，你需要执行初始化命令来创建数据库表和默认的管理员账户。
 
@@ -86,14 +61,14 @@ docker-compose exec noteblog python run.py init
 
 脚本会提示你设置管理员的用户名、邮箱和密码。
 
-#### 6. 访问你的博客
+#### 5. 访问你的博客
 
 完成以上步骤后，你的 Noteblog 实例应该已经成功运行。
 
 - **前台**: 访问 `http://<你的服务器IP或域名>`
 - **后台**: 访问 `http://<你的服务器IP或域名>/admin`
 
-#### 7. Nginx 与 HTTPS (生产环境推荐)
+#### 8. Nginx 与 HTTPS (生产环境推荐)
 
 `docker-compose.yml` 中的 Nginx 服务已配置为监听 80 和 443 端口。为了在生产环境中启用 HTTPS，请执行以下操作：
 
@@ -154,7 +129,7 @@ docker-compose restart nginx
   - **插件/主题**: `./plugins` 和 `./themes` 目录。
   请定期备份这些数据。
 
-### 方法二：本地开发环境 (不使用 Docker)
+### 方法二：本地**开发**环境 (不使用 Docker)
 
 1. **安装依赖**
 ```bash
@@ -193,15 +168,7 @@ Noteblog 支持 Vercel 无服务器部署，具有自动扩缩容和全球 CDN �
 
 #### 2. 获取数据库连接信息
 
-创建完成后，Vercel 会自动为您的项目设置以下环境变量：
-
-- `POSTGRES_URL` - 完整的数据库连接字符串
-- `POSTGRES_PRISMA_URL` - Prisma 优化的连接字符串
-- `POSTGRES_URL_NON_POOLING` - 非连接池的连接字符串
-- `POSTGRES_USER` - 数据库用户名
-- `POSTGRES_HOST` - 数据库主机
-- `POSTGRES_PASSWORD` - 数据库密码
-- `POSTGRES_DATABASE` - 数据库名称
+创建完成后，Vercel 会自动为您的项目设置环境变量
 
 #### 3. 安装 Vercel CLI 并部署
 
@@ -285,7 +252,7 @@ psycopg2-binary
 #### 1. 环境准备
 
 - 创建专用系统用户（示例 `noteblog`），限制其 sudo 权限。
-- 安装基础组件：`git`、`python3.11+`、`python3-venv`、`build-essential`、`nginx`、`mysql-server`/`postgresql`（或 SQLite 仅作测试）、可选 `redis`、`certbot`。
+- 安装基础组件：`git`、`python3.11+`、`python3-venv`、`build-essential`、`nginx`、`mysql-server`/`postgresql`（或使用 SQLite 作为测试）、可选 `redis`、`certbot`。
 - 开放 80/443 端口并限制其余端口；开启 `ufw`/`firewalld`。
 
 ```bash
