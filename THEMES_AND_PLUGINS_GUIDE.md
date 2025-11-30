@@ -27,7 +27,7 @@ themes/
 ```
 
 ### 2.2 `theme.json` 关键字段
-- `display_name`, `description`, `version`, `author`, `license`, `min_noteblog_version`：用于后台展示与兼容性检查。
+- `display_name`, `description`, `version`, `author`, `license`, `min_version`：用于后台展示与兼容性检查。
 - `config_schema`：遵循 JSON Schema 的简化结构，字段名尽量沿用 `themes/default`，以便后台自动生成设置表单（如 `logo`, `primary_color`, `show_sidebar`）。
 - `custom_pages`：`[{"route": "/timeline", "template": "pages/timeline.html", "methods": ["GET"], "context": {"title": "时间线"}}]`，用于声明无需写 Python 的静态路由。
 - `assets.version` 或自定义字段可帮助做静态资源 cache busting。
@@ -80,7 +80,7 @@ plugins/
 ```
 
 ### 3.3 `plugin.json` 字段
-- **必填**：`name`, `display_name`, `version`, `description`, `author`, `entry_point` (入口函数名，如 `create_plugin`), `min_noteblog_version` (建议), `install_path` 由系统推断。
+- **必填**：`name`, `display_name`, `version`, `description`, `author`, `entry_point` (入口函数名, 如 `create_plugin`), `min_version` (建议), `install_path` 由系统推断。
 - **可选**：
   - `blueprints`: `[{"name": "reading_time_bp", "url_prefix": "/reading-time"}]`，供后台展示路由信息。
   - `config_schema`: 与主题类似，用于后台渲染配置项。
@@ -104,20 +104,20 @@ class ReadingTimePlugin(PluginBase):
 
     def register_hooks(self):
         plugin_manager.register_filter(
-            'post_context', self.with_reading_time,
+            'post_context', self.add_reading_time_to_context,
             accepted_args=2, priority=10, plugin_name=self.name
         )
         plugin_manager.register_template_hook(
-            'post_footer', self.render_badge,
+            'post_footer', self.render_reading_time_badge,
             priority=20, plugin_name=self.name
         )
 
-    def with_reading_time(self, context, post):
+    def add_reading_time_to_context(self, context, post):
         words = len(post.content.split())
         context['reading_time'] = max(1, words // 250)
         return context
 
-    def render_badge(self):
+    def render_reading_time_badge(self):
         return render_template('reading_time/partials/badge.html')
 
 def create_plugin():
@@ -151,7 +151,7 @@ def create_plugin():
 使用钩子时可通过 `priority` 控制顺序（数字越小优先级越高），`accepted_args` 控制回调将收到的参数个数。模板钩子回调不接收参数，应返回 HTML 字符串，可配合 `plugin_manager.render_plugin_template()`。
 
 ### 3.6 Blueprint、模板与静态资源
-- 在插件模块中定义 `Blueprint` 对象（如 `hello_world_bp = Blueprint('hello_world', __name__, template_folder='templates', static_folder='static', url_prefix='/hello')`），Plugin Manager 会自动扫描并 `register_blueprint`。
+- 在插件模块中定义 `Blueprint` 对象（如 `hello_world_bp = Blueprint('hello_world', __name__, template_folder='templates', static_folder='static', url_prefix='/hello-world')`），Plugin Manager 会自动扫描并 `register_blueprint`。
 - 插件模板默认位于 `plugins/<name>/templates/`。如果需要从钩子中渲染 HTML，可直接使用 `render_template()`，Flask 会正确解析插件模板目录。
 - 静态文件可通过 `/static/plugins/<plugin_name>/<path>` 访问，或在模板中使用 `url_for('static', filename='plugins/<plugin_name>/css/plugin.css')`。
 

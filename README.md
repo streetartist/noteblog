@@ -4,7 +4,7 @@
 
 ## ✨ 特性
 
-- 🚀 **现代化架构**: 基于Flask + SQLAlchemy + Vue.js构建
+- 🚀 **现代化架构**: 基于Flask + SQLAlchemy构建
 - 🔌 **插件系统**: 支持钩子函数、过滤器、模板插入点
 - 🎨 **主题系统**: 支持多主题切换和自定义主题
 - 👥 **用户管理**: 完整的用户认证和权限管理系统
@@ -24,16 +24,13 @@
 - **Flask-Login**: 用户认证
 - **Flask-WTF**: 表单处理
 - **Alembic**: 数据库版本控制
-- **Redis**: 缓存和会话存储
 
 ### 前端
-- **Vue.js 3**: 前端框架
-- **Element Plus**: UI组件库
-- **Axios**: HTTP客户端
-- **Webpack**: 构建工具
+- **Jinja2**: 模板引擎，用于服务器端渲染
 
 ### 数据库
 - **MySQL**: 主数据库（生产环境）
+- **PostgreSQL**: 支持的生产数据库
 - **SQLite**: 开发数据库
 
 ### 部署
@@ -47,7 +44,7 @@
 
 1. **克隆项目**
 ```bash
-git clone https://github.com/your-username/noteblog.git
+git clone https://github.com/streetartist/noteblog.git
 cd noteblog
 ```
 
@@ -65,11 +62,14 @@ docker-compose --profile search up -d
 # 进入应用容器
 docker-compose exec noteblog bash
 
-# 运行数据库迁移
-flask db upgrade
+# 运行初始化命令
+python run.py init
+```
+上述命令将创建数据库表，初始化默认设置，并创建一个默认管理员用户（用户名：`admin`，密码：`admin123`）。
 
-# 创建管理员用户
-python scripts/create_admin.py
+你也可以使用以下命令手动创建一个管理员：
+```bash
+python run.py create_admin
 ```
 
 4. **访问应用**
@@ -119,16 +119,9 @@ python run.py run --host=127.0.0.1 --port=5000
 
 上面步骤会创建 SQLite 数据库（默认 `noteblog.db`），并初始化默认设置与管理员账号（默认 admin/admin123）。
 
-3. **初始化数据库**
+3. **启动开发服务器**
 ```bash
-flask db init
-flask db migrate -m "Initial migration"
-flask db upgrade
-```
-
-4. **启动开发服务器**
-```bash
-python app.py
+python run.py run
 ```
 
 ## 📁 项目结构
@@ -160,8 +153,6 @@ noteblog/
 │   ├── nginx/           # Nginx配置
 │   └── mysql/           # MySQL配置
 ├── migrations/           # 数据库迁移文件
-├── uploads/             # 上传文件目录
-├── logs/                # 日志文件
 ├── requirements.txt     # Python依赖
 ├── docker-compose.yml   # Docker Compose配置
 ├── Dockerfile          # Docker镜像配置
@@ -220,20 +211,19 @@ def create_plugin():
 
 可用的钩子包括：
 
-- `before_request`: 请求前处理
-- `after_request`: 请求后处理
-- `template_context`: 模板上下文处理
-- `admin_navigation`: 管理后台导航
-- `user_registered`: 用户注册后
-- `post_published`: 文章发布后
+- **请求**: `before_request`, `after_request`
+- **文章**: `before_post_save`, `after_post_save`, `before_post_update`, `after_post_update`, `before_post_delete`, `after_post_delete`, `before_post_render`
+- **评论**: `before_comment_save`, `after_comment_save`, `before_comment_update`, `after_comment_update`
+- **用户**: `before_user_login`, `after_user_login`, `before_user_register`, `after_user_register`, `before_user_logout`, `before_profile_update`, `after_profile_update`, `before_password_change`, `after_password_change`, `before_password_reset`, `after_password_reset`
+- **页面**: `before_index_render`
 
 ### 插件过滤器
 
 可用的过滤器包括：
 
-- `post_content`: 文章内容过滤
-- `page_title`: 页面标题过滤
-- `comment_content`: 评论内容过滤
+- **内容**: `post_content`, `page_title`
+- **模板上下文**: `template_context`, `index_context`, `post_context`
+- **管理后台**: `admin_navigation`, `admin_post_editor_hooks`
 
 ## 🎨 主题开发
 
@@ -250,14 +240,27 @@ cd themes/my_theme
 // theme.json
 {
     "name": "my_theme",
+    "display_name": "My Custom Theme",
     "version": "1.0.0",
-    "description": "My custom theme",
+    "description": "A custom theme for Noteblog.",
     "author": "Your Name",
+    "author_website": "https://example.com",
+    "license": "MIT",
     "config_schema": {
-        "color_scheme": {
-            "type": "string",
-            "default": "light",
-            "options": ["light", "dark"]
+        "primary_color": {
+            "type": "color",
+            "label": "Primary Color",
+            "default": "#409EFF"
+        },
+        "show_sidebar": {
+            "type": "checkbox",
+            "label": "Show Sidebar",
+            "default": true
+        },
+        "footer_text": {
+            "type": "textarea",
+            "label": "Footer Text",
+            "default": "© 2025 My Blog"
         }
     }
 }
@@ -282,7 +285,7 @@ cd themes/my_theme
     </main>
     
     <footer>
-        <p>&copy; 2024 {{ site_title }}</p>
+        <p>&copy; 2025 {{ site_title }}</p>
     </footer>
 </body>
 </html>
@@ -331,9 +334,6 @@ SECRET_KEY=your-secret-key
 
 # 数据库配置
 DATABASE_URL=mysql+pymysql://user:pass@localhost/noteblog
-
-# Redis配置
-REDIS_URL=redis://localhost:6379/0
 
 # 邮件配置
 MAIL_SERVER=smtp.gmail.com
@@ -426,13 +426,6 @@ CREATE INDEX idx_post_published ON post(status, published_at);
 CREATE INDEX idx_comment_post ON comment(post_id, status);
 ```
 
-2. **缓存配置**
-```python
-# Redis缓存
-CACHE_TYPE = 'redis'
-CACHE_REDIS_URL = 'redis://localhost:6379/1'
-```
-
 3. **静态文件优化**
 ```nginx
 # 启用Gzip压缩
@@ -456,14 +449,13 @@ location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
 
 ## 📄 许可证
 
-本项目采用 GPL-3.0 license 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+本项目采用 GPL-3.0 License 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
 ## 🆘 支持
 
 如果您遇到问题或有建议，请：
 
-1. 查看 [FAQ](docs/FAQ.md)
-2. 搜索 [Issues](https://github.com/your-username/noteblog/issues)
+1. 搜索 [Issues](https://github.com/streetartist/noteblog/issues)
 3. 创建新的 Issue
 4. 联系维护者
 
@@ -472,9 +464,8 @@ location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
 感谢所有为这个项目做出贡献的开发者！
 
 - [Flask](https://flask.palletsprojects.com/) - Web框架
-- [Vue.js](https://vuejs.org/) - 前端框架
-- [Element Plus](https://element-plus.org/) - UI组件库
 - [SQLAlchemy](https://www.sqlalchemy.org/) - ORM框架
+- [Jinja2](https://jinja.palletsprojects.com/) - 模板引擎
 
 ---
 

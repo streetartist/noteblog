@@ -569,6 +569,10 @@ class ThemeManager:
         if 'current_user' not in context:
             context['current_user'] = flask_current_user
 
+        # 应用全局模板上下文过滤器
+        from app.services.plugin_manager import plugin_manager
+        context = plugin_manager.apply_filters('template_context', context)
+
         if os.path.exists(template_path):
             # 使用 Jinja2 渲染模板
             from jinja2 import Environment, FileSystemLoader

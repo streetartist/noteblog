@@ -93,6 +93,20 @@ def create_app(config_name='default'):
     from app.services.theme_manager import theme_manager
     if os.getenv('SKIP_PLUGIN_INIT', '0') != '1':
         theme_manager.init_app(app)
+
+    # 注册请求处理钩子
+    @app.before_request
+    def before_request_handler():
+        if hasattr(app, 'plugin_manager'):
+            app.plugin_manager.do_action('before_request')
+
+    @app.after_request
+    def after_request_handler(response):
+        if hasattr(app, 'plugin_manager'):
+            # after_request钩子通常需要接收response对象
+            # 但我们的do_action不直接处理返回值，所以这里只是触发
+            app.plugin_manager.do_action('after_request', response)
+        return response
     
     # 添加全局模板上下文处理器
     @app.context_processor

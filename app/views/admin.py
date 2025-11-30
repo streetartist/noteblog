@@ -42,6 +42,33 @@ def _collect_editor_hooks(mode: str, post=None):
         current_app.logger.error('收集文章编辑钩子失败: %s', exc)
         return hooks
 
+def _get_base_context(page_title_suffix):
+    """获取管理后台页面的基础上下文"""
+    site_brand = SettingManager.get('site_title', 'Noteblog')
+    
+    # 定义基础导航项
+    navigation_items = [
+        {'name': 'dashboard', 'title': '仪表板', 'url': url_for('admin.dashboard'), 'icon': 'el-icon-s-home'},
+        {'name': 'posts', 'title': '文章管理', 'url': url_for('admin.posts'), 'icon': 'el-icon-document'},
+        {'name': 'categories', 'title': '分类管理', 'url': url_for('admin.categories'), 'icon': 'el-icon-folder'},
+        {'name': 'comments', 'title': '评论管理', 'url': url_for('admin.comments'), 'icon': 'el-icon-chat-dot-round'},
+        {'name': 'users', 'title': '用户管理', 'url': url_for('admin.users'), 'icon': 'el-icon-user'},
+        {'name': 'themes', 'title': '主题管理', 'url': url_for('admin.themes'), 'icon': 'el-icon-picture-outline'},
+        {'name': 'plugins', 'title': '插件管理', 'url': url_for('admin.plugins'), 'icon': 'el-icon-s-cooperation'},
+        {'name': 'settings', 'title': '系统设置', 'url': url_for('admin.settings'), 'icon': 'el-icon-s-tools'},
+    ]
+    
+    # 应用 admin_navigation 钩子
+    navigation_items = plugin_manager.apply_filters('admin_navigation', navigation_items)
+
+    context = {
+        'site_title': site_brand,
+        'page_title': f"{page_title_suffix} - {site_brand} 管理后台",
+        'current_user': current_user,
+        'navigation_items': navigation_items
+    }
+    return context
+
 def admin_required(f):
     """管理员权限装饰器"""
     @wraps(f)
@@ -79,15 +106,12 @@ def dashboard():
     # 最新评论
     latest_comments = Comment.query.order_by(Comment.created_at.desc()).limit(5).all()
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('仪表板')
+    context.update({
         'stats': stats,
         'latest_posts': latest_posts,
         'latest_comments': latest_comments,
-        'site_title': site_brand,
-        'page_title': f"仪表板 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/dashboard.html', **context)
 
@@ -108,14 +132,11 @@ def posts():
         page=page, per_page=20, error_out=False
     )
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('文章管理')
+    context.update({
         'posts': posts,
         'status': status,
-        'site_title': site_brand,
-        'page_title': f"文章管理 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/posts.html', **context)
 
@@ -206,16 +227,13 @@ def create_post():
     upload_limit_bytes = current_app.config.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024)
     upload_limit_mb = max(1, upload_limit_bytes // (1024 * 1024))
 
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('创建文章')
+    context.update({
         'categories': categories,
         'tags': tags,
-        'site_title': site_brand,
-        'page_title': f"创建文章 - {site_brand} 管理后台",
-        'current_user': current_user,
         'upload_limit_mb': upload_limit_mb,
         'editor_plugin_hooks': _collect_editor_hooks('create')
-    }
+    })
     
     return theme_manager.render_template('admin/create_post.html', **context)
 
@@ -358,17 +376,14 @@ def edit_post(post_id):
     upload_limit_bytes = current_app.config.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024)
     upload_limit_mb = max(1, upload_limit_bytes // (1024 * 1024))
 
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('编辑文章')
+    context.update({
         'post': post,
         'categories': categories,
         'tags': tags,
-        'site_title': site_brand,
-        'page_title': f"编辑文章 - {site_brand} 管理后台",
-        'current_user': current_user,
         'upload_limit_mb': upload_limit_mb,
         'editor_plugin_hooks': _collect_editor_hooks('edit', post=post)
-    }
+    })
     
     return theme_manager.render_template('admin/edit_post.html', **context)
 
@@ -399,13 +414,10 @@ def categories():
     """分类列表"""
     categories = Category.query.order_by(Category.sort_order, Category.name).all()
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('分类管理')
+    context.update({
         'categories': categories,
-        'site_title': site_brand,
-        'page_title': f"分类管理 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/categories.html', **context)
 
@@ -458,13 +470,10 @@ def create_category():
     
     categories = Category.query.filter_by(parent_id=None).all()
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('创建分类')
+    context.update({
         'categories': categories,
-        'site_title': site_brand,
-        'page_title': f"创建分类 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/create_category.html', **context)
 
@@ -518,14 +527,11 @@ def edit_category(category_id):
     
     categories = Category.query.filter_by(parent_id=None).all()
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('编辑分类')
+    context.update({
         'category': category,
         'categories': categories,
-        'site_title': site_brand,
-        'page_title': f"编辑分类 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/edit_category.html', **context)
 
@@ -569,14 +575,11 @@ def comments():
         page=page, per_page=20, error_out=False
     )
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('评论管理')
+    context.update({
         'comments': comments,
         'status': status,
-        'site_title': site_brand,
-        'page_title': f"评论管理 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/comments.html', **context)
 
@@ -639,13 +642,10 @@ def users():
         page=page, per_page=20, error_out=False
     )
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('用户管理')
+    context.update({
         'users': users,
-        'site_title': site_brand,
-        'page_title': f"用户管理 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/users.html', **context)
 
@@ -714,13 +714,10 @@ def plugins():
     # 合并插件列表
     all_plugins = list(installed_plugins) + available_plugins
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('插件管理')
+    context.update({
         'plugins': all_plugins,
-        'site_title': site_brand,
-        'page_title': f"插件管理 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/plugins.html', **context)
 
@@ -801,13 +798,10 @@ def configure_plugin(plugin_name):
         flash('插件不存在', 'error')
         return redirect(url_for('admin.plugins'))
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context(f"{plugin.display_name or plugin.name} 配置")
+    context.update({
         'plugin': plugin,
-        'site_title': site_brand,
-        'page_title': f"{plugin.display_name or plugin.name} 配置 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/plugin_configure.html', **context)
 
@@ -819,13 +813,10 @@ def themes():
     """主题列表"""
     themes = Theme.query.order_by(Theme.name).all()
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('主题管理')
+    context.update({
         'themes': themes,
-        'site_title': site_brand,
-        'page_title': f"主题管理 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/themes.html', **context)
 
@@ -860,13 +851,10 @@ def settings():
     if 'comment_blacklist' not in all_settings:
         all_settings['comment_blacklist'] = ''
     
-    site_brand = SettingManager.get('site_title', 'Noteblog')
-    context = {
+    context = _get_base_context('系统设置')
+    context.update({
         'settings': all_settings,
-        'site_title': site_brand,
-        'page_title': f"系统设置 - {site_brand} 管理后台",
-        'current_user': current_user
-    }
+    })
     
     return theme_manager.render_template('admin/settings.html', **context)
 

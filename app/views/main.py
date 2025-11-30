@@ -116,6 +116,10 @@ def post_detail(slug):
     # 应用过滤器
     context = plugin_manager.apply_filters('post_context', context, post)
     
+    # 应用内容和标题过滤器
+    post.content = plugin_manager.apply_filters('post_content', post.content, post)
+    context['page_title'] = plugin_manager.apply_filters('page_title', context['page_title'])
+    
     return theme_manager.render_template('post.html', **context)
 
 @bp.route('/category/<slug>')

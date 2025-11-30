@@ -184,3 +184,11 @@ CREATE INDEX idx_comment_post ON comment(post_id, status);
   - 静态资源 404：确认 Nginx `alias` 指向正确目录。
 
 完成以上步骤，Noteblog 即可在普通服务器上稳定运行。若需要多实例或自动扩缩容，可进一步结合 Docker、Kubernetes 或 CI/CD 管道实现。
+
+---
+
+> **寻求 Docker 部署？**
+> 
+> 本项目同样提供了基于 Docker 和 Docker Compose 的一键部署方案，这是推荐用于生产环境的方式。
+> 
+> 请参阅：[**Noteblog Docker 部署指南](./docker_deployment.md)**

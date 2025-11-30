@@ -11,6 +11,28 @@ from flask import current_app
 from app import db
 from app.models.plugin import Plugin, PluginHook
 
+def hook(hook_name: str, priority: int = 10):
+    """动作钩子装饰器"""
+    def decorator(func):
+        func._hook_info = {
+            'type': 'action',
+            'name': hook_name,
+            'priority': priority
+        }
+        return func
+    return decorator
+
+def filter(filter_name: str, priority: int = 10):
+    """过滤器钩子装饰器"""
+    def decorator(func):
+        func._hook_info = {
+            'type': 'filter',
+            'name': filter_name,
+            'priority': priority
+        }
+        return func
+    return decorator
+
 class PluginManager:
     """插件管理器"""
     
@@ -140,9 +162,8 @@ class PluginManager:
                 plugin_instance = plugin_class()
                 self.plugins[plugin.name] = plugin_instance
                 
-                # 注册插件的钩子
-                if hasattr(plugin_instance, 'register_hooks'):
-                    plugin_instance.register_hooks()
+                # 自动注册通过装饰器定义的钩子
+                self._register_decorated_hooks(plugin_instance)
                 
                 # 注册插件的蓝图
                 self._register_plugin_blueprints(module, plugin.name)
@@ -155,6 +176,25 @@ class PluginManager:
             current_app.logger.error(f"导入插件 {plugin.name} 失败: {e}")
             import traceback
             current_app.logger.error(f"详细错误信息: {traceback.format_exc()}")
+
+    def _register_decorated_hooks(self, plugin_instance):
+        """自动注册插件实例中通过装饰器定义的钩子"""
+        plugin_name = plugin_instance.name
+        for name, method in inspect.getmembers(plugin_instance, predicate=inspect.ismethod):
+            if hasattr(method, '_hook_info'):
+                info = method._hook_info
+                hook_type = info['type']
+                hook_name = info['name']
+                priority = info['priority']
+                
+                # 获取函数参数数量
+                sig = inspect.signature(method)
+                accepted_args = len(sig.parameters)
+                
+                if hook_type == 'action':
+                    self.register_hook(hook_name, method, priority, accepted_args, plugin_name)
+                elif hook_type == 'filter':
+                    self.register_filter(hook_name, method, priority, accepted_args, plugin_name)
     
     def _register_plugin_blueprints(self, module, plugin_name: str):
         """注册插件的蓝图"""
@@ -507,10 +547,6 @@ class PluginBase:
         self.version = "1.0.0"
         self.description = ""
         self.author = ""
-    
-    def register_hooks(self):
-        """注册钩子，子类需要重写此方法"""
-        pass
     
     def activate(self):
         """插件激活时调用"""
