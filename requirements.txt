@@ -21,3 +21,4 @@ importlib-metadata
 alembic
 pypinyin
 requests
+gunicorn
