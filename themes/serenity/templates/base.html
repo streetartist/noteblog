@@ -92,6 +92,7 @@
                         <div class="user-menu-panel">
                             <a href="/auth/profile">个人资料</a>
                             <a href="/?modal=edit_profile" data-modal-trigger="edit_profile">编辑资料</a>
+                            <a href="javascript:void(0)" data-modal-trigger="change_password">修改密码</a>
                             {% if current_user.is_admin %}
                             <a href="/admin">管理后台</a>
                             {% endif %}
@@ -229,6 +230,211 @@
                 </form>
             </div>
         </div>
+
+        <div class="serenity-modal" data-modal="change_password" aria-hidden="true">
+            <div class="modal-card" role="dialog" aria-modal="true">
+                <header>
+                    <h3>修改密码</h3>
+                    <button type="button" class="serenity-icon-button" data-modal-close aria-label="关闭">×</button>
+                </header>
+                <form action="{{ url_for('auth.change_password') }}" method="POST" id="change-password-form">
+                    <label for="current-password">当前密码
+                        <input id="current-password" type="password" name="current_password" autocomplete="current-password" required>
+                    </label>
+                    <label for="new-password">新密码
+                        <input id="new-password" type="password" name="new_password" minlength="6" autocomplete="new-password" required>
+                        <small class="field-hint">密码长度至少为6位</small>
+                    </label>
+                    <label for="confirm-password">确认新密码
+                        <input id="confirm-password" type="password" name="confirm_password" minlength="6" autocomplete="new-password" required>
+                    </label>
+                    <div class="password-strength-container" id="password-strength-container" style="display: none;">
+                        <div class="password-strength-label">密码强度：<span id="strength-text">弱</span></div>
+                        <div class="password-strength-bar">
+                            <div class="password-strength-fill" id="strength-fill"></div>
+                        </div>
+                    </div>
+                    <div class="password-match-hint" id="password-match-hint" style="display: none;"></div>
+                    <div class="modal-actions">
+                        <button type="button" class="serenity-ghost-button" data-modal-close>取消</button>
+                        <button type="submit" class="serenity-solid-button">修改密码</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <style>
+        .field-hint {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--serenity-text-muted, #6b7280);
+        }
+        .password-strength-container {
+            margin: 12px 0;
+            padding: 12px;
+            background: var(--serenity-bg-soft, #f9fafb);
+            border-radius: 6px;
+        }
+        .password-strength-label {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--serenity-text-secondary, #4b5563);
+        }
+        .password-strength-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--serenity-border, #e5e7eb);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .password-strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            border-radius: 2px;
+        }
+        .password-strength-fill.weak {
+            width: 33%;
+            background-color: #ef4444;
+        }
+        .password-strength-fill.medium {
+            width: 66%;
+            background-color: #f59e0b;
+        }
+        .password-strength-fill.strong {
+            width: 100%;
+            background-color: #10b981;
+        }
+        .password-match-hint {
+            font-size: 13px;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .password-match-hint.match {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .password-match-hint.mismatch {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        [data-theme="dark"] .password-strength-container {
+            background: var(--serenity-bg-soft, #1f2937);
+        }
+        [data-theme="dark"] .password-match-hint.match {
+            background: #064e3b;
+            color: #a7f3d0;
+        }
+        [data-theme="dark"] .password-match-hint.mismatch {
+            background: #7f1d1d;
+            color: #fecaca;
+        }
+        </style>
+
+        <script>
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('change-password-form');
+                if (!form) return;
+
+                const newPasswordInput = form.querySelector('#new-password');
+                const confirmPasswordInput = form.querySelector('#confirm-password');
+                const strengthContainer = document.getElementById('password-strength-container');
+                const strengthFill = document.getElementById('strength-fill');
+                const strengthText = document.getElementById('strength-text');
+                const matchHint = document.getElementById('password-match-hint');
+
+                function checkStrength(password) {
+                    let score = 0;
+                    if (password.length >= 6) score++;
+                    if (password.length >= 8) score++;
+                    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+                    if (/\d/.test(password)) score++;
+                    if (/[^a-zA-Z0-9]/.test(password)) score++;
+                    return score;
+                }
+
+                function updateStrength() {
+                    const password = newPasswordInput.value;
+                    if (password.length === 0) {
+                        strengthContainer.style.display = 'none';
+                        return;
+                    }
+                    strengthContainer.style.display = 'block';
+                    const score = checkStrength(password);
+                    strengthFill.className = 'password-strength-fill';
+                    if (score <= 2) {
+                        strengthFill.classList.add('weak');
+                        strengthText.textContent = '弱';
+                    } else if (score <= 3) {
+                        strengthFill.classList.add('medium');
+                        strengthText.textContent = '中等';
+                    } else {
+                        strengthFill.classList.add('strong');
+                        strengthText.textContent = '强';
+                    }
+                }
+
+                function updateMatch() {
+                    const newPass = newPasswordInput.value;
+                    const confirmPass = confirmPasswordInput.value;
+                    if (confirmPass.length === 0) {
+                        matchHint.style.display = 'none';
+                        return;
+                    }
+                    matchHint.style.display = 'block';
+                    if (newPass === confirmPass) {
+                        matchHint.className = 'password-match-hint match';
+                        matchHint.textContent = '✓ 密码匹配';
+                    } else {
+                        matchHint.className = 'password-match-hint mismatch';
+                        matchHint.textContent = '✗ 密码不匹配';
+                    }
+                }
+
+                newPasswordInput.addEventListener('input', function() {
+                    updateStrength();
+                    if (confirmPasswordInput.value) updateMatch();
+                });
+                confirmPasswordInput.addEventListener('input', updateMatch);
+
+                form.addEventListener('submit', function(e) {
+                    const currentPass = form.querySelector('#current-password').value;
+                    const newPass = newPasswordInput.value;
+                    const confirmPass = confirmPasswordInput.value;
+
+                    if (!currentPass) {
+                        e.preventDefault();
+                        alert('请输入当前密码');
+                        return false;
+                    }
+                    if (newPass.length < 6) {
+                        e.preventDefault();
+                        alert('新密码长度至少为6位');
+                        return false;
+                    }
+                    if (newPass !== confirmPass) {
+                        e.preventDefault();
+                        alert('两次输入的新密码不一致');
+                        return false;
+                    }
+                    if (currentPass === newPass) {
+                        e.preventDefault();
+                        alert('新密码不能与当前密码相同');
+                        return false;
+                    }
+                });
+            });
+        })();
+        </script>
         {% endif %}
     </div>
 
