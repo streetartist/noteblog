@@ -593,7 +593,7 @@ def comments():
 def toggle_global_comments():
     """切换全局评论功能"""
     enabled = request.form.get('enabled') == 'true'
-    SettingManager.set('allow_comments', enabled)
+    SettingManager.set('allow_comments', enabled, value_type='boolean')
     flash('全局评论功能已{}'.format('开启' if enabled else '关闭'), 'success')
     return redirect(url_for('admin.comments'))
 
