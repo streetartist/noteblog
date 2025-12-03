@@ -566,6 +566,12 @@ class ThemeManager:
             except Exception:
                 context['site_description'] = ''
 
+        if 'allow_comments' not in context:
+            try:
+                context['allow_comments'] = SettingManager.get('allow_comments', True) if SettingManager else True
+            except Exception:
+                context['allow_comments'] = True
+
         if 'current_user' not in context:
             context['current_user'] = flask_current_user
 

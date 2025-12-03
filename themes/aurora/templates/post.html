@@ -166,7 +166,7 @@
     <h3 class="comments-title">评论 ({{ total_comments }})</h3>
     {% set liked_comments = session.get('liked_comments', []) if session is defined else [] %}
     
-    {% if post.comment_status == 'open' %}
+    {% if post.comment_status == 'open' and allow_comments %}
     {% if plugin_hooks and plugin_hooks.comment_form_top %}
         {% for hook_content in plugin_hooks.comment_form_top %}
             {{ hook_content|safe }}
@@ -238,7 +238,7 @@
                 
                 {% set has_liked_comment = comment.id in liked_comments %}
                 <div class="comment-actions">
-                    {% if post.comment_status == 'open' %}
+                    {% if post.comment_status == 'open' and allow_comments %}
                     <button class="reply-btn" data-comment-id="{{ comment.id }}" data-author-name="{{ display_name|e }}">
                         回复
                     </button>
@@ -291,7 +291,7 @@
                             </div>
                             {% set has_liked_reply = reply.id in liked_comments %}
                             <div class="comment-actions">
-                                {% if post.comment_status == 'open' %}
+                                {% if post.comment_status == 'open' and allow_comments %}
                                 <button class="reply-btn" data-comment-id="{{ reply.id }}" data-author-name="{{ reply_name|e }}">
                                     回复
                                 </button>

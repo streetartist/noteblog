@@ -575,13 +575,27 @@ def comments():
         page=page, per_page=20, error_out=False
     )
     
+    # 获取全局评论开关状态
+    allow_comments = SettingManager.get('allow_comments', True)
+    
     context = _get_base_context('评论管理')
     context.update({
         'comments': comments,
         'status': status,
+        'allow_comments': allow_comments,
     })
     
     return theme_manager.render_template('admin/comments.html', **context)
+
+@bp.route('/comments/toggle_global', methods=['POST'])
+@login_required
+@admin_required
+def toggle_global_comments():
+    """切换全局评论功能"""
+    enabled = request.form.get('enabled') == 'true'
+    SettingManager.set('allow_comments', enabled)
+    flash('全局评论功能已{}'.format('开启' if enabled else '关闭'), 'success')
+    return redirect(url_for('admin.comments'))
 
 @bp.route('/comments/<int:comment_id>/approve', methods=['POST'])
 @login_required

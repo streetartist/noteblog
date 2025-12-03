@@ -109,7 +109,7 @@
 <section class="comments-section">
     <h3 class="comments-title">评论 ({{ post.comment_count }})</h3>
     
-    {% if post.comment_status == 'open' %}
+    {% if post.comment_status == 'open' and allow_comments %}
     <!-- 评论表单 -->
     <!-- 插件钩子：评论表单上方 -->
     {% if plugin_hooks and plugin_hooks.comment_form_top %}
@@ -157,7 +157,7 @@
     {% endif %}
     {% else %}
     <el-alert
-        title="评论已关闭"
+        title="{{ '评论功能已关闭' if not allow_comments else '评论已关闭' }}"
         type="info"
         :closable="false"
         show-icon>
