@@ -4,34 +4,28 @@
 
 {% block content %}
 <div class="archives-container">
-    <h1 class="glitch-text" data-text="SYSTEM_LOGS // ARCHIVES" style="text-align: center; margin-bottom: 50px; color: var(--cg-primary);">
+    <h1 class="glitch-text archives-title" data-text="SYSTEM_LOGS // ARCHIVES">
         SYSTEM_LOGS // ARCHIVES
     </h1>
 
-    <div class="timeline" style="position: relative; max-width: 800px; margin: 0 auto; padding: 20px 0;">
-        <!-- Vertical Line -->
-        <div style="position: absolute; left: 20px; top: 0; bottom: 0; width: 2px; background: var(--cg-secondary); box-shadow: 0 0 10px var(--cg-secondary);"></div>
+    <div class="timeline">
+        <div class="timeline-line"></div>
 
         {% for year, posts in archives.items() %}
-        <div class="year-group" style="margin-bottom: 40px;">
-            <h2 style="margin-left: 50px; font-size: 2.5rem; color: var(--cg-accent); text-shadow: 2px 2px var(--cg-secondary);">
+        <div class="year-group">
+            <h2 class="year-title">
                 {{ year }}
             </h2>
             
-            <ul style="list-style: none; padding: 0;">
+            <ul class="archive-list">
                 {% for post in posts %}
-                <li style="margin-bottom: 20px; position: relative; padding-left: 50px;">
-                    <!-- Dot on timeline -->
-                    <div style="position: absolute; left: 16px; top: 10px; width: 10px; height: 10px; background: var(--cg-primary); border-radius: 50%; box-shadow: 0 0 5px var(--cg-primary);"></div>
-                    
-                    <div class="archive-item" style="display: flex; align-items: baseline; flex-wrap: wrap;">
-                        <span style="font-family: var(--cg-font-mono); color: #888; margin-right: 15px; min-width: 60px;">
-                            {{ post.created_at.strftime('%m-%d') }}
-                        </span>
-                        <a href="/post/{{ post.slug }}" style="font-size: 1.2rem; color: var(--cg-text);">
-                            {{ post.title }}
-                        </a>
-                    </div>
+                <li class="archive-item">
+                    <span class="archive-date">
+                        {{ post.created_at.strftime('%m-%d') }}
+                    </span>
+                    <a href="/post/{{ post.slug }}" class="archive-link">
+                        {{ post.title }}
+                    </a>
                 </li>
                 {% endfor %}
             </ul>

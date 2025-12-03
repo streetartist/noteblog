@@ -30,6 +30,51 @@
       "label": "文字颜色",
       "default": "#e0e0e0"
     },
+    "hero_title": {
+      "type": "text",
+      "label": "首页主标题",
+      "default": "WELCOME TO THE VOID"
+    },
+    "hero_subtitle": {
+      "type": "textarea",
+      "label": "首页副标题",
+      "default": "Code is poetry. Bugs are features. Welcome to my digital garden."
+    },
+    "hero_cta_label": {
+      "type": "text",
+      "label": "首页按钮文字",
+      "default": "ENTER THE GRID"
+    },
+    "hero_cta_link": {
+      "type": "text",
+      "label": "首页按钮链接",
+      "default": "/archives"
+    },
+    "about_headline": {
+      "type": "text",
+      "label": "关于页面主标题",
+      "default": "About The Operator"
+    },
+    "about_tagline": {
+      "type": "textarea",
+      "label": "关于页面副标题",
+      "default": "A curious mind wiring code, stories, and neon dreams."
+    },
+    "about_mission": {
+      "type": "textarea",
+      "label": "关于页面简介",
+      "default": "I build delightful experiences that live between design and engineering. Every release is a new glitch in the matrix."
+    },
+    "about_contact_email": {
+      "type": "text",
+      "label": "联系邮箱",
+      "default": "hello@example.com"
+    },
+    "about_page_slug": {
+      "type": "text",
+      "label": "关于页面别名",
+      "default": "about"
+    },
     "glitch_intensity": {
       "type": "select",
       "label": "故障强度",

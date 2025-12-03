@@ -3,37 +3,37 @@
 {% block title %}{{ post.title }} - {{ site_title or 'Noteblog' }}{% endblock %}
 
 {% block content %}
-<article class="post-detail" style="max-width: 800px; margin: 0 auto;">
-    <header style="margin-bottom: 40px; text-align: center;">
-        <h1 class="glitch-text" data-text="{{ post.title }}" style="font-size: 3rem; color: var(--cg-primary); margin-bottom: 20px;">
+<article class="post-detail">
+    <header class="post-detail-header">
+        <h1 class="glitch-text post-detail-title" data-text="{{ post.title }}">
             {{ post.title }}
         </h1>
-        <div class="post-meta" style="font-size: 1.1rem;">
+        <div class="post-meta post-detail-meta">
             <span>DATE: {{ post.created_at.strftime('%Y-%m-%d') }}</span> // 
             <span>CAT: {{ post.category.name if post.category else 'NULL' }}</span> //
             <span>VIEWS: {{ post.views }}</span>
         </div>
     </header>
 
-    <div class="post-content" style="font-size: 1.2rem; line-height: 1.8;">
-        {{ post.content|safe }}
+    <div class="post-content">
+        {{ post.get_content_html()|safe }}
     </div>
 
-    <div class="post-footer" style="margin-top: 60px; padding-top: 20px; border-top: 1px dashed var(--cg-secondary);">
+    <div class="post-footer">
         {% if post.tags %}
-        <div class="tags" style="margin-bottom: 20px;">
+        <div class="tags">
             TAGS: 
             {% for tag in post.tags %}
-            <span style="color: var(--cg-accent); margin-right: 10px;">#{{ tag.name }}</span>
+            <span>#{{ tag.name }}</span>
             {% endfor %}
         </div>
         {% endif %}
         
-        <div class="navigation" style="display: flex; justify-content: space-between;">
+        <div class="navigation">
             {% if prev_post %}
             <a href="/post/{{ prev_post.slug }}" class="btn">&lt;_PREV_POST</a>
             {% else %}
-            <span></span>
+            <span class="navigation-placeholder"></span>
             {% endif %}
             
             {% if next_post %}
@@ -42,14 +42,126 @@
         </div>
     </div>
     
-    <!-- Comments Section Placeholder -->
-    <div id="comments" style="margin-top: 50px;">
-        <!-- Plugin hooks for comments would go here -->
-        {% if plugin_hooks and plugin_hooks.comments %}
-            {% for comment_content in plugin_hooks.comments %}
-                {{ comment_content|safe }}
+</article>
+<section class="comments-section" id="comments">
+    <header class="comments-header">
+        <p class="label">COMMENTS</p>
+        <h2 class="glitch-text" data-text="COMMENTS">COMMENTS ({{ post.comment_count }})</h2>
+    </header>
+
+    {% if post.comment_status == 'open' and allow_comments %}
+        {% if plugin_hooks and plugin_hooks.comment_form_top %}
+            {% for hook_content in plugin_hooks.comment_form_top %}
+                {{ hook_content|safe }}
             {% endfor %}
         {% endif %}
+        <form class="cg-comment-form" data-comment-form data-post-id="{{ post.id }}">
+            <input type="hidden" name="post_id" value="{{ post.id }}">
+            <input type="hidden" name="parent_id" value="" data-comment-parent>
+            <div class="reply-indicator" data-reply-indicator hidden>
+                正在回复 <strong data-reply-target></strong>
+                <button type="button" class="link-btn" data-reply-cancel>取消</button>
+            </div>
+            {% if not current_user.is_authenticated %}
+            <div class="comment-grid">
+                <label>
+                    <span>昵称</span>
+                    <input type="text" name="author_name" placeholder="你的名号" required>
+                </label>
+                <label>
+                    <span>邮箱</span>
+                    <input type="email" name="author_email" placeholder="name@mail.com" required>
+                </label>
+                <label>
+                    <span>网站</span>
+                    <input type="url" name="author_website" placeholder="https://" >
+                </label>
+            </div>
+            {% endif %}
+            <label class="comment-textarea">
+                <span>内容</span>
+                <textarea name="content" rows="4" placeholder="输入内容，支持 Markdown" required></textarea>
+            </label>
+            <div class="comment-form-actions">
+                <button class="btn" type="submit">提交评论</button>
+                <p class="comment-hint">支持 **粗体**、`code`、引用等 Markdown 语法。</p>
+            </div>
+            <p class="comment-status" data-comment-message></p>
+        </form>
+        {% if plugin_hooks and plugin_hooks.comment_form_bottom %}
+            {% for hook_content in plugin_hooks.comment_form_bottom %}
+                {{ hook_content|safe }}
+            {% endfor %}
+        {% endif %}
+    {% else %}
+        <p class="comment-disabled">评论功能已关闭。</p>
+    {% endif %}
+
+    <div class="comments-list" data-comments-list>
+        {% set top_level_comments = comments|selectattr('parent_id', 'equalto', None)|list %}
+        {% if top_level_comments %}
+            {% for comment in top_level_comments %}
+            <article class="comment-card" id="comment-{{ comment.id }}">
+                <header class="comment-header">
+                    <div class="comment-author">
+                        <span class="avatar">{{ (comment.get_display_name() or '访客')[:1].upper() }}</span>
+                        <div>
+                            <strong>{{ comment.get_display_name() }}</strong>
+                            <div class="comment-meta">
+                                <time>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') if comment.created_at else '' }}</time>
+                                {% if comment.get_display_website() %}
+                                <a href="{{ comment.get_display_website() }}" target="_blank" rel="noopener">WEBSITE</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if post.comment_status == 'open' and allow_comments %}
+                    <button class="link-btn" type="button" data-reply-button data-comment-id="{{ comment.id }}" data-author="{{ comment.get_display_name() }}">回复</button>
+                    {% endif %}
+                </header>
+                <div class="comment-body">
+                    {{ comment.get_content_html()|safe }}
+                </div>
+                {% set replies = comment.get_replies() %}
+                {% if replies %}
+                <div class="reply-thread">
+                    {% for reply in replies %}
+                    <article class="comment-card reply" id="comment-{{ reply.id }}">
+                        <header class="comment-header">
+                            <div class="comment-author">
+                                <span class="avatar">{{ (reply.get_display_name() or '访客')[:1].upper() }}</span>
+                                <div>
+                                    <strong>{{ reply.get_display_name() }}</strong>
+                                    <div class="comment-meta">
+                                        <time>{{ reply.created_at.strftime('%Y-%m-%d %H:%M') if reply.created_at else '' }}</time>
+                                        {% if reply.get_display_website() %}
+                                        <a href="{{ reply.get_display_website() }}" target="_blank" rel="noopener">WEBSITE</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% if post.comment_status == 'open' and allow_comments %}
+                            <button class="link-btn" type="button" data-reply-button data-comment-id="{{ reply.id }}" data-author="{{ reply.get_display_name() }}">回复</button>
+                            {% endif %}
+                        </header>
+                        <div class="comment-body">
+                            <p class="reply-to">@{{ comment.get_display_name() }}</p>
+                            {{ reply.get_content_html()|safe }}
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        {% else %}
+        <p class="comment-empty">暂无评论，率先发声吧。</p>
+        {% endif %}
     </div>
-</article>
+    {% if plugin_hooks and plugin_hooks.comments %}
+        {% for comment_content in plugin_hooks.comments %}
+            {{ comment_content|safe }}
+        {% endfor %}
+    {% endif %}
+</section>
 {% endblock %}

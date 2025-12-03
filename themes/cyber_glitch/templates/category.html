@@ -3,15 +3,15 @@
 {% block title %}CATEGORY: {{ category.name }} - {{ site_title or 'Noteblog' }}{% endblock %}
 
 {% block content %}
-<div class="category-header" style="text-align: center; margin-bottom: 60px;">
-    <h1 class="glitch-text" data-text="FILTER: {{ category.name }}" style="color: var(--cg-accent);">
+<div class="category-page-header">
+    <h1 class="glitch-text category-page-title" data-text="FILTER: {{ category.name }}">
         FILTER: {{ category.name }}
     </h1>
-    <p style="font-family: var(--cg-font-mono); color: #888;">FOUND {{ posts|length }} RECORDS</p>
+    <p class="category-subtitle">FOUND {{ posts.total }} RECORDS</p>
 </div>
 
 <div class="post-grid">
-    {% for post in posts %}
+    {% for post in posts.items %}
     <article class="post-card">
         <h2 class="post-title">
             <a href="/post/{{ post.slug }}">{{ post.title }}</a>
@@ -20,9 +20,9 @@
             <span>{{ post.created_at.strftime('%Y-%m-%d') }}</span>
         </div>
         <div class="post-excerpt">
-            {{ post.summary or post.content[:150] | striptags }}...
+            {{ post.get_excerpt_html(160)|safe }}
         </div>
-        <div style="margin-top: 20px;">
+        <div class="post-card-actions">
             <a href="/post/{{ post.slug }}" class="btn">ACCESS_FILE_&gt;</a>
         </div>
     </article>

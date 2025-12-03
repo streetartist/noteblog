@@ -1,16 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% set post_collection = posts.items if posts is defined and posts.items is defined else posts %}
+{% set pagination_obj = posts if posts is defined and posts.pages is defined else pagination %}
 <section class="hero">
     <h1 class="glitch-text" data-text="{{ get_theme_config().hero_title or 'WELCOME TO THE VOID' }}">
         {{ get_theme_config().hero_title or 'WELCOME TO THE VOID' }}
     </h1>
     <p>{{ get_theme_config().hero_subtitle or 'Code is poetry. Bugs are features. Welcome to my digital garden.' }}</p>
+    {% if get_theme_config().hero_cta_label and get_theme_config().hero_cta_link %}
+    <div class="hero-cta-row">
+        <a href="{{ get_theme_config().hero_cta_link }}" class="btn hero-cta">
+            {{ get_theme_config().hero_cta_label }}
+        </a>
+    </div>
+    {% endif %}
 </section>
 
 <section class="post-list">
     <div class="post-grid">
-        {% for post in posts %}
+        {% if post_collection %}
+        {% for post in post_collection %}
         <article class="post-card">
             <h2 class="post-title">
                 <a href="/post/{{ post.slug }}">{{ post.title }}</a>
@@ -20,25 +30,26 @@
                 <span>{{ post.category.name if post.category else 'Uncategorized' }}</span>
             </div>
             <div class="post-excerpt">
-                {{ post.summary or post.content[:150] | striptags }}...
+                {{ post.get_excerpt_html(160)|safe }}
             </div>
-            <div style="margin-top: 20px;">
+            <div class="post-card-actions">
                 <a href="/post/{{ post.slug }}" class="btn">READ_MORE_&gt;</a>
             </div>
         </article>
         {% endfor %}
+        {% else %}
+        <p class="search-empty">暂无文章，等待新的信号。</p>
+        {% endif %}
     </div>
 
-    {% if pagination %}
-    <div class="pagination" style="margin-top: 50px; text-align: center;">
-        {% if pagination.has_prev %}
-        <a href="{{ url_for('main.index', page=pagination.prev_num) }}" class="btn">&lt;_PREV</a>
+    {% if pagination_obj %}
+    <div class="pagination">
+        {% if pagination_obj.has_prev %}
+        <a href="{{ url_for('main.index', page=pagination_obj.prev_num) }}" class="btn">&lt;_PREV</a>
         {% endif %}
-        
-        <span style="margin: 0 20px; font-family: var(--cg-font-mono);">PAGE {{ pagination.page }} / {{ pagination.pages }}</span>
-        
-        {% if pagination.has_next %}
-        <a href="{{ url_for('main.index', page=pagination.next_num) }}" class="btn">NEXT_&gt;</a>
+        <span>PAGE {{ pagination_obj.page }} / {{ pagination_obj.pages }}</span>
+        {% if pagination_obj.has_next %}
+        <a href="{{ url_for('main.index', page=pagination_obj.next_num) }}" class="btn">NEXT_&gt;</a>
         {% endif %}
     </div>
     {% endif %}

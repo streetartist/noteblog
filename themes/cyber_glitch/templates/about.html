@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set theme_config = get_theme_config() %}
+{% set about_headline = theme_config.about_headline or 'About The Operator' %}
+{% set about_tagline = theme_config.about_tagline or 'A curious mind wandering between art and engineering.' %}
+{% set about_mission = theme_config.about_mission or 'I build delightful experiences living between product, design, and code.' %}
+{% set about_contact = theme_config.about_contact_email or 'hello@example.com' %}
+{% set about_slug = theme_config.about_page_slug or 'about' %}
+
+{% block title %}{{ about_headline }} - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="about-hero">
+    <p class="label">ABOUT</p>
+    <h1 class="glitch-text" data-text="{{ about_headline }}">{{ about_headline }}</h1>
+    <p class="tagline">{{ about_tagline }}</p>
+</section>
+
+<section class="about-panels">
+    <article class="panel highlight">
+        <h2>Mission Brief</h2>
+        <p>{{ about_mission }}</p>
+        <div class="signature">
+            <span class="sig-label">CONTACT</span>
+            <a href="mailto:{{ about_contact }}" class="sig-value">{{ about_contact }}</a>
+        </div>
+    </article>
+    <article class="panel info">
+        <h2>Signal Stack</h2>
+        <ul>
+            <li><span>Focus</span><strong>Design Systems · DX · CMS</strong></li>
+            <li><span>Toolset</span><strong>Python · Flask · Tailwind · Three.js</strong></li>
+            <li><span>Timezone</span><strong>UTC+8 / Remote</strong></li>
+        </ul>
+    </article>
+    <article class="panel timeline">
+        <h2>Transmission Log</h2>
+        <ol>
+            <li>
+                <span class="time">Now</span>
+                <p>Shipping thoughtful features for indie teams and solo makers.</p>
+            </li>
+            <li>
+                <span class="time">2022-2024</span>
+                <p>Lead engineer crafting multi-tenant publishing platforms.</p>
+            </li>
+            <li>
+                <span class="time">2019-2021</span>
+                <p>Designed immersive glitch aesthetics for creative studios.</p>
+            </li>
+        </ol>
+    </article>
+</section>
+
+<section class="about-cta">
+    <div>
+        <p class="label">NEXT STEP</p>
+        <h2>Need a collaborator?</h2>
+        <p>Ping me anytime — your next release deserves a cinematic launch.</p>
+    </div>
+    <div class="cta-actions">
+        <a class="btn" href="mailto:{{ about_contact }}">发起邮件</a>
+        <a class="btn btn-ghost" href="{{ url_for('main.index') }}">返回首页</a>
+    </div>
+</section>
+{% endblock %}

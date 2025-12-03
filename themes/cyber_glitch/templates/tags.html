@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}TAGS - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="tags-page">
+    <header class="tags-header">
+        <p class="glitch-text" data-text="META_INDEX::TAGS">META_INDEX::TAGS</p>
+        <h1>标签档案</h1>
+        <p class="category-subtitle">TOTAL {{ tags|length }} TAGS</p>
+    </header>
+
+    <div class="category-cloud">
+        {% for tag in tags %}
+        <a href="/tag/{{ tag.slug }}" class="category-chip">
+            <span class="category-chip-label">#{{ tag.name }} <span class="category-chip-count">[{{ tag.post_count or 0 }}]</span></span>
+            <span class="hover-bg"></span>
+        </a>
+        {% else %}
+        <p>暂无标签</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

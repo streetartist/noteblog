@@ -3,41 +3,21 @@
 {% block title %}CATEGORIES - {{ site_title or 'Noteblog' }}{% endblock %}
 
 {% block content %}
-<div class="categories-container" style="text-align: center;">
-    <h1 class="glitch-text" data-text="DATA_CLASSIFICATION" style="margin-bottom: 50px; color: var(--cg-secondary);">
-        DATA_CLASSIFICATION
-    </h1>
+<div class="categories-container">
+    <div class="category-header">
+        <h1 class="glitch-text categories-title" data-text="DATA_CLASSIFICATION">
+            DATA_CLASSIFICATION
+        </h1>
+        <p class="category-subtitle">FOUND {{ categories|length }} RECORDS</p>
+    </div>
 
-    <div class="category-cloud" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 900px; margin: 0 auto;">
+    <div class="category-cloud">
         {% for category in categories %}
-        <a href="/category/{{ category.slug }}" class="category-chip" style="
-            display: inline-block;
-            padding: 15px 30px;
-            border: 1px solid var(--cg-primary);
-            color: var(--cg-primary);
-            font-family: var(--cg-font-mono);
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s;
-        ">
-            <span style="position: relative; z-index: 2;">{{ category.name }} <span style="font-size: 0.8em; opacity: 0.7;">[{{ category.posts|length }}]</span></span>
-            <div class="hover-bg" style="
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 0;
-                height: 100%;
-                background: var(--cg-primary);
-                z-index: 1;
-                transition: width 0.3s;
-            "></div>
+        {% set post_count = category.post_count if (category.post_count is defined and category.post_count is not none) else category.posts.count() %}
+        <a href="/category/{{ category.slug }}" class="category-chip">
+            <span class="category-chip-label">{{ category.name }} <span class="category-chip-count">[{{ post_count }}]</span></span>
+            <span class="hover-bg"></span>
         </a>
-        <style>
-            .category-chip:hover .hover-bg { width: 100%; }
-            .category-chip:hover { color: var(--cg-bg) !important; box-shadow: 0 0 20px var(--cg-primary); }
-        </style>
         {% endfor %}
     </div>
 </div>

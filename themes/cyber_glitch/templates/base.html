@@ -1,3 +1,6 @@
+{% set _about_slug = (get_theme_config().about_page_slug or 'about')|trim('/') %}
+{% if not _about_slug %}{% set _about_slug = 'about' %}{% endif %}
+{% set _about_path = '/' ~ _about_slug %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -11,6 +14,8 @@
     {% endif %}
 
     <link rel="stylesheet" href="/themes/cyber_glitch/static/css/style.css">
+    <link rel="stylesheet" href="/themes/cyber_glitch/static/css/markdown.css">
+    <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     
     <style>
         :root {
@@ -29,23 +34,62 @@
         {% endfor %}
     {% endif %}
 </head>
-<body>
-    <header>
-        <div class="container">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <a href="/" class="logo" data-text="{{ site_title or 'NOTEBLOG' }}">
-                    {{ site_title or 'NOTEBLOG' }}
-                </a>
-                <nav>
-                    <ul>
-                        <li><a href="/">首页</a></li>
-                        <li><a href="/archives">归档</a></li>
-                        <li><a href="/about">关于</a></li>
-                        {% if current_user and current_user.is_authenticated %}
-                        <li><a href="/admin">管理</a></li>
+<body class="cyber-glitch" data-glitch-intensity="{{ get_theme_config().glitch_intensity or 'medium' }}">
+    <header class="cg-header">
+        <div class="container header-inner">
+            <a href="/" class="logo" data-text="{{ site_title or 'NOTEBLOG' }}">
+                {{ site_title or 'NOTEBLOG' }}
+            </a>
+            <button class="nav-toggle" type="button" aria-label="切换导航" aria-expanded="false" data-nav-toggle>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="main-nav" data-nav>
+                <a href="{{ url_for('main.index') }}" class="nav-link {% if request.path == url_for('main.index') %}active{% endif %}">首页</a>
+                <a href="{{ url_for('main.archives') }}" class="nav-link {% if request.path.startswith('/archives') %}active{% endif %}">归档</a>
+                <a href="{{ url_for('main.categories_list') }}" class="nav-link {% if request.path.startswith('/categories') %}active{% endif %}">分类</a>
+                <a href="{{ url_for('main.tags_list') }}" class="nav-link {% if request.path.startswith('/tags') %}active{% endif %}">标签</a>
+                <a href="{{ url_for('main.search') }}" class="nav-link {% if request.path.startswith('/search') %}active{% endif %}">搜索</a>
+                <a href="{{ url_for('cyber_glitch.about') }}" class="nav-link {% if request.path == _about_path %}active{% endif %}">关于</a>
+                {% if current_user and current_user.is_authenticated and current_user.is_admin %}
+                <a href="/admin" class="nav-link">管理后台</a>
+                {% endif %}
+                {% if plugin_hooks and plugin_hooks.get('nav') %}
+                    {% for hook_content in plugin_hooks.get('nav') %}
+                        {{ hook_content|safe }}
+                    {% endfor %}
+                {% endif %}
+                <div class="nav-auth-links">
+                    {% if current_user and current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.change_password') }}" class="nav-link nav-utility">修改密码</a>
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link nav-utility">退出</a>
+                    {% else %}
+                    <a href="{{ url_for('main.index', modal='login') }}" class="nav-link nav-utility" data-auth-open="login">登录</a>
+                    <a href="{{ url_for('main.index', modal='register') }}" class="nav-link nav-utility" data-auth-open="register">注册</a>
+                    {% endif %}
+                </div>
+            </nav>
+            <div class="header-actions">
+                {% if current_user and current_user.is_authenticated %}
+                <details class="user-menu">
+                    <summary>
+                        <span class="user-initial">{{ (current_user.display_name or current_user.username)[:1].upper() }}</span>
+                        <span class="user-name">{{ current_user.display_name or current_user.username }}</span>
+                    </summary>
+                    <div class="user-menu-panel">
+                        <a href="/auth/profile">个人资料</a>
+                        <a href="/auth/change-password">修改密码</a>
+                        {% if current_user.is_admin %}
+                        <a href="/admin">管理后台</a>
                         {% endif %}
-                    </ul>
-                </nav>
+                        <a href="/auth/logout">退出登录</a>
+                    </div>
+                </details>
+                {% else %}
+                <button class="btn btn-ghost header-btn" type="button" data-auth-open="login">登录</button>
+                <button class="btn header-btn" type="button" data-auth-open="register">注册</button>
+                {% endif %}
             </div>
         </div>
     </header>
@@ -61,7 +105,55 @@
     </footer>
 
     <script src="/themes/cyber_glitch/static/js/main.js"></script>
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <script>
+        (function () {
+            const selectors = '.post-content, .content-body, .comment-text';
+            const options = {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false },
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false }
+                ],
+                throwOnError: false
+            };
+            let warned = false;
+
+            function render(target) {
+                if (typeof renderMathInElement !== 'function') {
+                    if (!warned) {
+                        console.warn('KaTeX auto-render is not available.');
+                        warned = true;
+                    }
+                    return;
+                }
+                const roots = target ? [target] : Array.from(document.querySelectorAll(selectors));
+                roots.forEach((root) => {
+                    if (root) {
+                        renderMathInElement(root, options);
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', () => render());
+            window.addEventListener('cyber_glitch:content-updated', (event) => {
+                if (event && event.detail && event.detail.root) {
+                    render(event.detail.root);
+                } else {
+                    render();
+                }
+            });
+
+            window.cyberGlitchRenderMath = render;
+        })();
+    </script>
     
+    {% if not current_user or not current_user.is_authenticated %}
+        {% include 'auth/login.html' %}
+    {% endif %}
+
     {% if plugin_hooks and plugin_hooks.footer_assets %}
         {% for asset_content in plugin_hooks.footer_assets %}
             {{ asset_content|safe }}

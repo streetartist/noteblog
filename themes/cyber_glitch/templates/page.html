@@ -3,13 +3,13 @@
 {% block title %}{{ page.title }} - {{ site_title or 'Noteblog' }}{% endblock %}
 
 {% block content %}
-<article class="page-content" style="max-width: 800px; margin: 0 auto;">
-    <h1 class="glitch-text" data-text="{{ page.title }}" style="text-align: center; margin-bottom: 40px; color: var(--cg-primary);">
+<article class="page-content">
+    <h1 class="glitch-text page-title" data-text="{{ page.title }}">
         {{ page.title }}
     </h1>
     
-    <div class="content-body" style="font-size: 1.1rem; line-height: 1.8;">
-        {{ page.content|safe }}
+    <div class="content-body">
+        {{ page.get_content_html()|safe }}
     </div>
 </article>
 {% endblock %}

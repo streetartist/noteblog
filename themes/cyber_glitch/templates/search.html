@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}SEARCH - {{ site_title or 'Noteblog' }}{% endblock %}
+
+{% block content %}
+<section class="search-panel">
+    <form action="{{ url_for('main.search') }}" method="get" class="search-form">
+        <input type="text" name="q" value="{{ query }}" placeholder="输入关键词...">
+        <button class="btn" type="submit">SCAN</button>
+    </form>
+
+    {% if query %}
+    <div class="search-meta">
+        <span>关键词：<strong>{{ query }}</strong></span>
+        <span>结果：{{ total }}</span>
+    </div>
+
+    {% if results %}
+    <div class="search-results">
+        {% for post in results %}
+        <article class="search-result-card">
+            <h2><a href="/post/{{ post.slug }}">{{ post.title }}</a></h2>
+            <div class="search-result-excerpt">{{ post.get_excerpt_html(160)|safe }}</div>
+            <div class="post-meta">
+                <span>{{ (post.created_at or post.published_at).strftime('%Y-%m-%d') if post.created_at else '' }}</span>
+                {% if post.category %}
+                <span>{{ post.category.name }}</span>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    {% if posts and posts.pages > 1 %}
+    <div class="pagination">
+        {% if posts.has_prev %}
+        <a href="{{ url_for('main.search', q=query, page=posts.prev_num) }}" class="btn">&lt;_PREV</a>
+        {% endif %}
+        <span>PAGE {{ posts.page }} / {{ posts.pages }}</span>
+        {% if posts.has_next %}
+        <a href="{{ url_for('main.search', q=query, page=posts.next_num) }}" class="btn">NEXT_&gt;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <p class="search-empty">没有找到匹配的内容。</p>
+    {% endif %}
+    {% else %}
+    <p class="search-empty">输入关键词来唤醒档案。</p>
+    {% endif %}
+</section>
+{% endblock %}

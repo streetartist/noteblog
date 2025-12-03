@@ -1,0 +1,339 @@
+/* Markdown & KaTeX styles tuned for Cyber Glitch */
+.post-content,
+.content-body,
+.comment-text {
+    line-height: 1.8;
+    font-size: 1.05rem;
+    color: var(--cg-text);
+    font-family: var(--cg-font-sans);
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6,
+.content-body h1,
+.content-body h2,
+.content-body h3,
+.content-body h4,
+.content-body h5,
+.content-body h6,
+.comment-text h1,
+.comment-text h2,
+.comment-text h3,
+.comment-text h4,
+.comment-text h5,
+.comment-text h6 {
+    font-family: var(--cg-font-mono);
+    text-transform: uppercase;
+    color: var(--cg-primary);
+    margin: 1.8em 0 0.9em;
+    letter-spacing: 2px;
+}
+
+.post-content h1,
+.content-body h1,
+.comment-text h1 {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.4em;
+}
+
+.post-content h2,
+.content-body h2,
+.comment-text h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.3em;
+}
+
+.post-content h3,
+.content-body h3,
+.comment-text h3 {
+    font-size: 1.4rem;
+    color: var(--cg-secondary);
+}
+
+.post-content h4,
+.content-body h4,
+.comment-text h4 {
+    font-size: 1.2rem;
+    color: var(--cg-accent);
+}
+
+.post-content p,
+.content-body p,
+.comment-text p {
+    margin: 1.1em 0;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.post-content a,
+.content-body a,
+.comment-text a {
+    color: var(--cg-secondary);
+    border-bottom: 1px dashed transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.post-content a:hover,
+.content-body a:hover,
+.comment-text a:hover {
+    color: var(--cg-primary);
+    border-bottom-color: var(--cg-primary);
+}
+
+.post-content strong,
+.content-body strong,
+.comment-text strong {
+    color: #fff;
+    font-weight: 600;
+}
+
+.post-content em,
+.content-body em,
+.comment-text em {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.post-content code,
+.content-body code,
+.comment-text code {
+    font-family: var(--cg-font-mono);
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    color: var(--cg-secondary);
+}
+
+.post-content pre,
+.content-body pre,
+.comment-text pre {
+    font-family: var(--cg-font-mono);
+    background: #050505;
+    border: 1px solid rgba(57, 255, 20, 0.25);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 1.2em 0;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.post-content pre code,
+.content-body pre code,
+.comment-text pre code {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.highlight {
+    background: #050505;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 18px;
+    margin: 1.2em 0;
+}
+
+.highlight pre {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.post-content blockquote,
+.content-body blockquote,
+.comment-text blockquote {
+    position: relative;
+    margin: 1.5em 0;
+    padding: 1.2em 1.5em 1.2em 1.2em;
+    border-left: 4px solid var(--cg-secondary);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.post-content blockquote::before,
+.content-body blockquote::before,
+.comment-text blockquote::before {
+    content: '❝';
+    position: absolute;
+    top: -10px;
+    left: 8px;
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.08);
+}
+
+.post-content ul,
+.post-content ol,
+.content-body ul,
+.content-body ol,
+.comment-text ul,
+.comment-text ol {
+    margin: 1.1em 0;
+    padding-left: 1.8em;
+}
+
+.post-content li,
+.content-body li,
+.comment-text li {
+    margin: 0.4em 0;
+}
+
+.post-content ul > li::marker,
+.content-body ul > li::marker,
+.comment-text ul > li::marker {
+    color: var(--cg-secondary);
+}
+
+.post-content ol > li::marker,
+.content-body ol > li::marker,
+.comment-text ol > li::marker {
+    color: var(--cg-primary);
+    font-weight: 600;
+}
+
+.post-content table,
+.content-body table,
+.comment-text table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.post-content th,
+.post-content td,
+.content-body th,
+.content-body td,
+.comment-text th,
+.comment-text td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.post-content th,
+.content-body th,
+.comment-text th {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--cg-primary);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.post-content tr:nth-child(even),
+.content-body tr:nth-child(even),
+.comment-text tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.post-content hr,
+.content-body hr,
+.comment-text hr {
+    border: 0;
+    height: 2px;
+    margin: 2.5em 0;
+    background: linear-gradient(90deg, transparent, var(--cg-secondary), transparent);
+}
+
+.post-content img,
+.content-body img,
+.comment-text img {
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+    margin: 1.5em auto;
+    display: block;
+}
+
+.post-content .toc,
+.content-body .toc,
+.comment-text .toc {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1em 1.5em;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.post-content .toc a,
+.content-body .toc a,
+.comment-text .toc a {
+    color: var(--cg-secondary);
+}
+
+.post-content .admonition,
+.content-body .admonition,
+.comment-text .admonition {
+    padding: 1em 1.2em;
+    border-radius: 8px;
+    margin: 1.2em 0;
+    border-left: 4px solid var(--cg-secondary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.post-content .admonition.warning,
+.content-body .admonition.warning,
+.comment-text .admonition.warning {
+    border-left-color: #ffb347;
+}
+
+.post-content .admonition.danger,
+.content-body .admonition.danger,
+.comment-text .admonition.danger {
+    border-left-color: #ff5f6d;
+}
+
+.post-content .katex,
+.content-body .katex,
+.comment-text .katex {
+    font-size: 1.05rem;
+    color: #fff;
+}
+
+.post-content .katex-display,
+.content-body .katex-display,
+.comment-text .katex-display {
+    margin: 1.5em 0;
+    padding: 0.5em;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.post-content .math.block,
+.content-body .math.block,
+.comment-text .math.block {
+    display: block;
+    text-align: center;
+    margin: 1.5em 0;
+}
+
+.post-content .math.inline,
+.content-body .math.inline,
+.comment-text .math.inline {
+    display: inline;
+}
+
+@media (max-width: 768px) {
+    .post-content,
+    .content-body,
+    .comment-text {
+        font-size: 1rem;
+    }
+
+    .post-content pre,
+    .content-body pre,
+    .comment-text pre {
+        font-size: 0.9rem;
+    }
+}
