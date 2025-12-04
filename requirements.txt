@@ -22,3 +22,16 @@ alembic
 pypinyin
 requests
 gunicorn
+Jinja2
+Markdown
+Pygments
+bleach
+pymdown-extensions
+PyYAML
+click
+importlib-metadata
+alembic
+pypinyin
+requests
+gunicorn
+cryptography

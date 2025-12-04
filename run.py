@@ -40,7 +40,35 @@ def _bootstrap_database(drop_existing: bool = False):
     """Create (or recreate) core tables, default settings, and admin."""
     if drop_existing:
         click.echo('→ 正在删除现有数据库表...')
-        db.drop_all()
+
+        # Some DB engines (MySQL, SQLite) enforce foreign key constraints per-session.
+        # DROP operations may fail if dependent tables exist. Use the same connection
+        # to temporarily disable FK checks when supported by the dialect so child
+        # tables can be dropped safely.
+        dialect = getattr(db.engine, 'dialect', None)
+        dialect_name = getattr(dialect, 'name', None)
+
+        disable_fk = None
+        enable_fk = None
+        if dialect_name == 'mysql':
+            disable_fk = 'SET FOREIGN_KEY_CHECKS=0'
+            enable_fk = 'SET FOREIGN_KEY_CHECKS=1'
+        elif dialect_name == 'sqlite':
+            disable_fk = 'PRAGMA foreign_keys = OFF'
+            enable_fk = 'PRAGMA foreign_keys = ON'
+
+        if disable_fk:
+            # Use the same connection for disabling FKs and dropping tables so
+            # the session setting applies to the drop operation.
+            with db.engine.begin() as conn:
+                conn.exec_driver_sql(disable_fk)
+                # Use metadata.drop_all on the connection to ensure same session
+                db.metadata.drop_all(bind=conn)
+                conn.exec_driver_sql(enable_fk)
+        else:
+            # Fallback to default behavior for other DBs
+            db.drop_all()
+
         db.session.commit()
         click.echo('✓ 数据库表已全部删除')
 
