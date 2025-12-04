@@ -59,7 +59,7 @@ docker-compose exec noteblog python run.py init
 - `docker-compose exec noteblog`: 在名为 `noteblog` 的服务容器内执行命令。
 - `python run.py init`: 运行初始化脚本。
 
-脚本会提示你设置管理员的用户名、邮箱和密码。
+(***暂未实现！！！***)脚本会提示你设置管理员的用户名、邮箱和密码。
 
 #### 5. 访问你的博客
 
@@ -369,6 +369,14 @@ server {
 
     client_max_body_size 32m;
 
+    # 为插件静态文件做专门映射
+    location ~ ^/static/plugins/([^/]+)/(.+)$ {
+        alias /var/www/noteblog/plugins/$1/static/$2;
+        access_log off;
+        expires 7d;
+        add_header Cache-Control "public";
+    }
+
     location /static/ {
         alias /var/www/noteblog/app/static/;
         access_log off;
@@ -388,6 +396,12 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
+```
+
+授予文件可读权限：
+
+```bash
+sudo chmod -R 755 /var/www/noteblog
 ```
 
 启用站点并测试：
