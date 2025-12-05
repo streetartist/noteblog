@@ -20,49 +20,8 @@
     pointer-events: none;
     mix-blend-mode: screen;
 }
-.weather-aurora-layer {
-    position: fixed;
-    top: -8vh;
-    left: -20vw;
-    width: 140vw;
-    height: 90vh;
-    pointer-events: none;
-    filter: url(#weather-aurora-noise) blur(10px) saturate(130%);
-    mix-blend-mode: screen;
-    opacity: 0;
-    transform: rotate(-8deg) scale(1.05);
-    transition: opacity 0.4s ease;
-}
-.weather-aurora-layer::before,
-.weather-aurora-layer::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-        130% 120% at 70% 110%,
-        transparent 40%,
-        var(--weather-aurora-core, rgba(125, 211, 252, 0.9)) 58%,
-        var(--weather-aurora-glow, rgba(125, 211, 252, 0.5)) 70%,
-        var(--weather-aurora-fade, rgba(125, 211, 252, 0.18)) 84%,
-        transparent 92%
-    );
-    opacity: 0.9;
-    transform: rotate(12deg) scaleX(1.08);
-}
-.weather-aurora-layer::after {
-    opacity: 0.55;
-    transform: rotate(-6deg) scale(1.12) translateY(-6%);
-    filter: blur(2px);
-}
-.weather-showcase[data-weather-type="aurora"] .weather-aurora-layer {
-    opacity: 1;
-}
-.weather-aurora-filter {
-    position: absolute;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-}
+/* aurora feature removed — no dedicated aurora layer or canvas */
+/* legacy SVG filter removed - aurora is now canvas-based */
 .weather-showcase .weather-toggle {
     position: fixed;
     right: 18px;

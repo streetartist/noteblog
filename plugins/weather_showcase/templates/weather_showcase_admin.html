@@ -1,0 +1,226 @@
+<style>
+.weather-admin {
+    font-family: "Segoe UI", "PingFang SC", sans-serif;
+    color: #1f2937;
+    max-width: 960px;
+}
+.weather-admin .card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    padding: 24px;
+}
+.weather-admin h2 {
+    margin: 0;
+    font-size: 22px;
+    letter-spacing: 0.4px;
+}
+.weather-admin .subtitle {
+    color: #6b7280;
+    margin: 6px 0 0;
+    font-size: 14px;
+}
+.weather-admin .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px 20px;
+    margin: 20px 0;
+}
+.weather-admin .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.weather-admin label {
+    font-weight: 600;
+    color: #374151;
+}
+.weather-admin input[type="text"],
+.weather-admin input[type="number"],
+.weather-admin select {
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.weather-admin input[type="text"]:focus,
+.weather-admin input[type="number"]:focus,
+.weather-admin select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+.weather-admin .switch {
+    position: relative;
+    width: 52px;
+    height: 28px;
+}
+.weather-admin .switch input { opacity: 0; width: 0; height: 0; }
+.weather-admin .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #e5e7eb;
+    border-radius: 28px;
+    transition: 0.3s;
+}
+.weather-admin .slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: 0.3s;
+}
+.weather-admin .switch input:checked + .slider {
+    background: linear-gradient(135deg, #60a5fa, #22d3ee);
+}
+.weather-admin .switch input:checked + .slider:before { transform: translateX(24px); }
+.weather-admin .actions { margin-top: 12px; display: flex; gap: 12px; }
+.weather-admin .btn-primary {
+    background: linear-gradient(135deg, #2563eb, #22c55e);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+}
+.weather-admin .btn-primary:hover { filter: brightness(1.05); }
+.weather-admin .note { color: #6b7280; font-size: 13px; line-height: 1.6; }
+.weather-admin .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #0f172a;
+    font-size: 12px;
+}
+</style>
+<div class="weather-admin">
+    <div class="card">
+        <div>
+            <h2>天气秀插件</h2>
+            <p class="subtitle">展示雨、雪、流星、极光等天气特效，可按需切换/轮播。</p>
+        </div>
+        <form id="weather-config-form" onsubmit="return false;">
+            <div class="grid">
+                <div class="form-row">
+                    <label>启用特效</label>
+                    <label class="switch">
+                        <input type="checkbox" id="cfg-enabled" {% if config.enabled %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="note">关闭后页面不会加载任何天气相关的 HTML/JS。</span>
+                </div>
+                <div class="form-row">
+                    <label>显示范围</label>
+                    <select id="cfg-allow-on">
+                        <option value="all" {% if config.allow_on == 'all' %}selected{% endif %}>全站</option>
+                        <option value="home" {% if config.allow_on == 'home' %}selected{% endif %}>仅首页/列表</option>
+                        <option value="post" {% if config.allow_on == 'post' %}selected{% endif %}>仅文章详情</option>
+                    </select>
+                    <span class="note">通过路径粗略判断，若有自定义路由请选择“全站”。</span>
+                </div>
+                <div class="form-row">
+                    <label>默认天气</label>
+                    <select id="cfg-default-type">
+                        <option value="rain" {% if config.default_type == 'rain' %}selected{% endif %}>雨</option>
+                        <option value="snow" {% if config.default_type == 'snow' %}selected{% endif %}>雪</option>
+                        <option value="stars" {% if config.default_type == 'stars' %}selected{% endif %}>星空</option>
+                        <option value="meteors" {% if config.default_type == 'meteors' %}selected{% endif %}>流星</option>
+                        <option value="aurora" {% if config.default_type == 'aurora' %}selected{% endif %}>极光</option>
+                    </select>
+                    <span class="note">可在前台切换，或开启轮播自动循环。</span>
+                </div>
+                <div class="form-row">
+                    <label for="cfg-intensity">强度 (1-5)</label>
+                    <input type="number" id="cfg-intensity" value="{{ config.intensity or 3 }}" min="1" max="5">
+                    <span class="note">控制粒子数量/速度，建议 2-4 之间。</span>
+                </div>
+                <div class="form-row">
+                    <label>自动轮播</label>
+                    <label class="switch">
+                        <input type="checkbox" id="cfg-auto-rotate" {% if config.auto_rotate %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="note">开启后会在多种天气之间自动切换。</span>
+                </div>
+                <div class="form-row">
+                    <label for="cfg-rotate-seconds">轮播间隔 (秒)</label>
+                    <input type="number" id="cfg-rotate-seconds" value="{{ config.rotate_seconds or 18 }}" min="5" max="120">
+                    <span class="note">仅在启用自动轮播后生效。</span>
+                </div>
+                <div class="form-row">
+                    <label>前台显示开关按钮</label>
+                    <label class="switch">
+                        <input type="checkbox" id="cfg-show-toggle" {% if config.show_toggle %}checked{% endif %}>
+                        <span class="slider"></span>
+                    </label>
+                    <span class="note">允许读者自行关闭/打开特效。</span>
+                </div>
+                <div class="form-row">
+                    <label for="cfg-accent-color">高亮色</label>
+                    <input type="text" id="cfg-accent-color" value="{{ config.accent_color or '#7dd3fc' }}" placeholder="#7dd3fc">
+                    <span class="note">用于极光/流星尾迹等色彩，支持十六进制或 CSS 颜色值。</span>
+                </div>
+            </div>
+            <div class="actions">
+                <button type="button" class="btn-primary" onclick="saveWeatherConfig()">保存配置</button>
+                <span class="pill">当前默认：{{ config.default_type|title }} · 强度 {{ config.intensity }}</span>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+(function() {
+    function getMessage() {
+        if (window.ElMessage) return window.ElMessage;
+        if (window.ElementPlus && window.ElementPlus.ElMessage) return window.ElementPlus.ElMessage;
+        if (window.ELEMENT && window.ELEMENT.Message) return window.ELEMENT.Message;
+        return null;
+    }
+
+    window.saveWeatherConfig = function() {
+        const payload = {
+            enabled: document.getElementById('cfg-enabled').checked,
+            allow_on: document.getElementById('cfg-allow-on').value,
+            default_type: document.getElementById('cfg-default-type').value,
+            intensity: parseInt(document.getElementById('cfg-intensity').value, 10) || 3,
+            auto_rotate: document.getElementById('cfg-auto-rotate').checked,
+            rotate_seconds: parseInt(document.getElementById('cfg-rotate-seconds').value, 10) || 18,
+            show_toggle: document.getElementById('cfg-show-toggle').checked,
+            accent_color: document.getElementById('cfg-accent-color').value.trim()
+        };
+
+        fetch('/plugins/weather_showcase/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload)
+        })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                const Message = getMessage();
+                if (data && data.success) {
+                    Message ? Message({ message: '配置已保存', type: 'success' }) : alert('配置已保存');
+                } else {
+                    Message ? Message({ message: data.message || '保存失败', type: 'error' }) : alert(data.message || '保存失败');
+                }
+            })
+            .catch(function(err) {
+                const Message = getMessage();
+                Message ? Message({ message: '网络异常: ' + err, type: 'error' }) : alert('网络异常: ' + err);
+            });
+    }
+})();
+</script>

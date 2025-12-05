@@ -25,8 +25,7 @@
         accent: ds.weatherAccent || cfg.accent_color || '#7dd3fc'
     };
 
-    const allowedTypes = ['rain', 'snow', 'stars', 'meteors', 'aurora'];
-    setAuroraColors(config.accent);
+    const allowedTypes = ['rain', 'snow', 'stars', 'meteors'];
     if (!allowedTypes.includes(config.type)) {
         config.type = 'rain';
     }
@@ -43,68 +42,22 @@
     stage && stage.appendChild(canvas);
     const ctx = canvas.getContext('2d');
 
-    // Aurora DOM layer (uses SVG filter for turbulence)
-    const auroraLayer = document.createElement('div');
-    auroraLayer.className = 'weather-aurora-layer';
-    stage && stage.appendChild(auroraLayer);
-    const auroraFilter = createAuroraFilter();
+    // aurora feature removed
 
     let particles = [];
     let meteors = [];
     let stars = [];
-    let auroraOffset = 0;
+    
     let stopped = false;
     let rotateTimer = null;
     let currentType = config.type;
     let rafId = null;
-    let auroraFrame = 0;
+    
 
-    function createAuroraFilter() {
-        const svgNS = 'http://www.w3.org/2000/svg';
-        const svg = document.createElementNS(svgNS, 'svg');
-        svg.setAttribute('class', 'weather-aurora-filter');
-        svg.setAttribute('aria-hidden', 'true');
-        svg.style.position = 'absolute';
-        svg.style.width = '0';
-        svg.style.height = '0';
-        svg.style.pointerEvents = 'none';
+    // NOTE: aurora removed
 
-        const defs = document.createElementNS(svgNS, 'defs');
-        const filter = document.createElementNS(svgNS, 'filter');
-        filter.setAttribute('id', 'weather-aurora-noise');
 
-        const turbulence = document.createElementNS(svgNS, 'feTurbulence');
-        turbulence.setAttribute('type', 'turbulence');
-        turbulence.setAttribute('baseFrequency', '0.003 0.003');
-        turbulence.setAttribute('numOctaves', '3');
-        turbulence.setAttribute('seed', '10');
-        turbulence.setAttribute('result', 'noise');
-
-        const displacement = document.createElementNS(svgNS, 'feDisplacementMap');
-        displacement.setAttribute('in', 'SourceGraphic');
-        displacement.setAttribute('in2', 'noise');
-        displacement.setAttribute('scale', '72');
-        displacement.setAttribute('xChannelSelector', 'R');
-        displacement.setAttribute('yChannelSelector', 'G');
-
-        filter.appendChild(turbulence);
-        filter.appendChild(displacement);
-        defs.appendChild(filter);
-        svg.appendChild(defs);
-        root.appendChild(svg);
-
-        return { svg, filter, turbulence };
-    }
-
-    function setAuroraColors(accent) {
-        const base = accent || '#7dd3fc';
-        const light = colorWithAlpha(base, 0.7, 0.18);
-        const glow = colorWithAlpha(base, 0.9, 0.42);
-        const core = colorWithAlpha(base, 1, 0.9);
-        root.style.setProperty('--weather-aurora-core', core);
-        root.style.setProperty('--weather-aurora-glow', glow);
-        root.style.setProperty('--weather-aurora-fade', light);
-    }
+    // aurora removed — no band data needed
 
     function hexToRgb(hex) {
         const cleaned = (hex || '').replace('#', '');
@@ -114,14 +67,7 @@
         return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
     }
 
-    function colorWithAlpha(hex, alpha, brighten = 0) {
-        const [r, g, b] = hexToRgb(hex);
-        const mix = (channel) => Math.min(255, Math.max(0, channel + 255 * brighten));
-        const rr = Math.round(mix(r));
-        const gg = Math.round(mix(g));
-        const bb = Math.round(mix(b));
-        return `rgba(${rr}, ${gg}, ${bb}, ${alpha})`;
-    }
+    // colorWithAlpha removed; aurora colors no longer used
 
     function clampInt(val, min, max) {
         const n = parseInt(val, 10);
@@ -134,8 +80,7 @@
         canvas.height = window.innerHeight * window.devicePixelRatio;
         canvas.style.width = window.innerWidth + 'px';
         canvas.style.height = window.innerHeight + 'px';
-        auroraLayer.style.width = window.innerWidth * 1.4 + 'px';
-        auroraLayer.style.height = window.innerHeight * 0.9 + 'px';
+        // no aurora layer — keep main canvas full-window
     }
 
     function setLegend(text) {
@@ -287,21 +232,7 @@
         });
     }
 
-    function drawAurora() {
-        auroraOffset += 0.002 * (1 + config.intensity * 0.3);
-        auroraFrame += 0.8;
-        const wobble = 4 + config.intensity * 0.8;
-        const shiftX = Math.sin(auroraOffset * 0.6) * wobble * 4;
-        const shiftY = Math.cos(auroraOffset * 0.45) * wobble * 2;
-        const scale = 1.05 + config.intensity * 0.02;
-        auroraLayer.style.transform = `rotate(-10deg) translate(${shiftX}px, ${shiftY}px) scale(${scale})`;
-
-        if (auroraFilter && auroraFilter.turbulence) {
-            const bfx = 0.0042 + 0.0012 * Math.cos(auroraFrame * 0.017);
-            const bfy = 0.0036 + 0.001 * Math.sin(auroraFrame * 0.021);
-            auroraFilter.turbulence.setAttribute('baseFrequency', `${bfx.toFixed(4)} ${bfy.toFixed(4)}`);
-        }
-    }
+    // aurora drawing removed
 
     function render() {
         if (stopped) return;
@@ -318,9 +249,7 @@
             case 'meteors':
                 drawMeteors();
                 break;
-            case 'aurora':
-                drawAurora();
-                break;
+            // aurora removed
             default:
                 drawRain();
         }
@@ -333,17 +262,12 @@
         setLegend(typeLabel(type));
         initParticles(type);
         root.setAttribute('data-weather-type', type);
-        if (type === 'aurora') {
-            canvas.style.display = 'none';
-            auroraLayer.style.display = 'block';
-        } else {
-            canvas.style.display = 'block';
-            auroraLayer.style.display = 'none';
-        }
+        // aurora removed — always use main canvas for drawing
+        canvas.style.display = 'block';
     }
 
     function typeLabel(type) {
-        const map = { rain: '雨', snow: '雪', stars: '星空', meteors: '流星', aurora: '极光' };
+        const map = { rain: '雨', snow: '雪', stars: '星空', meteors: '流星' };
         return map[type] || type;
     }
 
@@ -355,9 +279,7 @@
             toggleBtn.setAttribute('aria-pressed', next ? 'false' : 'true');
             toggleBtn.textContent = next ? '开启天气' : '关闭天气';
         }
-        if (auroraLayer) {
-            auroraLayer.style.opacity = next ? '0' : '';
-        }
+        // aurora removed — toggle only affects main canvas layer
         stopped = next;
         if (next) {
             if (rafId) {
@@ -428,12 +350,7 @@
         window.addEventListener('resize', resize);
         setLegend(typeLabel(currentType));
         initParticles(currentType);
-        if (currentType === 'aurora') {
-            canvas.style.display = 'none';
-            auroraLayer.style.display = 'block';
-        } else {
-            auroraLayer.style.display = 'none';
-        }
+        // aurora removed — main canvas draws all supported types
         render();
         setupToggle();
         setupRotate();

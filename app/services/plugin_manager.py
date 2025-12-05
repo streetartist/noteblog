@@ -67,9 +67,27 @@ class PluginManager:
             os.makedirs(plugins_dir)
             return
         
-        # 只扫描插件目录，不自动注册到数据库
-        # 插件注册将在用户点击安装时进行
-        pass
+        # 扫描插件目录并尝试自动注册到数据库（不自动激活）
+        for plugin_name in os.listdir(plugins_dir):
+            plugin_path = os.path.join(plugins_dir, plugin_name)
+
+            # 只处理目录，避免文件报错
+            if not os.path.isdir(plugin_path):
+                continue
+
+            # 已存在于数据库，不重复注册
+            if Plugin.query.filter_by(name=plugin_name).first():
+                continue
+
+            config_file = os.path.join(plugin_path, 'plugin.json')
+            if not os.path.exists(config_file):
+                continue
+
+            try:
+                self._register_plugin(plugin_name, plugin_path)
+                current_app.logger.info(f"找到新插件 {plugin_name} ，已自动注册到数据库")
+            except Exception as exc:
+                current_app.logger.error(f"自动注册插件 {plugin_name} 失败: {exc}")
 
     def reload_runtime_state(self):
         """Unload all in-memory plugin state and reload currently active plugins."""
@@ -488,29 +506,27 @@ class PluginManager:
     def install_plugin(self, plugin_name: str):
         """安装插件"""
         try:
-            # 先检查插件是否已存在
-            plugin = Plugin.query.filter_by(name=plugin_name).first()
-            if plugin:
-                current_app.logger.error(f"插件 {plugin_name} 已存在")
-                return False
-            
-            # 注册插件到数据库
             plugins_dir = path_utils.project_path('plugins')
-            plugin_path = os.path.join(plugins_dir, plugin_name)
-            
+            plugin = Plugin.query.filter_by(name=plugin_name).first()
+            plugin_path = plugin.install_path if plugin else os.path.join(plugins_dir, plugin_name)
+
             if not os.path.exists(plugin_path):
                 current_app.logger.error(f"插件目录 {plugin_path} 不存在")
                 return False
-            
-            # 调用注册方法
-            self._register_plugin(plugin_name, plugin_path)
-            
-            # 重新获取插件对象
-            plugin = Plugin.query.filter_by(name=plugin_name).first()
+
+            # 如未注册到数据库则先注册；已存在则继续安装流程（幂等处理）
             if not plugin:
-                current_app.logger.error(f"插件 {plugin_name} 注册失败")
-                return False
-            
+                self._register_plugin(plugin_name, plugin_path)
+                plugin = Plugin.query.filter_by(name=plugin_name).first()
+                if not plugin:
+                    current_app.logger.error(f"插件 {plugin_name} 注册失败")
+                    return False
+
+            # 保证安装路径更新（兼容相对/绝对路径变更）
+            if plugin.install_path != plugin_path:
+                plugin.install_path = plugin_path
+                db.session.commit()
+
             # 加载插件
             self._load_plugin(plugin)
             plugin_instance = self.plugins.get(plugin_name)

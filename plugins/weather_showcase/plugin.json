@@ -1,0 +1,28 @@
+{
+  "name": "weather_showcase",
+  "display_name": "天气秀",
+  "version": "1.0.0",
+  "description": "在页面上展示多种天气特效，并提供后台配置界面。",
+  "author": "Noteblog",
+  "license": "MIT",
+  "entry_point": "create_plugin",
+  "blueprints": [
+    { "name": "weather_showcase_bp", "url_prefix": "/plugins/weather_showcase" }
+  ],
+  "min_noteblog_version": "1.0.0",
+  "max_noteblog_version": "2.0.0",
+  "config_schema": {
+    "enabled": { "type": "boolean", "default": true, "description": "是否启用天气特效" },
+    "default_type": { "type": "string", "default": "rain", "description": "默认展示的天气类型" },
+    "intensity": { "type": "integer", "default": 3, "description": "特效密度 1-5" },
+    "auto_rotate": { "type": "boolean", "default": false, "description": "是否轮播多种天气" },
+    "rotate_seconds": { "type": "integer", "default": 18, "description": "轮播间隔（秒）" },
+    "show_toggle": { "type": "boolean", "default": true, "description": "前台是否显示开关按钮" },
+    "allow_on": { "type": "string", "default": "all", "description": "显示范围：all/home/post" },
+    "accent_color": { "type": "string", "default": "#7dd3fc", "description": "高亮颜色（部分特效会使用）" }
+  },
+  "assets": {
+    "css": ["static/css/weather_showcase.css"],
+    "js": ["static/js/weather_showcase.js"]
+  }
+}

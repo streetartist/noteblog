@@ -41,6 +41,7 @@ def index():
         'site_description': SettingManager.get('site_description', ''),
         'current_user': current_user,
         'plugin_hooks': {
+            'content_top': plugin_manager.get_template_hooks('content_top'),
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
             'head_assets': plugin_manager.get_template_hooks('head_assets'),
             'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
@@ -107,6 +108,7 @@ def post_detail(slug):
         'page_title': f"{post.title} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
+            'content_top': plugin_manager.get_template_hooks('content_top'),
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
             'head_assets': plugin_manager.get_template_hooks('head_assets'),
             'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
@@ -143,6 +145,7 @@ def category(slug):
         'page_title': f"{category.name} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
+            'content_top': plugin_manager.get_template_hooks('content_top'),
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
             'head_assets': plugin_manager.get_template_hooks('head_assets'),
             'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
@@ -173,6 +176,7 @@ def tag(slug):
         'page_title': f"{tag.name} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
+            'content_top': plugin_manager.get_template_hooks('content_top'),
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
             'head_assets': plugin_manager.get_template_hooks('head_assets'),
             'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
@@ -218,6 +222,7 @@ def search():
         'page_title': f"{title_prefix} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
+            'content_top': plugin_manager.get_template_hooks('content_top'),
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
             'head_assets': plugin_manager.get_template_hooks('head_assets'),
             'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
@@ -322,6 +327,7 @@ def archives():
         'page_title': f"归档 - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
+            'content_top': plugin_manager.get_template_hooks('content_top'),
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
             'head_assets': plugin_manager.get_template_hooks('head_assets'),
             'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
@@ -342,6 +348,7 @@ def categories_list():
         'page_title': f"分类 - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
+            'content_top': plugin_manager.get_template_hooks('content_top'),
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
             'head_assets': plugin_manager.get_template_hooks('head_assets'),
             'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
@@ -372,6 +379,7 @@ def tags_list():
         'page_title': f"标签 - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
+            'content_top': plugin_manager.get_template_hooks('content_top'),
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
             'head_assets': plugin_manager.get_template_hooks('head_assets'),
             'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')
@@ -394,6 +402,7 @@ def page(slug):
         'page_title': f"{page.title} - {site_brand}",
         'current_user': current_user,
         'plugin_hooks': {
+            'content_top': plugin_manager.get_template_hooks('content_top'),
             'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom'),
             'head_assets': plugin_manager.get_template_hooks('head_assets'),
             'scripts_assets': plugin_manager.get_template_hooks('scripts_assets')

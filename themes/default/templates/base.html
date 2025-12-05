@@ -35,6 +35,12 @@
     </style>
 </head>
 <body>
+    {# 插件插槽：内容区域顶部（全局覆盖/特效等） #}
+    {% if plugin_hooks and plugin_hooks.get('content_top') %}
+        {% for hook_content in plugin_hooks.get('content_top') %}
+            {{ hook_content|safe }}
+        {% endfor %}
+    {% endif %}
     <div id="app">
         <!-- 头部 -->
         <header class="site-header">
