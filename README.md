@@ -503,6 +503,29 @@ git reset --hard streetartist/noteblog/main # 把所有Git知道的文件（Trac
 ```
 该命令会覆盖项目原有文件，保留新增的文件
 
+- 方法2：
+
+先在本地的目录拉取最新的代码：
+
+HTTPS 协议clone
+```bash
+git clone https://github.com/streetartist/noteblog.git
+```
+或者 SSH 协议clone（需要在 github 配置SSH密钥）
+```bash
+git clone git@github.com:streetartist/noteblog.git
+```
+
+命令行执行：
+```
+scp -r noteblog [username]@[server-ip]:/var/www/ #或者你自己的目录
+```
+
+注意上面这个远程地址不要写成 `/var/www/noteblog`，否则将会在复制到noteblog下，变成 `noteblog/noteblog`
+
+该方法会覆盖项目原有的文件，用户侧产生的文件不受影响
+
+
 ## 🔧 配置说明
 
 ### 环境变量
