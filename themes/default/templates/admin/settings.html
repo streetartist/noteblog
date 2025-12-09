@@ -5,13 +5,13 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0; color: #303133;">系统设置</h2>
         <div>
-            <el-button type="primary" @click="saveSettings">
+            <el-button type="primary" onclick="document.getElementById('settingsForm').submit()">
                 <i class="el-icon-check"></i> 保存设置
             </el-button>
         </div>
     </div>
 
-    <form method="POST" id="settingsForm">
+    <form method="POST" id="settingsForm" action="{{ url_for('admin.save_settings') }}">
         <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
             <!-- 主要内容区 -->
             <div>
@@ -21,29 +21,47 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">网站标题 <span style="color: #f56c6c;">*</span></label>
-                        <el-input name="site_title" value="{{ settings.site_title if settings.site_title else '' }}" placeholder="请输入网站标题" required></el-input>
+                        <div class="el-input">
+                            <div class="el-input__wrapper">
+                                <input class="el-input__inner" type="text" name="site_title" value="{{ settings.site_title if settings.site_title else '' }}" placeholder="请输入网站标题" required>
+                            </div>
+                        </div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">网站描述</label>
-                        <el-input name="site_description" type="textarea" :rows="3" placeholder="请输入网站描述">{{ settings.site_description if settings.site_description else '' }}</el-input>
+                        <div class="el-textarea">
+                            <textarea class="el-textarea__inner" name="site_description" rows="3" placeholder="请输入网站描述">{{ settings.site_description if settings.site_description else '' }}</textarea>
+                        </div>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">用于SEO，建议150字符以内</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">网站关键词</label>
-                        <el-input name="site_keywords" placeholder="多个关键词用逗号分隔">{{ settings.site_keywords if settings.site_keywords else '' }}</el-input>
+                        <div class="el-input">
+                            <div class="el-input__wrapper">
+                                <input class="el-input__inner" type="text" name="site_keywords" value="{{ settings.site_keywords if settings.site_keywords else '' }}" placeholder="多个关键词用逗号分隔">
+                            </div>
+                        </div>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">用于SEO，多个关键词用英文逗号分隔</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">网站地址</label>
-                        <el-input name="site_url" placeholder="https://example.com">{{ settings.site_url if settings.site_url else '' }}</el-input>
+                        <div class="el-input">
+                            <div class="el-input__wrapper">
+                                <input class="el-input__inner" type="text" name="site_url" value="{{ settings.site_url if settings.site_url else '' }}" placeholder="https://example.com">
+                            </div>
+                        </div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">管理员邮箱</label>
-                        <el-input name="admin_email" type="email" placeholder="admin@example.com">{{ settings.admin_email if settings.admin_email else '' }}</el-input>
+                        <div class="el-input">
+                            <div class="el-input__wrapper">
+                                <input class="el-input__inner" type="email" name="admin_email" value="{{ settings.admin_email if settings.admin_email else '' }}" placeholder="admin@example.com">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -53,27 +71,43 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">每页文章数</label>
-                        <el-input-number name="posts_per_page" :min="5" :max="50" value="{{ settings.posts_per_page if settings.posts_per_page else 10 }}" style="width: 200px;"></el-input-number>
+                        <div class="el-input" style="width: 200px;">
+                            <div class="el-input__wrapper">
+                                <input class="el-input__inner" type="number" name="posts_per_page" min="5" max="50" value="{{ settings.posts_per_page if settings.posts_per_page else 10 }}">
+                            </div>
+                        </div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">时区</label>
-                        <el-select name="timezone" placeholder="选择时区" style="width: 200px;" value="{{ settings.timezone if settings.timezone else 'Asia/Shanghai' }}">
-                            <el-option label="北京时间 (UTC+8)" value="Asia/Shanghai"></el-option>
-                            <el-option label="东京时间 (UTC+9)" value="Asia/Tokyo"></el-option>
-                            <el-option label="纽约时间 (UTC-5)" value="America/New_York"></el-option>
-                            <el-option label="伦敦时间 (UTC+0)" value="Europe/London"></el-option>
-                        </el-select>
+                        <div class="el-select" style="width: 200px;">
+                            <div class="el-input el-input--suffix">
+                                <div class="el-input__wrapper">
+                                    <select name="timezone" class="el-input__inner" style="border: none; outline: none; width: 100%; background: transparent; -webkit-appearance: auto;">
+                                        <option value="Asia/Shanghai" {% if settings.timezone == 'Asia/Shanghai' %}selected{% endif %}>北京时间 (UTC+8)</option>
+                                        <option value="Asia/Tokyo" {% if settings.timezone == 'Asia/Tokyo' %}selected{% endif %}>东京时间 (UTC+9)</option>
+                                        <option value="America/New_York" {% if settings.timezone == 'America/New_York' %}selected{% endif %}>纽约时间 (UTC-5)</option>
+                                        <option value="Europe/London" {% if settings.timezone == 'Europe/London' %}selected{% endif %}>伦敦时间 (UTC+0)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">日期格式</label>
-                        <el-select name="date_format" placeholder="选择日期格式" style="width: 200px;" value="{{ settings.date_format if settings.date_format else '%Y-%m-%d' }}">
-                            <el-option label="2024-01-01" value="%Y-%m-%d"></el-option>
-                            <el-option label="2024/01/01" value="%Y/%m/%d"></el-option>
-                            <el-option label="01/01/2024" value="%m/%d/%Y"></el-option>
-                            <el-option label="2024年1月1日" value="%Y年%m月%d日"></el-option>
-                        </el-select>
+                        <div class="el-select" style="width: 200px;">
+                            <div class="el-input el-input--suffix">
+                                <div class="el-input__wrapper">
+                                    <select name="date_format" class="el-input__inner" style="border: none; outline: none; width: 100%; background: transparent; -webkit-appearance: auto;">
+                                        <option value="%Y-%m-%d" {% if settings.date_format == '%Y-%m-%d' %}selected{% endif %}>2024-01-01</option>
+                                        <option value="%Y/%m/%d" {% if settings.date_format == '%Y/%m/%d' %}selected{% endif %}>2024/01/01</option>
+                                        <option value="%m/%d/%Y" {% if settings.date_format == '%m/%d/%Y' %}selected{% endif %}>01/01/2024</option>
+                                        <option value="%Y年%m月%d日" {% if settings.date_format == '%Y年%m月%d日' %}selected{% endif %}>2024年1月1日</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -82,22 +116,32 @@
                     <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">评论设置</h3>
                     
                     <div style="margin-bottom: 15px;">
-                        <el-checkbox name="comment_moderation" {% if settings.comment_moderation == 'true' %}checked{% endif %}>
-                            评论需要审核
-                        </el-checkbox>
+                        <label class="el-checkbox">
+                            <span class="el-checkbox__input {% if settings.comment_moderation == 'true' %}is-checked{% endif %}">
+                                <input type="checkbox" name="comment_moderation" class="el-checkbox__original" value="true" {% if settings.comment_moderation == 'true' %}checked{% endif %}>
+                                <span class="el-checkbox__inner"></span>
+                            </span>
+                            <span class="el-checkbox__label">评论需要审核</span>
+                        </label>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">新评论需要管理员审核后才能显示</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
-                        <el-checkbox name="comment_registration" {% if settings.comment_registration == 'true' %}checked{% endif %}>
-                            仅注册用户可评论
-                        </el-checkbox>
+                        <label class="el-checkbox">
+                            <span class="el-checkbox__input {% if settings.comment_registration == 'true' %}is-checked{% endif %}">
+                                <input type="checkbox" name="comment_registration" class="el-checkbox__original" value="true" {% if settings.comment_registration == 'true' %}checked{% endif %}>
+                                <span class="el-checkbox__inner"></span>
+                            </span>
+                            <span class="el-checkbox__label">仅注册用户可评论</span>
+                        </label>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">只有注册用户才能发表评论</div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">评论审核关键词</label>
-                        <el-input name="comment_blacklist" type="textarea" :rows="3" placeholder="每行一个关键词">{{ settings.comment_blacklist if settings.comment_blacklist else '' }}</el-input>
+                        <div class="el-textarea">
+                            <textarea class="el-textarea__inner" name="comment_blacklist" rows="3" placeholder="每行一个关键词">{{ settings.comment_blacklist if settings.comment_blacklist else '' }}</textarea>
+                        </div>
                         <div style="font-size: 12px; color: #909399; margin-top: 4px;">包含这些关键词的评论将自动标记为垃圾评论</div>
                     </div>
                 </div>

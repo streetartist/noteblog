@@ -890,14 +890,14 @@ def save_settings():
     ]
     
     for key in general_settings:
-        value = request.form.get(key, '').strip()
-        if value:
+        if key in request.form:
+            value = request.form.get(key, '').strip()
             SettingManager.set(key, value)
     
     # 评论设置
     comment_settings = {
-        'comment_moderation': request.form.get('comment_moderation', 'false'),
-        'comment_registration': request.form.get('comment_registration', 'false'),
+        'comment_moderation': 'true' if request.form.get('comment_moderation') else 'false',
+        'comment_registration': 'true' if request.form.get('comment_registration') else 'false',
         'comment_blacklist': request.form.get('comment_blacklist', '').strip()
     }
     

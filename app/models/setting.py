@@ -88,26 +88,30 @@ class SettingManager:
             return default
     
     @staticmethod
-    def set(key, value, value_type='string', description=None, category='general', 
-            is_public=False, is_editable=True):
+    def set(key, value, value_type=None, description=None, category=None, 
+            is_public=None, is_editable=None):
         """设置值"""
         setting = Setting.query.filter_by(key=key).first()
         if setting:
-            setting.value_type = value_type
-            if description:
+            if value_type is not None:
+                setting.value_type = value_type
+            if description is not None:
                 setting.description = description
-            setting.category = category
-            setting.is_public = is_public
-            setting.is_editable = is_editable
+            if category is not None:
+                setting.category = category
+            if is_public is not None:
+                setting.is_public = is_public
+            if is_editable is not None:
+                setting.is_editable = is_editable
             setting.set_typed_value(value)
         else:
             setting = Setting(
                 key=key,
-                value_type=value_type,
+                value_type=value_type if value_type is not None else 'string',
                 description=description,
-                category=category,
-                is_public=is_public,
-                is_editable=is_editable
+                category=category if category is not None else 'general',
+                is_public=is_public if is_public is not None else False,
+                is_editable=is_editable if is_editable is not None else True
             )
             setting.set_typed_value(value)
             db.session.add(setting)
