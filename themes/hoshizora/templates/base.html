@@ -241,8 +241,7 @@
         </main>
 
         <footer class="hoshi-footer">
-            <p>{{ _theme.footer_text or '© 2025 Powered by Noteblog' }}</p>
-            <p><a href="https://github.com/streetartist/noteblog" target="_blank" rel="noopener">Noteblog</a> · Theme Hoshizora</p>
+            {{ get_setting('footer_text', '<p>© 2025 Powered by Noteblog</p><p><a href=\"https://github.com/streetartist/noteblog\" target=\"_blank\" rel=\"noopener\">Noteblog</a> · Theme Hoshizora</p>')|safe }}
             {% if plugin_hooks and plugin_hooks.footer %}
                 {% for block in plugin_hooks.footer %}
                     {{ block|safe }}
@@ -370,6 +369,12 @@
             window.hoshiRenderMath = render;
         })();
     </script>
+    {% endif %}
+
+    {% if plugin_hooks and plugin_hooks.scripts_assets %}
+        {% for asset_content in plugin_hooks.scripts_assets %}
+            {{ asset_content|safe }}
+        {% endfor %}
     {% endif %}
 
     {% if plugin_hooks and plugin_hooks.body_end %}

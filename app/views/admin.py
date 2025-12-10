@@ -885,8 +885,9 @@ def save_settings():
     """保存设置"""
     # 基本设置
     general_settings = [
-        'site_title', 'site_description', 'site_keywords', 
-        'site_url', 'admin_email', 'posts_per_page', 'timezone', 'date_format'
+        'site_title', 'site_description', 'site_keywords',
+        'site_url', 'admin_email', 'posts_per_page', 'timezone', 'date_format',
+        'footer_text'
     ]
     
     for key in general_settings:

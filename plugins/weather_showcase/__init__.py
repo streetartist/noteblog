@@ -44,7 +44,9 @@ class WeatherShowcasePlugin(PluginBase):
         pm = current_app.plugin_manager
         pm.register_template_hook('head_assets', self._render_head_assets, priority=12, plugin_name=self.name)
         pm.register_template_hook('content_top', self._render_stage, priority=12, plugin_name=self.name)
+        # 注册到 scripts_assets 和 body_end 以兼容所有主题
         pm.register_template_hook('scripts_assets', self._render_scripts, priority=12, plugin_name=self.name)
+        pm.register_template_hook('body_end', self._render_scripts, priority=12, plugin_name=self.name)
 
     # -------- rendering helpers --------
     def _safe_config(self) -> Dict[str, Any]:

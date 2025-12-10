@@ -166,10 +166,7 @@
 
         <footer class="serenity-footer">
             <div class="serenity-container">
-                <p>{{ get_theme_config().footer_text or '© 2025 Serenity Theme for Noteblog.' }}</p>
-                <p>
-                    Powered by <a href="https://github.com/streetartist/noteblog">Noteblog</a> · Theme Serenity
-                </p>
+                {{ get_setting('footer_text', '<p>© 2025 Serenity Theme for Noteblog.</p><p>Powered by <a href=\"https://github.com/streetartist/noteblog\">Noteblog</a> · Theme Serenity</p>')|safe }}
                 {% if plugin_hooks and plugin_hooks.footer %}
                     {% for hook_content in plugin_hooks.footer %}
                         {{ hook_content|safe }}

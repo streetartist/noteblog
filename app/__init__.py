@@ -122,19 +122,29 @@ def create_app(config_name='default'):
         """为所有模板注入插件钩子"""
         if os.getenv('SKIP_PLUGIN_INIT', '0') == '1':
             return {}
-        
+
         try:
             from app.services.plugin_manager import plugin_manager
-            
+
             # 获取插件钩子内容
             plugin_hooks = {
                 'sidebar_bottom': plugin_manager.get_template_hooks('sidebar_bottom')
             }
-            
+
             return {'plugin_hooks': plugin_hooks}
         except Exception:
             # 如果插件管理器不可用，返回空字典
             return {}
+
+    @app.context_processor
+    def inject_settings():
+        """为所有模板注入设置获取函数"""
+        from app.models.setting import SettingManager
+
+        def get_setting(key, default=None):
+            return SettingManager.get(key, default)
+
+        return {'get_setting': get_setting}
 
     # 提供主题静态文件（/themes/<theme>/static/...）的路由，便于主题资源加载
     from app.utils import path_utils

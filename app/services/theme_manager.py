@@ -622,6 +622,12 @@ class ThemeManager:
         if 'current_user' not in context:
             context['current_user'] = flask_current_user
 
+        # 注入 get_setting 函数供模板使用
+        if 'get_setting' not in context:
+            def get_setting(key, default=None):
+                return SettingManager.get(key, default) if SettingManager else default
+            context['get_setting'] = get_setting
+
         # 应用全局模板上下文过滤器
         from app.services.plugin_manager import plugin_manager
         context = plugin_manager.apply_filters('template_context', context)
