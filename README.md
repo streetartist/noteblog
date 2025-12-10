@@ -478,7 +478,6 @@ CREATE INDEX idx_comment_post ON comment(post_id, status);
 ```
 
 - 启用 Fail2ban 或 Cloudflare 等防护；限制 SSH 登录；定期备份数据库与 `instance/uploads`。
-- 每次升级：`git pull`、`pip install -r requirements.txt`、`flask db upgrade`、`sudo systemctl restart noteblog`。
 
 #### 8. 验证与运维
 
@@ -492,6 +491,40 @@ CREATE INDEX idx_comment_post ON comment(post_id, status);
   - 静态资源 404：确认 Nginx `alias` 指向正确目录。
 
 完成以上步骤，Noteblog 即可在普通服务器上稳定运行。若需要多实例或自动扩缩容，可进一步结合 Docker、Kubernetes 或 CI/CD 管道实现。
+
+#### 9. 升级版本
+
+Noteblog后期可能提供一键升级的功能，但是目前还是需要手动更新：
+
+- 方法1：
+```bash
+git fetch --all # 把远程的更新下载到本地的 .git 仓库中
+git reset --hard streetartist/noteblog/main # 把所有Git知道的文件（Tracked files）全部变成远程分支现在的样子
+```
+该命令会覆盖项目原有文件，保留新增的文件
+
+- 方法2：
+
+先在本地的目录拉取最新的代码：
+
+HTTPS 协议clone
+```bash
+git clone https://github.com/streetartist/noteblog.git
+```
+或者 SSH 协议clone（需要在 github 配置SSH密钥）
+```bash
+git clone git@github.com:streetartist/noteblog.git
+```
+
+命令行执行：
+```
+scp -r noteblog [username]@[server-ip]:/var/www/ #或者你自己的目录
+```
+
+注意上面这个远程地址不要写成 `/var/www/noteblog`，否则将会在复制到noteblog下，变成 `noteblog/noteblog`
+
+该方法会覆盖项目原有的文件，用户侧产生的文件不受影响
+
 
 ## 🔧 配置说明
 
