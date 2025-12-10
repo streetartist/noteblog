@@ -1,7 +1,7 @@
 """
 API 视图
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Blueprint, jsonify, request, session
 from flask_login import login_required, current_user
 from app import db
@@ -483,7 +483,7 @@ def api_update_comment(comment_id):
     plugin_manager.do_action('before_comment_update', comment=comment)
 
     comment.content = content
-    comment.updated_at = datetime.utcnow()
+    comment.updated_at = datetime.now(timezone.utc)
     if requires_review:
         comment.is_approved = False
     db.session.commit()

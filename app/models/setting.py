@@ -1,7 +1,7 @@
 """
 系统设置模型
 """
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from app import db
 
@@ -17,8 +17,8 @@ class Setting(db.Model):
     category = db.Column(db.String(50), default='general')  # general, theme, plugin, security, etc.
     is_public = db.Column(db.Boolean, default=False)  # 是否为公开设置（前端可访问）
     is_editable = db.Column(db.Boolean, default=True)  # 是否可编辑
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     def __init__(self, key, value=None, **kwargs):
         self.key = key

@@ -1,5 +1,5 @@
 """文章相关模型"""
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 from app.services.markdown_service import markdown_service
 
@@ -20,8 +20,8 @@ class Category(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     sort_order = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     # 自引用关系
     parent = db.relationship('Category', remote_side=[id], backref='children')
@@ -74,7 +74,7 @@ class Tag(db.Model):
     slug = db.Column(db.String(50), unique=True, nullable=False, index=True)
     description = db.Column(db.Text, nullable=True)
     color = db.Column(db.String(7), nullable=True)  # 十六进制颜色值
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     def __init__(self, name, slug, **kwargs):
         self.name = name
@@ -141,8 +141,8 @@ class Post(db.Model):
     seo_title = db.Column(db.String(200), nullable=True)
     seo_description = db.Column(db.String(300), nullable=True)
     seo_keywords = db.Column(db.String(200), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     published_at = db.Column(db.DateTime, nullable=True)
     
     # 外键
@@ -164,7 +164,7 @@ class Post(db.Model):
     def publish(self):
         """发布文章"""
         self.status = 'published'
-        self.published_at = datetime.utcnow()
+        self.published_at = datetime.now(timezone.utc)
         db.session.commit()
     
     def unpublish(self):

@@ -3,7 +3,7 @@ Weather Showcase plugin
 在页面上显示多种天气特效，并提供后台管理。
 """
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 from flask import Blueprint, current_app, jsonify, render_template, request
@@ -104,7 +104,7 @@ class WeatherShowcasePlugin(PluginBase):
             f'data-weather-accent="{cfg["accent_color"]}"'
         ]
         attrs = ' '.join(data_attrs)
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         return f'''
 <div class="weather-showcase" data-weather-stage {attrs}>
     <div class="weather-stage" aria-hidden="true"></div>

@@ -359,6 +359,53 @@
     </div>
 
     <!-- JavaScript -->
+    <!-- 时间本地化脚本 -->
+    <script>
+    (function() {
+        // 将 UTC 时间转换为访问者本地时间
+        function convertToLocalTime() {
+            document.querySelectorAll('time[data-localtime]').forEach(function(el) {
+                var utcTime = el.getAttribute('datetime');
+                if (!utcTime) return;
+
+                try {
+                    var date = new Date(utcTime);
+                    if (isNaN(date.getTime())) return;
+
+                    var format = el.getAttribute('data-format') || '%Y-%m-%d %H:%M:%S';
+                    var localTime = formatDate(date, format);
+                    el.textContent = localTime;
+                    el.removeAttribute('data-localtime'); // 标记已处理
+                } catch (e) {
+                    console.warn('时间转换失败:', e);
+                }
+            });
+        }
+
+        // 根据格式字符串格式化日期
+        function formatDate(date, format) {
+            var pad = function(n) { return n < 10 ? '0' + n : n; };
+
+            return format
+                .replace('%Y', date.getFullYear())
+                .replace('%m', pad(date.getMonth() + 1))
+                .replace('%d', pad(date.getDate()))
+                .replace('%H', pad(date.getHours()))
+                .replace('%M', pad(date.getMinutes()))
+                .replace('%S', pad(date.getSeconds()));
+        }
+
+        // 页面加载完成后执行
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', convertToLocalTime);
+        } else {
+            convertToLocalTime();
+        }
+
+        // 暴露给全局，以便动态内容也能调用
+        window.convertToLocalTime = convertToLocalTime;
+    })();
+    </script>
     <script src="https://fastly.jsdelivr.net/npm/vue@3.3.0/dist/vue.global.js"></script>
     <script src="https://fastly.jsdelivr.net/npm/element-plus@2.4.0/dist/index.full.js"></script>
     <script src="https://fastly.jsdelivr.net/npm/@element-plus/icons-vue@2.1.0/dist/index.iife.min.js"></script>

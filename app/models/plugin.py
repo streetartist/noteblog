@@ -1,7 +1,7 @@
 """
 插件模型
 """
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from app import db
 from app.utils import path_utils
@@ -31,8 +31,8 @@ class Plugin(db.Model):
     config_data = db.Column(db.Text, nullable=True)  # JSON格式的配置数据
     
     # 时间戳
-    installed_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    installed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     activated_at = db.Column(db.DateTime, nullable=True)
     
     def __init__(self, name, display_name, version, install_path, **kwargs):
@@ -60,7 +60,7 @@ class Plugin(db.Model):
     def activate(self):
         """激活插件"""
         self.is_active = True
-        self.activated_at = datetime.utcnow()
+        self.activated_at = datetime.now(timezone.utc)
         db.session.commit()
     
     def deactivate(self):

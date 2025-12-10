@@ -2,7 +2,7 @@
 友链插件数据模型
 """
 from app import db
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class FriendLink(db.Model):
@@ -17,8 +17,8 @@ class FriendLink(db.Model):
     email = db.Column(db.String(100), comment='联系邮箱')
     sort_order = db.Column(db.Integer, default=0, comment='排序权重')
     is_active = db.Column(db.Boolean, default=True, comment='是否激活')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, comment='创建时间')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, comment='更新时间')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), comment='创建时间')
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), comment='更新时间')
     
     def __repr__(self):
         return f'<FriendLink {self.name}>'

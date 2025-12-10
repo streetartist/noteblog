@@ -146,6 +146,27 @@ def create_app(config_name='default'):
 
         return {'get_setting': get_setting}
 
+    # 注册时间本地化过滤器
+    from markupsafe import Markup
+
+    @app.template_filter('localtime')
+    def localtime_filter(dt, format='%Y-%m-%d %H:%M:%S'):
+        """
+        将 datetime 对象转换为可本地化的 <time> 标签。
+        前端 JavaScript 会自动将 UTC 时间转换为访问者的本地时间。
+
+        用法: {{ post.created_at|localtime }}
+              {{ post.created_at|localtime('%Y-%m-%d') }}
+        """
+        if dt is None:
+            return ''
+        # 生成 ISO 格式的 UTC 时间字符串（用于 datetime 属性）
+        iso_time = dt.isoformat() + 'Z' if dt.tzinfo is None else dt.isoformat()
+        # 生成默认显示文本（服务器端格式化，作为 fallback）
+        display_time = dt.strftime(format)
+        # 返回带有 data-format 属性的 time 标签，便于 JS 处理
+        return Markup(f'<time datetime="{iso_time}" data-localtime data-format="{format}">{display_time}</time>')
+
     # 提供主题静态文件（/themes/<theme>/static/...）的路由，便于主题资源加载
     from app.utils import path_utils
 

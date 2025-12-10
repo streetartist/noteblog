@@ -10,7 +10,7 @@
     <div class="hoshi-hero-left">
         <span class="hoshi-hero-tag">{{ post.category.name if post.category else 'POST' }}</span>
         <h1 class="hoshi-hero-title">{{ post.title }}</h1>
-        <p class="hoshi-hero-desc">发布于 {{ (post.published_at or post.created_at).strftime('%Y-%m-%d') if post.created_at else '' }}</p>
+        <p class="hoshi-hero-desc">发布于 {{ (post.published_at or post.created_at)|localtime('%Y-%m-%d') if post.created_at else '' }}</p>
         <div class="hoshi-hero-actions">
             <button class="hoshi-pill-btn primary" type="button" data-hoshi-like-post data-post-id="{{ post.id }}" data-liked="{{ 'true' if post.id in liked_posts else 'false' }}">
                 喜欢 · <span data-like-count>{{ post.like_count or 0 }}</span>
@@ -39,7 +39,7 @@
     <header class="hoshi-post-header">
         <div class="hoshi-post-meta">
             <span class="hoshi-meta-pill">{{ post.category.name if post.category else 'POST' }}</span>
-            <span>{{ (post.published_at or post.created_at).strftime('%Y-%m-%d') if post.created_at else '' }}</span>
+            <span>{{ (post.published_at or post.created_at)|localtime('%Y-%m-%d') if post.created_at else '' }}</span>
             {% if post.category %}
             <span>· <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a></span>
             {% endif %}
@@ -175,7 +175,7 @@
                 <div class="hoshi-comment-body">
                     <div class="hoshi-comment-head">
                         <strong>{{ display }}</strong>
-                        <time>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') if comment.created_at else '' }}</time>
+                        <time>{{ comment.created_at|localtime('%Y-%m-%d %H:%M') if comment.created_at else '' }}</time>
                         {% if comment.get_display_website() %}
                         <a href="{{ comment.get_display_website() }}" target="_blank" rel="noopener">🔗</a>
                         {% endif %}
@@ -205,7 +205,7 @@
                             <div class="hoshi-comment-body">
                                 <div class="hoshi-comment-head">
                                     <strong>{{ reply_name }}</strong>
-                                    <time>{{ reply.created_at.strftime('%Y-%m-%d %H:%M') if reply.created_at else '' }}</time>
+                                    <time>{{ reply.created_at|localtime('%Y-%m-%d %H:%M') if reply.created_at else '' }}</time>
                                 </div>
                                 <div class="hoshi-comment-text">
                                     {% if display %}<span class="mention">@{{ display }}</span>{% endif %}

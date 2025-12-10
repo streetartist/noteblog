@@ -2,7 +2,7 @@
     <header class="hoshi-post-header">
         <div class="hoshi-post-meta">
             <span class="hoshi-meta-pill">{{ post.category.name if post.category else 'POST' }}</span>
-            <span>{{ (post.published_at or post.created_at).strftime('%Y-%m-%d') if post.created_at else '' }}</span>
+            <span>{{ (post.published_at or post.created_at)|localtime('%Y-%m-%d') if post.created_at else '' }}</span>
             {% if post.view_count is not none %}
             <span>· {{ post.view_count }} 阅读</span>
             {% endif %}

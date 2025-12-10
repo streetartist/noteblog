@@ -17,7 +17,7 @@
             <a href="/post/{{ post.slug }}">{{ post.title }}</a>
         </h2>
         <div class="post-meta">
-            <span>{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+            <span>{{ post.created_at|localtime('%Y-%m-%d') }}</span>
         </div>
         <div class="post-excerpt">
             {{ post.get_excerpt_html(160)|safe }}

@@ -22,7 +22,7 @@
             <h2><a href="/post/{{ post.slug }}">{{ post.title }}</a></h2>
             <div class="search-result-excerpt">{{ post.get_excerpt_html(160)|safe }}</div>
             <div class="post-meta">
-                <span>{{ (post.created_at or post.published_at).strftime('%Y-%m-%d') if post.created_at else '' }}</span>
+                <span>{{ (post.created_at or post.published_at)|localtime('%Y-%m-%d') if post.created_at else '' }}</span>
                 {% if post.category %}
                 <span>{{ post.category.name }}</span>
                 {% endif %}

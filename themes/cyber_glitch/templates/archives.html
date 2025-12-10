@@ -21,7 +21,7 @@
                 {% for post in posts %}
                 <li class="archive-item">
                     <span class="archive-date">
-                        {{ post.created_at.strftime('%m-%d') }}
+                        {{ post.created_at|localtime('%m-%d') }}
                     </span>
                     <a href="/post/{{ post.slug }}" class="archive-link">
                         {{ post.title }}

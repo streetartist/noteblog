@@ -18,7 +18,7 @@
                 {% for post in posts %}
                 <article>
                     <p style="margin:0;color:var(--hoshi-text-muted);font-size:0.9rem;">
-                        {{ post.created_at.strftime('%m-%d') if post.created_at else '' }} ·
+                        {{ post.created_at|localtime('%m-%d') if post.created_at else '' }} ·
                         {% if post.category %}
                         <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
                         {% endif %}

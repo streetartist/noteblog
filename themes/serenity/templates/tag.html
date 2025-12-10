@@ -18,7 +18,7 @@
         <article class="post-card">
             <header>
                 <div class="post-meta-line">
-                    <span>{{ post.published_at.strftime('%Y-%m-%d') if post.published_at else post.created_at.strftime('%Y-%m-%d') }}</span>
+                    <span>{{ (post.published_at or post.created_at)|localtime('%Y-%m-%d') }}</span>
                     {% if post.category %}
                     <a href="/category/{{ post.category.slug }}" class="post-meta-link">{{ post.category.name }}</a>
                     {% endif %}

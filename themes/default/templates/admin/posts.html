@@ -72,7 +72,7 @@
                         {% endif %}
                     </td>
                     <td style="padding: 12px; color: #606266; font-size: 13px;">
-                        {{ post.published_at.strftime('%Y-%m-%d %H:%M') if post.published_at else '' }}
+                        {{ post.published_at|localtime('%Y-%m-%d %H:%M') if post.published_at else '' }}
                     </td>
                     <td style="padding: 12px;">
                         <a href="/admin/posts/{{ post.id }}/edit" class="admin-action-btn admin-action-btn-edit">

@@ -9,7 +9,7 @@
             {{ post.title }}
         </h1>
         <div class="post-meta post-detail-meta">
-            <span>DATE: {{ post.created_at.strftime('%Y-%m-%d') }}</span> // 
+            <span>DATE: {{ post.created_at|localtime('%Y-%m-%d') }}</span> // 
             <span>CAT: {{ post.category.name if post.category else 'NULL' }}</span> //
             <span>VIEWS: {{ post.views }}</span>
         </div>
@@ -108,7 +108,7 @@
                         <div>
                             <strong>{{ comment.get_display_name() }}</strong>
                             <div class="comment-meta">
-                                <time>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') if comment.created_at else '' }}</time>
+                                <time>{{ comment.created_at|localtime('%Y-%m-%d %H:%M') if comment.created_at else '' }}</time>
                                 {% if comment.get_display_website() %}
                                 <a href="{{ comment.get_display_website() }}" target="_blank" rel="noopener">WEBSITE</a>
                                 {% endif %}
@@ -133,7 +133,7 @@
                                 <div>
                                     <strong>{{ reply.get_display_name() }}</strong>
                                     <div class="comment-meta">
-                                        <time>{{ reply.created_at.strftime('%Y-%m-%d %H:%M') if reply.created_at else '' }}</time>
+                                        <time>{{ reply.created_at|localtime('%Y-%m-%d %H:%M') if reply.created_at else '' }}</time>
                                         {% if reply.get_display_website() %}
                                         <a href="{{ reply.get_display_website() }}" target="_blank" rel="noopener">WEBSITE</a>
                                         {% endif %}

@@ -364,8 +364,43 @@
     })();
     </script>
     
+    <!-- 时间本地化脚本 -->
+    <script>
+    (function() {
+        function convertToLocalTime() {
+            document.querySelectorAll('time[data-localtime]').forEach(function(el) {
+                var utcTime = el.getAttribute('datetime');
+                if (!utcTime) return;
+                try {
+                    var date = new Date(utcTime);
+                    if (isNaN(date.getTime())) return;
+                    var format = el.getAttribute('data-format') || '%Y-%m-%d %H:%M:%S';
+                    el.textContent = formatDate(date, format);
+                    el.removeAttribute('data-localtime');
+                } catch (e) {}
+            });
+        }
+        function formatDate(date, format) {
+            var pad = function(n) { return n < 10 ? '0' + n : n; };
+            return format
+                .replace('%Y', date.getFullYear())
+                .replace('%m', pad(date.getMonth() + 1))
+                .replace('%d', pad(date.getDate()))
+                .replace('%H', pad(date.getHours()))
+                .replace('%M', pad(date.getMinutes()))
+                .replace('%S', pad(date.getSeconds()));
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', convertToLocalTime);
+        } else {
+            convertToLocalTime();
+        }
+        window.convertToLocalTime = convertToLocalTime;
+    })();
+    </script>
+
     {% block scripts %}{% endblock %}
-    
+
     <!-- 插件资源钩子：JavaScript -->
     {% if plugin_hooks and plugin_hooks.scripts_assets %}
         {% for asset_content in plugin_hooks.scripts_assets %}

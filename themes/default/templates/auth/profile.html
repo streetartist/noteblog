@@ -75,12 +75,12 @@
                 
                 <div class="mb-3">
                     <strong>注册时间：</strong>
-                    <span>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else '未知' }}</span>
+                    <span>{{ user.created_at|localtime('%Y-%m-%d %H:%M') if user.created_at else '未知' }}</span>
                 </div>
                 
                 <div class="mb-4">
                     <strong>最后登录：</strong>
-                    <span>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else '从未登录' }}</span>
+                    <span>{{ user.last_login|localtime('%Y-%m-%d %H:%M') if user.last_login else '从未登录' }}</span>
                 </div>
                 
                 <div class="post-actions">

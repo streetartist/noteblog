@@ -34,7 +34,7 @@
                         {{ category.get_post_count() }}
                     </td>
                     <td style="padding: 12px; color: #606266; font-size: 13px;">
-                        {{ category.created_at.strftime('%Y-%m-%d %H:%M') if category.created_at else '' }}
+                        {{ category.created_at|localtime('%Y-%m-%d %H:%M') if category.created_at else '' }}
                     </td>
                     <td style="padding: 12px;">
                         <a href="/admin/categories/{{ category.id }}/edit" class="admin-action-btn admin-action-btn-edit">

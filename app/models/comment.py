@@ -1,5 +1,5 @@
 """评论模型"""
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 from app.services.markdown_service import markdown_service
 
@@ -18,8 +18,8 @@ class Comment(db.Model):
     is_spam = db.Column(db.Boolean, default=False)  # 是否为垃圾评论
     parent_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True)  # 父评论ID
     like_count = db.Column(db.Integer, default=0)  # 点赞数
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     # 外键
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)

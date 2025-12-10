@@ -91,13 +91,13 @@
                     </td>
                     <td style="padding: 12px;">
                         <div style="color: #606266; font-size: 13px;">
-                            {{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else '' }}
+                            {{ user.created_at|localtime('%Y-%m-%d %H:%M') if user.created_at else '' }}
                         </div>
                     </td>
                     <td style="padding: 12px;">
                         <div style="color: #606266; font-size: 13px;">
                             {% if user.last_login %}
-                            {{ user.last_login.strftime('%Y-%m-%d %H:%M') }}
+                            {{ user.last_login|localtime('%Y-%m-%d %H:%M') }}
                             {% else %}
                             <span style="color: #c0c4cc;">从未登录</span>
                             {% endif %}

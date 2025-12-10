@@ -651,6 +651,18 @@ class ThemeManager:
             env.globals['get_theme_config'] = self.get_theme_config
             env.globals['url_for'] = self._url_for_helper
 
+            # 注册 localtime 过滤器（用于时间本地化显示）
+            from markupsafe import Markup
+
+            def localtime_filter(dt, format='%Y-%m-%d %H:%M:%S'):
+                if dt is None:
+                    return ''
+                iso_time = dt.isoformat() + 'Z' if dt.tzinfo is None else dt.isoformat()
+                display_time = dt.strftime(format)
+                return Markup(f'<time datetime="{iso_time}" data-localtime data-format="{format}">{display_time}</time>')
+
+            env.filters['localtime'] = localtime_filter
+
             try:
                 from flask import get_flashed_messages, request, session, g
 

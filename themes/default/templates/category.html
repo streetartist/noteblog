@@ -21,7 +21,7 @@
             {% if category.created_at %}
             <span>
                 <i class="el-icon-time"></i>
-                创建于 {{ category.created_at.strftime('%Y-%m-%d') }}
+                创建于 {{ category.created_at|localtime('%Y-%m-%d') }}
             </span>
             {% endif %}
         </div>
@@ -55,7 +55,7 @@
                             </span>
                             <span class="post-date">
                                 <i class="el-icon-time"></i>
-                                {{ post.published_at.strftime('%Y-%m-%d %H:%M:%S') if post.published_at else post.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {{ (post.published_at or post.created_at)|localtime }}
                             </span>
                             {% if post.category %}
                             <span class="post-category">

@@ -30,7 +30,7 @@
                             <div class="post-meta">
                                 <span class="post-date">
                                     <i class="el-icon-time"></i>
-                                    {{ post.published_at.strftime('%Y-%m-%d %H:%M:%S') if post.published_at else post.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    {{ (post.published_at or post.created_at)|localtime }}
                                 </span>
                                 {% if post.category %}
                                 <span class="post-category">

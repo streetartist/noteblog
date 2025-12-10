@@ -9,7 +9,7 @@ import shutil
 import sqlite3
 import tempfile
 import zipfile
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timezone
 from decimal import Decimal
 from typing import Any, BinaryIO, Dict, List, Optional, Tuple
 
@@ -37,7 +37,7 @@ def create_backup_archive(include_extensions: bool = False) -> Tuple[str, Binary
     if not upload_folder:
         raise BackupError('UPLOAD_FOLDER 未配置，无法生成备份。')
 
-    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    timestamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
     tmp_dir = tempfile.mkdtemp(prefix='noteblog-backup-')
     data_dir = os.path.join(tmp_dir, DATA_FOLDER_NAME)
     os.makedirs(data_dir, exist_ok=True)
@@ -145,7 +145,7 @@ def _build_backup_manifest(upload_folder: str, include_extensions: bool) -> Dict
     return {
         'format': BACKUP_FORMAT_NAME,
         'version': BACKUP_FORMAT_VERSION,
-        'generated_at': datetime.utcnow().isoformat() + 'Z',
+        'generated_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         'app_version': current_app.config.get('APP_VERSION', 'unknown'),
         'upload_folder': upload_folder,
         'include_extensions': include_extensions,
@@ -650,7 +650,7 @@ def _copy_extension_dirs(src_dir: str, dest_dir: str, overwrite: bool) -> None:
                         # If removal fails (e.g. file in use), try to rename it first
                         current_app.logger.warning(f"Failed to remove {dest_path}: {e}. Trying to rename and replace.")
                         try:
-                            tmp_backup = dest_path + f".bak.{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+                            tmp_backup = dest_path + f".bak.{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
                             os.rename(dest_path, tmp_backup)
                             # Schedule deletion of backup? For now just leave it or try to delete
                             try:

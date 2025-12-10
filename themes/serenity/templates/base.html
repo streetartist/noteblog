@@ -436,6 +436,45 @@
     </div>
 
     <script src="/themes/serenity/static/js/serenity.js"></script>
+    <script>
+    (function() {
+        function formatDate(date, format) {
+            var pad = function(n) { return n < 10 ? '0' + n : n; };
+            var map = {
+                '%Y': date.getFullYear(),
+                '%m': pad(date.getMonth() + 1),
+                '%d': pad(date.getDate()),
+                '%H': pad(date.getHours()),
+                '%M': pad(date.getMinutes()),
+                '%S': pad(date.getSeconds())
+            };
+            var result = format;
+            for (var key in map) {
+                result = result.replace(key, map[key]);
+            }
+            return result;
+        }
+        function convertToLocalTime() {
+            document.querySelectorAll('time[data-localtime]').forEach(function(el) {
+                var utcTime = el.getAttribute('datetime');
+                if (!utcTime) return;
+                try {
+                    var date = new Date(utcTime);
+                    if (isNaN(date.getTime())) return;
+                    var format = el.getAttribute('data-format') || '%Y-%m-%d %H:%M:%S';
+                    el.textContent = formatDate(date, format);
+                    el.removeAttribute('data-localtime');
+                } catch (e) {}
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', convertToLocalTime);
+        } else {
+            convertToLocalTime();
+        }
+        window.addEventListener('serenity:content-updated', convertToLocalTime);
+    })();
+    </script>
     <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <script>

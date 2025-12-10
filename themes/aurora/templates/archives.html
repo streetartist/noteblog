@@ -331,9 +331,7 @@
                         <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="archive-post-title">
                             {{ post.title }}
                         </a>
-                        <time class="archive-post-date" datetime="{{ post.created_at }}">
-                            {{ post.created_at.strftime('%m-%d') }}
-                        </time>
+                        {{ post.created_at|localtime('%m-%d') }}
                     </div>
                     
                     <div class="archive-post-meta">

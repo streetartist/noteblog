@@ -27,7 +27,7 @@
         {% for post in posts.items %}
         <article class="search-card">
             <div class="search-card-head">
-                <time>{{ post.published_at.strftime('%Y-%m-%d') if post.published_at else post.created_at.strftime('%Y-%m-%d') }}</time>
+                {{ (post.published_at or post.created_at)|localtime('%Y-%m-%d') }}
                 {% if post.category %}
                 <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
                 {% endif %}

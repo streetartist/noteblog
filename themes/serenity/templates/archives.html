@@ -36,7 +36,7 @@
                 {% for post in items %}
                 <article>
                     <div class="timeline-meta">
-                        <time>{{ post.created_at.strftime('%m-%d') }}</time>
+                        {{ post.created_at|localtime('%m-%d') }}
                         {% if post.category %}
                         <a href="/category/{{ post.category.slug }}">{{ post.category.name }}</a>
                         {% endif %}

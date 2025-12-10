@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, send_file
 from flask_login import login_required, current_user
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import uuid
 from app import db
@@ -290,11 +290,11 @@ def upload_media():
         return jsonify({'success': 0, 'message': '服务器未配置上传目录'}), 500
 
     # 使用年月分类目录，避免单个目录文件过多
-    relative_dir = datetime.utcnow().strftime('%Y/%m')
+    relative_dir = datetime.now(timezone.utc).strftime('%Y/%m')
     target_dir = os.path.join(upload_root, relative_dir)
     os.makedirs(target_dir, exist_ok=True)
 
-    unique_name = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:8]}.{extension}"
+    unique_name = f"{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:8]}.{extension}"
     file_path = os.path.join(target_dir, unique_name)
 
     try:

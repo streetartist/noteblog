@@ -13,7 +13,7 @@
         <h1>{{ post.title }}</h1>
         <div class="article-meta">
             <span>✍️ {{ post.author.display_name or post.author.username }}</span>
-            <span>📅 {{ (post.published_at or post.created_at).strftime('%Y-%m-%d') if post.created_at else '' }}</span>
+            <span>📅 {{ (post.published_at or post.created_at)|localtime('%Y-%m-%d') if post.created_at else '' }}</span>
             <span>👁️ {{ post.view_count or 0 }}</span>
             {% if post.comment_count is defined %}
             <span>💬 {{ post.comment_count or 0 }}</span>
@@ -151,7 +151,7 @@
             <div class="comment-body">
                 <div class="comment-head">
                     <strong>{{ display_name }}</strong>
-                    <span>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <span>{{ comment.created_at|localtime('%Y-%m-%d %H:%M') }}</span>
                     {% if website %}
                     <a href="{{ website }}" target="_blank" rel="noopener">🔗</a>
                     {% endif %}
@@ -188,7 +188,7 @@
                         <div class="comment-body">
                             <div class="comment-head">
                                 <strong>{{ reply_name }}</strong>
-                                <span>{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                <span>{{ reply.created_at|localtime('%Y-%m-%d %H:%M') }}</span>
                                 {% if reply_website %}
                                 <a href="{{ reply_website }}" target="_blank" rel="noopener">🔗</a>
                                 {% endif %}

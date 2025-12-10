@@ -19,7 +19,7 @@
             </span>
             <span class="post-date">
                 <i class="el-icon-time"></i>
-                发布于 {{ published_time.strftime('%Y-%m-%d %H:%M:%S') if published_time else '' }}
+                发布于 {{ published_time|localtime if published_time else '' }}
             </span>
             {% if post.category %}
             <span class="post-category">
@@ -177,7 +177,7 @@
                 <div class="comment-content">
                     <div class="comment-header">
                         <span class="comment-author">{{ comment.get_display_name() }}</span>
-                        <span class="comment-date">{{ comment.created_at.strftime('%Y-%m-%d %H:%M:%S') if comment.created_at else '' }}</span>
+                        <span class="comment-date">{{ comment.created_at|localtime if comment.created_at else '' }}</span>
                         {% if comment.get_display_website() %}
                         <a href="{{ comment.get_display_website() }}" target="_blank" class="comment-website">
                             <i class="el-icon-link"></i>
@@ -232,7 +232,7 @@
                         <div class="comment-content">
                             <div class="comment-header">
                                 <span class="comment-author">{{ reply.get_display_name() }}</span>
-                                <span class="comment-date">{{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') if reply.created_at else '' }}</span>
+                                <span class="comment-date">{{ reply.created_at|localtime if reply.created_at else '' }}</span>
                             </div>
                             <div class="comment-text">
                                 <span class="reply-to">@{{ comment.get_display_name() }}:</span>
