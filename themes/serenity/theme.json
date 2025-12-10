@@ -59,6 +59,22 @@
       "label": "首页按钮链接",
       "default": "/archives"
     },
+    "hero_kicker": {
+      "type": "text",
+      "label": "首页英雄区小标题",
+      "description": "显示在主标题上方的小字",
+      "default": "Serenity Theme"
+    },
+    "hero_secondary_text": {
+      "type": "text",
+      "label": "首页第二按钮文字",
+      "default": "全文搜索"
+    },
+    "hero_secondary_link": {
+      "type": "text",
+      "label": "首页第二按钮链接",
+      "default": "/search"
+    },
     "layout_density": {
       "type": "select",
       "label": "卡片密度",
@@ -96,11 +112,6 @@
       "type": "array",
       "label": "侧边栏组件顺序",
       "default": ["recent_posts", "categories", "tags"]
-    },
-    "footer_text": {
-      "type": "textarea",
-      "label": "页脚文字",
-      "default": "© 2025 Serenity Theme for Noteblog."
     },
     "analytics_code": {
       "type": "textarea",

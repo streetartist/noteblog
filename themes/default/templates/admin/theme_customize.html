@@ -1,0 +1,194 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="admin-theme-customize">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button type="button" onclick="window.location.href='/admin/themes'"
+                style="display: inline-flex; align-items: center; gap: 4px; padding: 8px 15px; border: 1px solid #dcdfe6; border-radius: 4px; background: white; color: #606266; cursor: pointer; font-size: 14px;">
+                ← 返回
+            </button>
+            <h2 style="margin: 0; color: #303133;">{{ theme.display_name or theme.name }} 自定义</h2>
+        </div>
+    </div>
+
+    <!-- 主题信息 -->
+    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 20px; align-items: flex-start;">
+            {% if theme.screenshot %}
+            <div style="width: 200px; height: 120px; border-radius: 6px; overflow: hidden; flex-shrink: 0;">
+                <img src="{{ theme.screenshot }}" alt="{{ theme.display_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            {% endif %}
+            <div style="flex: 1;">
+                <h3 style="margin: 0 0 10px 0; color: #303133;">{{ theme.display_name or theme.name }}</h3>
+                <p style="color: #606266; margin: 0 0 10px 0;">{{ theme.description or '暂无描述' }}</p>
+                <div style="display: flex; gap: 15px; font-size: 12px; color: #909399;">
+                    <span>版本: {{ theme.version or '1.0.0' }}</span>
+                    {% if theme.author %}
+                    <span>作者: {{ theme.author }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 配置表单 -->
+    {% if config_schema %}
+    <form method="POST" action="{{ url_for('admin.customize_theme', theme_name=theme.name) }}">
+        <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px;">
+            <h3 style="margin: 0 0 20px 0; color: #303133; border-bottom: 1px solid #ebeef5; padding-bottom: 15px;">主题设置</h3>
+
+            <div style="display: grid; gap: 20px;">
+                {% for key, schema in config_schema.items() %}
+                <div class="config-item" style="display: flex; flex-direction: column; gap: 8px;">
+                    <label for="field_{{ key }}" style="font-weight: 500; color: #303133;">
+                        {{ schema.label or key }}
+                    </label>
+
+                    {% if schema.description %}
+                    <span style="font-size: 12px; color: #909399;">{{ schema.description }}</span>
+                    {% endif %}
+
+                    {% set field_type = schema.type or 'text' %}
+                    {% set current_value = current_config.get(key, schema.default or '') %}
+
+                    {% if field_type == 'text' %}
+                    <input
+                        type="text"
+                        id="field_{{ key }}"
+                        name="{{ key }}"
+                        value="{{ current_value }}"
+                        placeholder="{{ schema.placeholder or '' }}"
+                        style="max-width: 500px; height: 36px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; color: #606266; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#409eff'"
+                        onblur="this.style.borderColor='#dcdfe6'">
+
+                    {% elif field_type == 'textarea' %}
+                    <textarea
+                        id="field_{{ key }}"
+                        name="{{ key }}"
+                        rows="3"
+                        placeholder="{{ schema.placeholder or '' }}"
+                        style="max-width: 500px; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; color: #606266; outline: none; resize: vertical; font-family: inherit; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#409eff'"
+                        onblur="this.style.borderColor='#dcdfe6'">{{ current_value }}</textarea>
+
+                    {% elif field_type == 'number' %}
+                    <input
+                        type="number"
+                        id="field_{{ key }}"
+                        name="{{ key }}"
+                        value="{{ current_value }}"
+                        {% if schema.min is defined %}min="{{ schema.min }}"{% endif %}
+                        {% if schema.max is defined %}max="{{ schema.max }}"{% endif %}
+                        style="max-width: 200px; height: 36px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; color: #606266; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#409eff'"
+                        onblur="this.style.borderColor='#dcdfe6'">
+
+                    {% elif field_type == 'color' %}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input
+                            type="color"
+                            id="field_{{ key }}"
+                            name="{{ key }}"
+                            value="{{ current_value or '#000000' }}"
+                            style="width: 50px; height: 36px; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; padding: 2px;">
+                        <span id="color_display_{{ key }}" style="color: #606266; font-size: 14px;">{{ current_value or '#000000' }}</span>
+                    </div>
+
+                    {% elif field_type == 'checkbox' %}
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input
+                            type="checkbox"
+                            id="field_{{ key }}"
+                            name="{{ key }}"
+                            value="on"
+                            {% if current_value %}checked{% endif %}
+                            style="width: 16px; height: 16px; cursor: pointer;">
+                        <span style="color: #606266;">{{ schema.checkbox_label or '启用' }}</span>
+                    </label>
+
+                    {% elif field_type == 'select' %}
+                    <select
+                        id="field_{{ key }}"
+                        name="{{ key }}"
+                        style="max-width: 300px; height: 36px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; background: white; color: #606266; font-size: 14px; outline: none; cursor: pointer; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#409eff'"
+                        onblur="this.style.borderColor='#dcdfe6'">
+                        {% for option in schema.options or [] %}
+                        <option value="{{ option }}" {% if current_value == option %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    {% elif field_type == 'array' %}
+                    <input
+                        type="text"
+                        id="field_{{ key }}"
+                        name="{{ key }}"
+                        value="{{ current_value | join(', ') if current_value is iterable and current_value is not string else current_value }}"
+                        placeholder="用逗号分隔多个值"
+                        style="max-width: 500px; height: 36px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; color: #606266; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#409eff'"
+                        onblur="this.style.borderColor='#dcdfe6'">
+                    <span style="font-size: 12px; color: #909399;">多个值请用逗号分隔</span>
+
+                    {% else %}
+                    <input
+                        type="text"
+                        id="field_{{ key }}"
+                        name="{{ key }}"
+                        value="{{ current_value }}"
+                        style="max-width: 500px; height: 36px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; color: #606266; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#409eff'"
+                        onblur="this.style.borderColor='#dcdfe6'">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ebeef5; display: flex; gap: 10px;">
+                <button type="submit"
+                    style="display: inline-flex; align-items: center; gap: 4px; padding: 10px 20px; border: none; border-radius: 4px; background: #409eff; color: white; cursor: pointer; font-size: 14px; transition: background 0.2s;"
+                    onmouseover="this.style.background='#66b1ff'"
+                    onmouseout="this.style.background='#409eff'">
+                    ✓ 保存配置
+                </button>
+                <button type="button" onclick="window.location.href='/admin/themes'"
+                    style="display: inline-flex; align-items: center; gap: 4px; padding: 10px 20px; border: 1px solid #dcdfe6; border-radius: 4px; background: white; color: #606266; cursor: pointer; font-size: 14px; transition: border-color 0.2s, color 0.2s;"
+                    onmouseover="this.style.borderColor='#c0c4cc'; this.style.color='#909399'"
+                    onmouseout="this.style.borderColor='#dcdfe6'; this.style.color='#606266'">
+                    取消
+                </button>
+            </div>
+        </div>
+    </form>
+    {% else %}
+    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 40px; text-align: center;">
+        <div style="font-size: 48px; color: #c0c4cc; margin-bottom: 15px;">⚙️</div>
+        <p style="color: #909399; margin: 0;">该主题暂无可配置项</p>
+        <p style="color: #c0c4cc; font-size: 12px; margin-top: 10px;">如需配置，请在主题的 theme.json 文件中添加 config_schema</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(function() {
+    // 颜色选择器实时更新显示
+    document.querySelectorAll('input[type="color"]').forEach(function(input) {
+        input.addEventListener('input', function() {
+            var displayId = 'color_display_' + this.name;
+            var span = document.getElementById(displayId);
+            if (span) {
+                span.textContent = this.value;
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

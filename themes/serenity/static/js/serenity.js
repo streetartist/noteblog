@@ -445,13 +445,33 @@ class SerenityTheme {
     }
 
     copyLink(url) {
-        if (!navigator.clipboard) {
-            this.showToast('复制失败，请手动选择链接', 'error');
+        // 优先使用现代 Clipboard API（需要 HTTPS 或 localhost）
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url)
+                .then(() => this.showToast('链接已复制'))
+                .catch(() => this.fallbackCopy(url));
             return;
         }
-        navigator.clipboard.writeText(url)
-            .then(() => this.showToast('链接已复制'))
-            .catch(() => this.showToast('复制失败', 'error'));
+        // 回退到传统方法
+        this.fallbackCopy(url);
+    }
+
+    fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '0';
+        textarea.setAttribute('readonly', '');
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            this.showToast('链接已复制');
+        } catch (err) {
+            this.showToast('复制失败，请手动选择链接', 'error');
+        }
+        document.body.removeChild(textarea);
     }
 
     showToast(message, type = 'success') {

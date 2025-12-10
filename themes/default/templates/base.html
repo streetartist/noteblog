@@ -1121,9 +1121,10 @@
                     this.createAndSubmitForm(`/admin/themes/${themeName}/activate`);
                 },
                 customizeTheme(themeName) {
-                    if (this.$message?.info) {
-                        this.$message.info('主题自定义功能开发中...');
+                    if (!themeName) {
+                        return;
                     }
+                    window.location.href = `/admin/themes/${themeName}/customize`;
                 },
                 previewTheme(themeName) {
                     if (!themeName) {

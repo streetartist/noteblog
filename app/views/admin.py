@@ -849,8 +849,87 @@ def activate_theme(theme_name):
         flash('主题激活成功', 'success')
     else:
         flash('主题激活失败', 'error')
-    
+
     return redirect(url_for('admin.themes'))
+
+@bp.route('/themes/<theme_name>/customize', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def customize_theme(theme_name):
+    """主题自定义页面"""
+    import json
+
+    theme = Theme.query.filter_by(name=theme_name).first()
+    if not theme:
+        flash('主题不存在', 'error')
+        return redirect(url_for('admin.themes'))
+
+    # 始终从 theme.json 文件读取最新配置模式
+    config_schema = {}
+    theme_json_path = os.path.join(theme.install_path, 'theme.json')
+    if os.path.exists(theme_json_path):
+        try:
+            with open(theme_json_path, 'r', encoding='utf-8') as f:
+                theme_info = json.load(f)
+            config_schema = theme_info.get('config_schema', {})
+        except Exception as e:
+            current_app.logger.error(f'读取主题配置模式失败: {e}')
+            # 如果读取文件失败，尝试从数据库获取
+            config_schema = theme.get_config_schema() or {}
+
+    if request.method == 'POST':
+        # 保存配置
+        config_data = {}
+        for key, schema in config_schema.items():
+            field_type = schema.get('type', 'text')
+
+            if field_type == 'checkbox':
+                # 复选框：选中为 True，未选中为 False
+                config_data[key] = key in request.form
+            elif field_type == 'number':
+                # 数字类型
+                value = request.form.get(key, '')
+                if value:
+                    try:
+                        config_data[key] = int(value)
+                    except ValueError:
+                        try:
+                            config_data[key] = float(value)
+                        except ValueError:
+                            config_data[key] = schema.get('default', 0)
+                else:
+                    config_data[key] = schema.get('default', 0)
+            elif field_type == 'array':
+                # 数组类型（逗号分隔）
+                value = request.form.get(key, '')
+                if value:
+                    config_data[key] = [item.strip() for item in value.split(',') if item.strip()]
+                else:
+                    config_data[key] = schema.get('default', [])
+            else:
+                # 文本、颜色、选择框等
+                config_data[key] = request.form.get(key, schema.get('default', ''))
+
+        theme.set_config(config_data)
+        flash('主题配置保存成功', 'success')
+        return redirect(url_for('admin.customize_theme', theme_name=theme_name))
+
+    # 获取当前配置
+    current_config = theme.get_config()
+
+    # 合并默认值
+    for key, schema in config_schema.items():
+        if key not in current_config:
+            current_config[key] = schema.get('default', '')
+
+    context = _get_base_context(f'{theme.display_name} 自定义')
+    context.update({
+        'theme': theme,
+        'config_schema': config_schema,
+        'current_config': current_config,
+    })
+
+    return theme_manager.render_template('admin/theme_customize.html', **context)
 
 # 设置管理
 @bp.route('/settings')

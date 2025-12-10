@@ -6,14 +6,14 @@
 <section class="serenity-hero">
     <div class="serenity-container hero-inner">
         <div>
-            <p class="hero-kicker">Serenity Theme</p>
+            <p class="hero-kicker">{{ get_theme_config().hero_kicker or 'Serenity Theme' }}</p>
             <h1>{{ get_theme_config().hero_title or '写下日常，积累灵感' }}</h1>
             <p class="hero-description">{{ get_theme_config().hero_subtitle or 'Serenity 将杂乱信息重新编排，帮助访客在舒适的排版中专注阅读。' }}</p>
             <div class="hero-actions">
                 <a class="serenity-solid-button" href="{{ get_theme_config().hero_cta_link or '/archives' }}">
                     {{ get_theme_config().hero_cta_text or '开始阅读' }}
                 </a>
-                <a class="serenity-ghost-button" href="/search">全文搜索</a>
+                <a class="serenity-ghost-button" href="{{ get_theme_config().hero_secondary_link or '/search' }}">{{ get_theme_config().hero_secondary_text or '全文搜索' }}</a>
             </div>
         </div>
         <ul class="hero-metrics">
