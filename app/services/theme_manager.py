@@ -645,7 +645,7 @@ class ThemeManager:
                 else:
                     template_dir = os.path.join(self.current_theme.install_path, 'templates')
 
-            env = Environment(loader=FileSystemLoader(template_dir))
+            env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
 
             env.globals['get_theme_hooks'] = self.get_theme_hooks
             env.globals['get_theme_config'] = self.get_theme_config
