@@ -975,15 +975,16 @@ def save_settings():
             SettingManager.set(key, value)
     
     # 评论设置 - 布尔类型需要指定 value_type='boolean'
+    # 复选框选中时提交 value="true"，未选中时不提交
     SettingManager.set(
         'comment_moderation',
-        request.form.get('comment_moderation') == 'on',
+        'comment_moderation' in request.form,
         value_type='boolean',
         category='comment'
     )
     SettingManager.set(
         'comment_registration',
-        request.form.get('comment_registration') == 'on',
+        'comment_registration' in request.form,
         value_type='boolean',
         category='comment'
     )
