@@ -974,15 +974,24 @@ def save_settings():
             value = request.form.get(key, '').strip()
             SettingManager.set(key, value)
     
-    # 评论设置
-    comment_settings = {
-        'comment_moderation': 'true' if request.form.get('comment_moderation') else 'false',
-        'comment_registration': 'true' if request.form.get('comment_registration') else 'false',
-        'comment_blacklist': request.form.get('comment_blacklist', '').strip()
-    }
-    
-    for key, value in comment_settings.items():
-        SettingManager.set(key, value, category='comment')
+    # 评论设置 - 布尔类型需要指定 value_type='boolean'
+    SettingManager.set(
+        'comment_moderation',
+        request.form.get('comment_moderation') == 'on',
+        value_type='boolean',
+        category='comment'
+    )
+    SettingManager.set(
+        'comment_registration',
+        request.form.get('comment_registration') == 'on',
+        value_type='boolean',
+        category='comment'
+    )
+    SettingManager.set(
+        'comment_blacklist',
+        request.form.get('comment_blacklist', '').strip(),
+        category='comment'
+    )
     
     flash('设置保存成功', 'success')
     return redirect(url_for('admin.settings'))
