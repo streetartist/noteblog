@@ -110,9 +110,6 @@
     background: rgba(168, 187, 255, 0.08);
 }
 
-[data-theme="dark"] .serenity-nav {
-    background: var(--serenity-surface);
-}
 
 * {
     box-sizing: border-box;
@@ -1032,7 +1029,7 @@ button.serenity-link:focus-visible {
     gap: 0.85rem;
 }
 
-.modal-card label {
+.modal-card label:not(.checkbox) {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
@@ -1056,10 +1053,12 @@ button.serenity-link:focus-visible {
 
 .checkbox {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 0.4rem;
     font-size: 0.9rem;
     color: var(--serenity-muted);
+    white-space: nowrap;
 }
 
 .modal-meta {
