@@ -67,8 +67,10 @@
                         {{ post.published_at|localtime('%Y-%m-%d') if post.published_at else '' }}
                     </td>
                     <td style="padding: 12px;">
+                        <div style="display: flex; gap: 6px; align-items: center;">
                         <a href="/admin/posts/{{ post.id }}/edit" class="admin-action-btn admin-action-btn-edit">编辑</a>
                         <button type="button" class="admin-action-btn admin-action-btn-delete" onclick="deletePost({{ post.id }}, '{{ post.title }}')">删除</button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
