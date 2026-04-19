@@ -26,6 +26,16 @@
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s ease;
     --transition-slow: 0.5s ease;
+
+    /* Plugin standard variables */
+    --plugin-bg: var(--bg-primary);
+    --plugin-bg-soft: var(--bg-secondary);
+    --plugin-text: var(--text-primary);
+    --plugin-text-muted: var(--text-muted);
+    --plugin-border: var(--border-color);
+    --plugin-primary: var(--primary-color);
+    --plugin-radius: var(--border-radius-md);
+    --plugin-shadow: var(--shadow-sm);
 }
 
 /* 深色模式变量 */

@@ -1,8 +1,10 @@
 {% extends "admin/base.html" %}
 
+{% block admin_mobile_title %}主题管理{% endblock %}
+
 {% block admin_content %}
 <div class="admin-themes">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="admin-page-header">
         <h2 style="margin: 0; color: #303133;">主题管理</h2>
         <div>
             <el-button type="primary" @click="installTheme">

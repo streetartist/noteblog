@@ -24,12 +24,32 @@
     margin-top: 8px;
     line-height: 1.6;
 }
+
+@media (max-width: 768px) {
+    .markdown-editor-wrapper .CodeMirror { min-height: 300px; }
+    .markdown-editor-wrapper .editor-toolbar { flex-wrap: wrap; }
+    .markdown-editor-wrapper .editor-toolbar button { padding: 2px; }
+    .admin-create-post .admin-card { padding: 14px !important; margin-bottom: 12px !important; }
+    .admin-create-post .admin-card h3 { font-size: 14px !important; margin-bottom: 12px !important; }
+    .admin-create-post input[type="text"],
+    .admin-create-post textarea,
+    .admin-create-post select { font-size: 16px !important; }
+    .admin-sticky-actions {
+        position: sticky; bottom: 0; z-index: 50;
+        background: #fff; border-top: 1px solid #e4e7ed;
+        margin: 0 -12px; padding: 10px 12px;
+        display: flex; gap: 8px;
+    }
+    .admin-sticky-actions button { flex: 1; padding: 10px 0 !important; font-size: 13px !important; }
+}
 </style>
 {% endblock %}
 
+{% block admin_mobile_title %}创建文章{% endblock %}
+
 {% block admin_content %}
 <div class="admin-create-post">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="admin-page-header">
         <h2 style="margin: 0; color: #303133;">创建文章</h2>
         <div>
             <el-button onclick="window.location.href='/admin/posts'">
@@ -39,11 +59,11 @@
     </div>
 
     <form method="POST" id="postForm">
-        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;" class="admin-editor-grid">
             <!-- 主要内容区 -->
             <div>
                 <!-- 基本信息 -->
-                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <div class="admin-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
                     <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">基本信息</h3>
                     
                     <div style="margin-bottom: 15px;">
@@ -78,7 +98,7 @@
                 </div>
 
                 <!-- 文章内容 -->
-                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <div class="admin-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
                     <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">文章内容 <span style="color: #f56c6c;">*</span></h3>
                     <div class="markdown-editor-wrapper">
                         <textarea id="content-editor" name="content" rows="15" placeholder="请输入文章内容，支持Markdown格式" required 
@@ -97,7 +117,7 @@
                 </div>
 
                 <!-- SEO设置 -->
-                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div class="admin-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">SEO设置</h3>
                     
                     <div style="margin-bottom: 15px;">
@@ -170,12 +190,23 @@
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">分类</label>
-                        <select name="category_id" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
-                            <option value="">选择分类</option>
-                            {% for category in categories %}
-                            <option value="{{ category.id }}">{{ category.name }}</option>
-                            {% endfor %}
-                        </select>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <select name="category_id" id="categorySelect" style="flex: 1; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                                <option value="">选择分类</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" onclick="showNewCategoryInput()" id="addCategoryBtn" style="padding: 8px 12px; background: #f0f0f0; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; color: #606266; font-size: 14px; white-space: nowrap;">+ 新建</button>
+                        </div>
+                        <div id="newCategoryBox" style="display: none; margin-top: 8px;">
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="newCategoryName" placeholder="输入分类名称" style="flex: 1; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                                <button type="button" onclick="createCategory()" style="padding: 8px 12px; background: #409eff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; white-space: nowrap;">确定</button>
+                                <button type="button" onclick="hideNewCategoryInput()" style="padding: 8px 12px; background: #f0f0f0; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; color: #606266; font-size: 14px;">取消</button>
+                            </div>
+                            <div id="newCategoryError" style="font-size: 12px; color: #f56c6c; margin-top: 4px; display: none;"></div>
+                        </div>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
@@ -193,18 +224,13 @@
                 </div>
 
                 <!-- 操作按钮 -->
-                <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="admin-card admin-sticky-actions" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                         <button type="submit" style="width: 100%; padding: 10px; background: #409eff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                            <i class="el-icon-check"></i> 发布文章
+                            发布文章
                         </button>
                         <button type="button" onclick="saveDraft()" style="width: 100%; padding: 10px; background: #909399; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                            <i class="el-icon-document"></i> 保存草稿
+                            存草稿
                         </button>
-                        <button type="button" onclick="window.location.href='/admin/posts'" style="width: 100%; padding: 10px; background: #f56c6c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                            <i class="el-icon-close"></i> 取消
-                        </button>
-                    </div>
                 </div>
                 {% if editor_hooks.get('sidebar_bottom') %}
                 <div class="plugin-sidebar-bottom" style="margin-top: 20px; display: flex; flex-direction: column; gap: 20px;">
@@ -356,6 +382,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
     updateSlugPreview();
 });
+
+function showNewCategoryInput() {
+    document.getElementById('newCategoryBox').style.display = 'block';
+    document.getElementById('addCategoryBtn').style.display = 'none';
+    document.getElementById('newCategoryName').focus();
+}
+function hideNewCategoryInput() {
+    document.getElementById('newCategoryBox').style.display = 'none';
+    document.getElementById('addCategoryBtn').style.display = '';
+    document.getElementById('newCategoryName').value = '';
+    document.getElementById('newCategoryError').style.display = 'none';
+}
+function createCategory() {
+    var name = document.getElementById('newCategoryName').value.trim();
+    var errEl = document.getElementById('newCategoryError');
+    if (!name) { errEl.textContent = '请输入分类名称'; errEl.style.display = 'block'; return; }
+    errEl.style.display = 'none';
+    fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ name: name })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.data && data.data.id) {
+            var sel = document.getElementById('categorySelect');
+            var opt = document.createElement('option');
+            opt.value = data.data.id;
+            opt.textContent = data.data.name;
+            opt.selected = true;
+            sel.appendChild(opt);
+            hideNewCategoryInput();
+        } else {
+            errEl.textContent = data.message || '创建失败';
+            errEl.style.display = 'block';
+        }
+    })
+    .catch(function() { errEl.textContent = '网络错误'; errEl.style.display = 'block'; });
+}
 </script>
 {% if editor_hooks.get('scripts') %}
     {% for block in editor_hooks.get('scripts') %}

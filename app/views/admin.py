@@ -203,7 +203,10 @@ def create_post():
             seo_description=seo_description,
             seo_keywords=seo_keywords
         )
-        
+
+        if status == 'published' and not post.published_at:
+            post.published_at = datetime.now(timezone.utc)
+
         # 处理标签
         tag_names = request.form.get('tags', '').strip()
         if tag_names:
@@ -341,7 +344,10 @@ def edit_post(post_id):
         post.seo_title = seo_title
         post.seo_description = seo_description
         post.seo_keywords = seo_keywords
-        
+
+        if status == 'published' and not post.published_at:
+            post.published_at = datetime.now(timezone.utc)
+
         # 处理 slug
         slug = request.form.get('slug', '').strip()
         if slug:
@@ -675,7 +681,10 @@ def users():
 def toggle_user_status(user_id):
     """切换用户状态"""
     user = User.query.get_or_404(user_id)
-    
+
+    if user.id == 1:
+        flash('不能禁用初始管理员', 'error')
+        return redirect(url_for('admin.users'))
     if user.id == current_user.id:
         flash('不能禁用自己的账户', 'error')
         return redirect(url_for('admin.users'))
@@ -685,6 +694,54 @@ def toggle_user_status(user_id):
     
     status = '激活' if user.is_active else '禁用'
     flash(f'用户已{status}', 'success')
+    return redirect(url_for('admin.users'))
+
+@bp.route('/users/<int:user_id>/edit', methods=['GET'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    """编辑用户页面（JSON 返回用户数据）"""
+    user = User.query.get_or_404(user_id)
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'display_name': user.display_name or '',
+        'bio': user.bio or '',
+        'website': user.website or '',
+        'location': user.location or '',
+        'is_admin': user.is_admin,
+        'is_active': user.is_active
+    })
+
+@bp.route('/users/<int:user_id>/edit', methods=['POST'])
+@login_required
+@admin_required
+def update_user(user_id):
+    """更新用户信息"""
+    user = User.query.get_or_404(user_id)
+
+    user.display_name = request.form.get('display_name', '').strip()
+    user.email = request.form.get('email', '').strip() or user.email
+    user.bio = request.form.get('bio', '').strip()
+    user.website = request.form.get('website', '').strip()
+    user.location = request.form.get('location', '').strip()
+
+    new_password = request.form.get('new_password', '').strip()
+    if new_password:
+        user.set_password(new_password)
+
+    is_admin = request.form.get('is_admin') == 'on'
+    if user.id == 1 and not is_admin:
+        flash('不能取消初始管理员的权限', 'error')
+        return redirect(url_for('admin.users'))
+    if user.id == current_user.id and not is_admin:
+        flash('不能取消自己的管理员权限', 'error')
+        return redirect(url_for('admin.users'))
+    user.is_admin = is_admin
+
+    db.session.commit()
+    flash(f'用户 {user.username} 信息已更新', 'success')
     return redirect(url_for('admin.users'))
 
 # 插件管理

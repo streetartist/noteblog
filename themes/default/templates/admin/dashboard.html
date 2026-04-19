@@ -1,8 +1,10 @@
 {% extends "admin/base.html" %}
 
+{% block admin_mobile_title %}仪表板{% endblock %}
+
 {% block admin_content %}
 <div class="admin-dashboard">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="admin-page-header">
         <h2 style="margin: 0; color: #303133;">仪表板</h2>
         <div>
             <el-button type="primary" @click="goToCreatePost">
@@ -39,7 +41,7 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;" class="admin-dashboard-grid">
         <!-- 最新文章 -->
         <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
             <div style="padding: 20px; border-bottom: 1px solid #f0f0f0; background: #fafafa;">

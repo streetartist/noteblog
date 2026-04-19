@@ -1,8 +1,10 @@
 {% extends "admin/base.html" %}
 
+{% block admin_mobile_title %}系统设置{% endblock %}
+
 {% block admin_content %}
 <div class="admin-settings">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="admin-page-header">
         <h2 style="margin: 0; color: #303133;">系统设置</h2>
         <div>
             <el-button type="primary" onclick="document.getElementById('settingsForm').submit()">
@@ -12,7 +14,7 @@
     </div>
 
     <form method="POST" id="settingsForm" action="{{ url_for('admin.save_settings') }}">
-        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;" class="admin-dashboard-grid">
             <!-- 主要内容区 -->
             <div>
                 <!-- 基本设置 -->

@@ -29,7 +29,7 @@
 
     {% if archives %}
     <div class="archive-timeline">
-        {% for year, items in archives|dictsort(true) %}
+        {% for year, items in archives|dictsort(reverse=true) %}
         <section class="timeline-year">
             <h2>{{ year }}</h2>
             <div class="timeline-list">

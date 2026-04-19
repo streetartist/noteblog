@@ -14,6 +14,15 @@
     --hoshi-shadow-card: 0 12px 30px rgba(20, 24, 39, 0.25);
     --hoshi-grid-gap: clamp(1.25rem, 1.5vw, 2.5rem);
     --hoshi-header-height: 74px;
+
+    --plugin-bg: #ffffff;
+    --plugin-bg-soft: #f8fafc;
+    --plugin-text: var(--hoshi-text);
+    --plugin-text-muted: var(--hoshi-text-muted);
+    --plugin-border: #e5e7eb;
+    --plugin-primary: var(--hoshi-primary);
+    --plugin-radius: var(--hoshi-radius-sm);
+    --plugin-shadow: var(--hoshi-shadow-soft);
 }
 
 [data-theme="dark"] {
@@ -21,6 +30,14 @@
     --hoshi-text: #f3f0ff;
     --hoshi-text-muted: #b9b4d0;
     --hoshi-border: rgba(255, 255, 255, 0.12);
+
+    --plugin-bg: rgba(19, 21, 35, 0.9);
+    --plugin-bg-soft: rgba(30, 33, 50, 0.9);
+    --plugin-text: #f3f0ff;
+    --plugin-text-muted: #b9b4d0;
+    --plugin-border: rgba(255, 255, 255, 0.12);
+    --plugin-primary: #a8bbff;
+    --plugin-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 
 html {

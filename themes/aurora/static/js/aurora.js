@@ -47,6 +47,7 @@ class AuroraTheme {
         if (themeToggle) {
             themeToggle.innerHTML = theme === 'dark' ? '☀️' : '🌙';
         }
+        window.dispatchEvent(new CustomEvent('noteblog:theme-change', { detail: { theme: theme } }));
     }
 
     // 滚动效果

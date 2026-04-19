@@ -1,47 +1,28 @@
-/* 友情链接插件样式（与主题解耦，使用CSS变量） */
+/* 友情链接插件样式（使用 Noteblog 标准 --plugin-* 变量） */
 
-/* 若宿主主题未定义主色/暗色变量，提供默认值 */
 :root {
-    --primary-color: #409eff;
-    --primary-color-alt: #66b1ff;
-    --surface-bg: #ffffff;
-    --surface-border: #ebeef5;
-    --surface-hover: #f5f7fa;
-    --text-color: #303133;
-    --text-color-light: #606266;
-    --text-color-lighter: #909399;
-    --divider-color: #f0f0f0;
-    --radius-md: 8px;
-    --radius-sm: 4px;
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --surface-bg: #2f3440;
-        --surface-border: #3a3f4a;
-        --surface-hover: #3a3f4a;
-        --text-color: #e0e0e0;
-        --text-color-light: #bdbdbd;
-        --text-color-lighter: #9e9e9e;
-        --divider-color: #3a3f4a;
-        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
-    }
+    --fl-bg: var(--plugin-bg, #ffffff);
+    --fl-bg-hover: var(--plugin-bg-soft, #f5f7fa);
+    --fl-text: var(--plugin-text, #303133);
+    --fl-text-light: var(--plugin-text-muted, #606266);
+    --fl-border: var(--plugin-border, #ebeef5);
+    --fl-primary: var(--plugin-primary, #409eff);
+    --fl-radius: var(--plugin-radius, 8px);
+    --fl-shadow: var(--plugin-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
 }
 
 .friend-links-widget {
     margin-bottom: 20px;
-    background: var(--surface-bg);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--surface-border);
+    background: var(--fl-bg);
+    border-radius: var(--fl-radius);
+    box-shadow: var(--fl-shadow);
+    border: 1px solid var(--fl-border);
     overflow: hidden;
     transition: background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
 .friend-links-widget .widget-title {
-    /* 使用主色创建可兼容的渐变，如果主题未提供主色则使用默认值 */
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-alt) 100%);
+    background: linear-gradient(135deg, var(--fl-primary) 0%, color-mix(in srgb, var(--fl-primary), #fff 30%) 100%);
     color: #fff;
     -webkit-text-fill-color: #fff;
     -webkit-background-clip: border-box;
@@ -61,7 +42,7 @@
 .friend-link-item {
     margin-bottom: 12px;
     padding: 8px 0;
-    border-bottom: 1px solid var(--divider-color);
+    border-bottom: 1px solid var(--fl-border);
     transition: background-color .25s ease, padding .25s ease, border-radius .25s ease;
 }
 
@@ -71,8 +52,8 @@
 }
 
 .friend-link-item:hover {
-    background-color: var(--surface-hover);
-    border-radius: var(--radius-sm);
+    background-color: var(--fl-bg-hover);
+    border-radius: var(--fl-radius);
     padding-left: 8px;
     padding-right: 8px;
 }
@@ -81,14 +62,14 @@
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: var(--text-color);
+    color: var(--fl-text);
     transition: color .25s ease;
     font-weight: 500;
     line-height: 1.3;
 }
 
 .friend-link:hover {
-    color: var(--primary-color);
+    color: var(--fl-primary);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -97,7 +78,7 @@
 .friend-link-icon {
     margin-right: 8px;
     font-size: 14px;
-    color: var(--primary-color);
+    color: var(--fl-primary);
     width: 16px;
     text-align: center;
 }
@@ -110,7 +91,7 @@
 .friend-link-description {
     margin-top: 4px;
     font-size: 12px;
-    color: var(--text-color-light);
+    color: var(--fl-text-light);
     line-height: 1.4;
     padding-left: 24px;
     word-break: break-word;
@@ -202,10 +183,10 @@
     max-width: 32px;
     max-height: 32px;
     margin-right: 8px;
-    border-radius: var(--radius-sm);
+    border-radius: var(--fl-radius);
     object-fit: contain;
     object-position: center;
-    background-color: var(--surface-hover);
+    background-color: var(--fl-bg-hover);
     padding: 2px;
     box-sizing: border-box;
     transition: transform .25s ease, box-shadow .25s ease;
@@ -232,8 +213,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--surface-hover);
-    border-radius: var(--radius-sm);
+    background-color: var(--fl-bg-hover);
+    border-radius: var(--fl-radius);
     font-size: 14px;
     margin-right: 8px;
     flex-shrink: 0;
@@ -248,13 +229,16 @@
 
 /* 暗色主题下的logo背景 */
 @media (prefers-color-scheme: dark) {
-    .friend-link-logo { background-color: var(--surface-border); }
-    .friend-link-default-icon { background-color: var(--surface-border); color: var(--text-color); }
+    .friend-link-logo { background-color: var(--fl-border); }
+    .friend-link-default-icon { background-color: var(--fl-border); color: var(--fl-text); }
+}
+[data-theme="dark"] .friend-link-logo { background-color: var(--fl-border); }
+[data-theme="dark"] .friend-link-default-icon { background-color: var(--fl-border); color: var(--fl-text); }
 }
 
 /* 特殊链接样式 */
 /* 针对常见域名的可选色彩（仍使用变量变体） */
-.friend-link[href*="github.com"] .friend-link-icon { color: var(--text-color); }
+.friend-link[href*="github.com"] .friend-link-icon { color: var(--fl-text); }
 
 .friend-link[href*="twitter.com"] .friend-link-icon { color: #1da1f2; }
 
@@ -276,8 +260,8 @@
     width: 20px;
     height: 20px;
     margin: -10px 0 0 -10px;
-    border: 2px solid var(--surface-border);
-    border-top: 2px solid var(--primary-color);
+    border: 2px solid var(--fl-border);
+    border-top: 2px solid var(--fl-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }

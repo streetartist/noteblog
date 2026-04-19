@@ -101,12 +101,12 @@ class AISummaryPlugin(PluginBase):
         body = summary if has_summary else 'AI 摘要生成中，通常几秒内完成…'
         script = '' if has_summary else self._pending_loader_script()
         return f'''
-<section class="ai-summary" data-ai-summary data-post-id="{post_id}" data-state="{state}" style="margin-top:1.5rem;padding:1rem;border:1px solid var(--nb-border,#e5e7eb);border-radius:0.5rem;background:var(--nb-card,#fafafa)">
-    <div style="font-weight:600;margin-bottom:0.5rem;display:flex;align-items:center;gap:.4rem">
+<section class="ai-summary" data-ai-summary data-post-id="{post_id}" data-state="{state}" style="margin-top:1.5rem;padding:1rem;border:1px solid var(--plugin-border,#e5e7eb);border-radius:var(--plugin-radius,0.5rem);background:var(--plugin-bg-soft,#fafafa)">
+    <div style="font-weight:600;margin-bottom:0.5rem;display:flex;align-items:center;gap:.4rem;color:var(--plugin-text,#374151)">
         <span aria-hidden>🤖</span><span>AI 摘要</span>
     </div>
-    <div data-ai-summary-body style="white-space:pre-wrap;line-height:1.7;color:var(--nb-text,#374151)">{body}</div>
-    <div style="margin-top:.5rem;color:#9ca3af;font-size:.85em">首访生成，后台可强制重算</div>
+    <div data-ai-summary-body style="white-space:pre-wrap;line-height:1.7;color:var(--plugin-text,#374151)">{body}</div>
+    <div style="margin-top:.5rem;color:var(--plugin-text-muted,#9ca3af);font-size:.85em">首访生成，后台可强制重算</div>
 </section>
 {script}
 '''
@@ -233,8 +233,11 @@ class AISummaryPlugin(PluginBase):
         return (self._get_cfg().get('model') or DEFAULT_MODEL).strip()
 
     def _get_endpoint(self) -> str:
-        ep = self._get_cfg().get('endpoint') or DEFAULT_ENDPOINT
-        return ep.strip()
+        ep = (self._get_cfg().get('endpoint') or DEFAULT_ENDPOINT).strip().rstrip('/')
+        # 兼容只填 base URL 的情况（如 https://api.xxx.com/v1）
+        if not ep.endswith('/chat/completions'):
+            ep = ep + '/chat/completions'
+            return ep
 
     def _get_api_key(self) -> Optional[str]:
         # 允许从环境变量覆盖（优先）

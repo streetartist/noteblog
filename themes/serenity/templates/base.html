@@ -12,6 +12,7 @@
     {% endif %}
 
     <link rel="stylesheet" href="/themes/serenity/static/css/serenity.css">
+    <link rel="stylesheet" href="/themes/serenity/static/css/highlight.css">
     <link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 
     <style>
@@ -28,7 +29,7 @@
             backdrop-filter: blur(14px);
             background: rgba(250, 250, 252, 0.75);
         }
-        [data-theme="dark"] .serenity-header {
+        [data-theme="dark"] body.serenity-body .serenity-header {
             background: rgba(16, 18, 27, 0.75);
         }
     </style>
@@ -178,6 +179,10 @@
         <button class="serenity-back-to-top" type="button" title="回到顶部" aria-label="回到顶部">
             ↑
         </button>
+
+        <div class="serenity-lightbox" id="serenityLightbox">
+            <img src="" alt="">
+        </div>
 
         <div class="serenity-search-modal" aria-hidden="true">
             <div class="search-panel" role="dialog" aria-modal="true">
@@ -436,6 +441,24 @@
     </div>
 
     <script src="/themes/serenity/static/js/serenity.js"></script>
+    <script>
+    (function() {
+        var lb = document.getElementById('serenityLightbox');
+        var lbImg = lb.querySelector('img');
+        function closeLb() { lb.classList.remove('active'); }
+        lb.addEventListener('click', closeLb);
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLb(); });
+        document.addEventListener('click', function(e) {
+            var img = e.target;
+            if (img.tagName !== 'IMG') return;
+            if (!img.closest('.article-content, .post-excerpt')) return;
+            e.preventDefault();
+            lbImg.src = img.src;
+            lbImg.alt = img.alt || '';
+            lb.classList.add('active');
+        });
+    })();
+    </script>
     <script>
     (function() {
         function formatDate(date, format) {

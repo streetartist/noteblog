@@ -1,19 +1,19 @@
-<div class="ai-summary-editor-tool" data-ai-summary-tool style="border:1px dashed #dbeafe;border-radius:10px;padding:14px 16px;background:#f8fbff;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-        <div style="font-weight:600;color:#1f2937;display:flex;align-items:center;gap:6px;">
-            <span aria-hidden="true">🤖</span>
+<div class=”ai-summary-editor-tool” data-ai-summary-tool style=”border:1px dashed var(--plugin-border, #dbeafe);border-radius:var(--plugin-radius, 10px);padding:14px 16px;background:var(--plugin-bg-soft, #f8fbff);”>
+    <div style=”display:flex;justify-content:space-between;align-items:center;gap:10px;”>
+        <div style=”font-weight:600;color:var(--plugin-text, #1f2937);display:flex;align-items:center;gap:6px;”>
+            <span aria-hidden=”true”>🤖</span>
             <span>AI 摘要助手</span>
         </div>
-        <button type="button"
-                class="ai-summary-editor-tool__button"
+        <button type=”button”
+                class=”ai-summary-editor-tool__button”
                 data-ai-summary-generate
-                data-target-selector="textarea[name='excerpt']"
-                style="padding:6px 14px;border-radius:6px;border:1px solid #2563eb;background:#2563eb;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">
+                data-target-selector=”textarea[name='excerpt']”
+                style=”padding:6px 14px;border-radius:6px;border:1px solid var(--plugin-primary, #2563eb);background:var(--plugin-primary, #2563eb);color:#fff;font-size:13px;font-weight:600;cursor:pointer;”>
             即时生成
         </button>
     </div>
-    <p style="margin:10px 0 6px;color:#4b5563;font-size:13px;">
-        根据当前标题与正文生成约 120 字的摘要，并自动填入“文章摘要”输入框。
+    <p style=”margin:10px 0 6px;color:var(--plugin-text-muted, #4b5563);font-size:13px;”>
+        根据当前标题与正文生成约 120 字的摘要，并自动填入”文章摘要”输入框。
     </p>
-    <div data-ai-summary-status style="min-height:18px;font-size:12px;color:#6b7280;"></div>
+    <div data-ai-summary-status style=”min-height:18px;font-size:12px;color:var(--plugin-text-muted, #6b7280);”></div>
 </div>

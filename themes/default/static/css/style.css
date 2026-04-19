@@ -1,5 +1,16 @@
 /* Noteblog 默认主题样式 */
 
+:root {
+    --plugin-bg: #ffffff;
+    --plugin-bg-soft: #f5f7fa;
+    --plugin-text: #303133;
+    --plugin-text-muted: #909399;
+    --plugin-border: #e4e7ed;
+    --plugin-primary: #409eff;
+    --plugin-radius: 8px;
+    --plugin-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 /*
     Theme Required Classes (必需样式类)
     - 主题必须实现以下类以保证 Noteblog 前端功能和插件样式正常：

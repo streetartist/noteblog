@@ -43,6 +43,7 @@ class SerenityTheme {
         if (this.themeToggle) {
             this.themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
         }
+        window.dispatchEvent(new CustomEvent('noteblog:theme-change', { detail: { theme: theme } }));
     }
 
     initNav() {

@@ -19,9 +19,11 @@ class MarkdownService:
             'blockquote', 'pre', 'code',
             'a', 'img',
             'table', 'thead', 'tbody', 'tr', 'th', 'td',
-            'hr', 'div', 'span'
+            'hr', 'div', 'span',
+            'input', 'label', 'mark', 'kbd', 'sub', 'sup',
+            'details', 'summary'
         ]
-        
+
         self.allowed_attributes = {
             **ALLOWED_ATTRIBUTES,
             'a': ['href', 'title', 'target'],
@@ -29,7 +31,7 @@ class MarkdownService:
             'code': ['class'],
             'pre': ['class'],
             'div': ['class'],
-            'span': ['class'],  # 数学公式会使用span标签
+            'span': ['class'],
             'th': ['align'],
             'td': ['align'],
             'h1': ['id'],
@@ -37,7 +39,10 @@ class MarkdownService:
             'h3': ['id'],
             'h4': ['id'],
             'h5': ['id'],
-            'h6': ['id']
+            'h6': ['id'],
+            'input': ['type', 'checked', 'disabled'],
+            'label': ['class'],
+            'li': ['class']
         }
         
         # 初始化Markdown处理器
@@ -52,7 +57,12 @@ class MarkdownService:
                 'def_list',
                 'footnotes',
                 'admonition',
-                'pymdownx.arithmatex'
+                'pymdownx.arithmatex',
+                'pymdownx.tasklist',
+                'pymdownx.tilde',
+                'pymdownx.caret',
+                'pymdownx.mark',
+                'pymdownx.keys',
             ],
             extension_configs={
                 'codehilite': {
@@ -65,6 +75,9 @@ class MarkdownService:
                 },
                 'pymdownx.arithmatex': {
                     'generic': True
+                },
+                'pymdownx.tasklist': {
+                    'custom_checkbox': True
                 }
             }
         )

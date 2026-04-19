@@ -10,6 +10,15 @@
     --cg-glitch-duration: 6s;
     --cg-glitch-shift: 2px;
     --cg-primary-soft: rgba(57, 255, 20, 0.12);
+
+    --plugin-bg: var(--cg-card-bg);
+    --plugin-bg-soft: #1a1a1a;
+    --plugin-text: var(--cg-text);
+    --plugin-text-muted: #888;
+    --plugin-border: #333;
+    --plugin-primary: var(--cg-primary);
+    --plugin-radius: 4px;
+    --plugin-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 body[data-glitch-intensity="low"] {

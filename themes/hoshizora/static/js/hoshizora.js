@@ -138,6 +138,7 @@
   function applyTheme(mode) {
     root.setAttribute('data-theme', mode);
     body.dataset.currentMode = mode;
+    window.dispatchEvent(new CustomEvent('noteblog:theme-change', { detail: { theme: mode } }));
   }
 
   function toggleTheme() {

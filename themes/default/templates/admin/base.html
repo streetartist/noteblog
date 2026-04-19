@@ -6,7 +6,91 @@
 
 {% block head %}
 {{ super() }}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+/* Admin mobile topbar */
+.admin-mobile-topbar {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 1100;
+    height: 48px;
+    background: #fff;
+    border-bottom: 1px solid #e4e7ed;
+    align-items: center;
+    padding: 0 12px;
+    gap: 12px;
+}
+.admin-mobile-topbar .admin-mobile-toggle {
+    width: 32px; height: 32px;
+    border: none; border-radius: 6px;
+    background: transparent;
+    color: #606266;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.admin-mobile-topbar .admin-mobile-toggle:active { background: #f0f0f0; }
+.admin-mobile-topbar .admin-mobile-title {
+    font-size: 15px; font-weight: 600; color: #303133;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.admin-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.35);
+    z-index: 1200;
+    opacity: 0;
+    transition: opacity .25s ease;
+}
+.admin-overlay.open { display: block; opacity: 1; }
+
+@media (max-width: 768px) {
+    .admin-mobile-topbar { display: flex; }
+    .site-header { display: none !important; }
+    .admin-layout { flex-direction: column !important; }
+    .admin-sidebar {
+        position: fixed !important;
+        top: 0; left: 0; bottom: 0;
+        width: 260px !important;
+        z-index: 1300;
+        transform: translateX(-100%);
+        transition: transform .25s cubic-bezier(.4,0,.2,1);
+        overflow-y: auto;
+        box-shadow: 4px 0 16px rgba(0,0,0,.1);
+    }
+    .admin-sidebar.open { transform: translateX(0); }
+    .admin-main { padding: 12px !important; }
+    .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .admin-dashboard-grid { grid-template-columns: 1fr !important; }
+    .admin-page-header { flex-direction: column !important; align-items: flex-start !important; gap: 10px; }
+    .admin-filter-bar { flex-direction: column !important; align-items: stretch !important; }
+    .admin-pagination { flex-direction: column !important; align-items: center !important; gap: 10px; }
+    .admin-editor-grid { grid-template-columns: 1fr !important; }
+    /* Card-style list items on mobile */
+    .admin-mobile-cards thead { display: none; }
+    .admin-mobile-cards tr {
+        display: block;
+        padding: 12px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .admin-mobile-cards td {
+        display: block;
+        padding: 2px 0 !important;
+        border: none !important;
+        text-align: left !important;
+    }
+    .admin-mobile-cards td:before {
+        content: attr(data-label);
+        font-size: 12px;
+        color: #909399;
+        margin-right: 6px;
+    }
+    .admin-mobile-cards .mobile-hide { display: none !important; }
+    .admin-mobile-cards .admin-action-btn { padding: 6px 12px; min-width: 60px; font-size: 12px; }
+}
 .admin-action-btn {
     display: inline-flex;
     align-items: center;
@@ -53,9 +137,14 @@
 {% endblock %}
 
 {% block content %}
+<div class="admin-mobile-topbar">
+    <button class="admin-mobile-toggle" id="adminMenuToggle" aria-label="菜单">&#9776;</button>
+    <span class="admin-mobile-title">{% block admin_mobile_title %}管理后台{% endblock %}</span>
+</div>
+<div class="admin-overlay" id="adminOverlay"></div>
 <div class="admin-layout" style="display: flex; min-height: calc(100vh - 200px);">
     <!-- 管理后台侧边栏 -->
-    <aside class="admin-sidebar" style="width: 250px; background: #f5f7fa; border-right: 1px solid #e4e7ed; padding: 20px 0;">
+    <aside class="admin-sidebar" id="adminSidebar" style="width: 250px; background: #f5f7fa; border-right: 1px solid #e4e7ed; padding: 20px 0;">
         <div class="admin-logo" style="padding: 0 20px 20px; border-bottom: 1px solid #e4e7ed; margin-bottom: 20px;">
             <h3 style="margin: 0; color: #303133; font-size: 18px;">管理后台</h3>
         </div>
@@ -147,12 +236,23 @@
 
 {% block scripts %}
 <script>
-// 后台特定的JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    // 高亮当前菜单项
+    // Mobile sidebar toggle
+    var toggle = document.getElementById('adminMenuToggle');
+    var sidebar = document.getElementById('adminSidebar');
+    var overlay = document.getElementById('adminOverlay');
+    function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('open'); }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+    if (toggle) toggle.addEventListener('click', function() {
+        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+    if (overlay) overlay.addEventListener('click', closeSidebar);
+    // Close sidebar on nav click (mobile)
+    sidebar.querySelectorAll('a').forEach(function(a) { a.addEventListener('click', closeSidebar); });
+
+    // Highlight current menu item
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.admin-nav a');
-    
     navLinks.forEach(link => {
         if (link.getAttribute('href') === currentPath) {
             link.style.background = '#409eff';
