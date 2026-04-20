@@ -181,9 +181,7 @@
         </footer>
 
         <div class="back-to-top" v-show="showBackToTop" @click="scrollToTop">
-            <el-icon>
-                <ArrowUp />
-            </el-icon>
+            <svg viewBox="0 0 1024 1024" width="20" height="20" fill="currentColor"><path d="M572.235 205.282v600.365a30.118 30.118 0 1 1-60.235 0V205.282L292.382 424.9a30.118 30.118 0 1 1-42.6-42.6L512 120.082l262.218 262.218a30.118 30.118 0 0 1-42.6 42.6L572.235 205.282z"/></svg>
         </div>
         
         {% if not current_user.is_authenticated %}
