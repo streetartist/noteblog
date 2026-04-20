@@ -268,8 +268,7 @@
             </template>
         </el-dialog>
         
-        {% if current_user.is_authenticated %}
-        <!-- 编辑资料对话框 -->
+        {% if current_user.is_authenticated and not _admin_page %}
         <el-dialog v-model="editProfileDialogVisible" title="编辑个人资料" width="500px">
             <el-form :model="editProfileForm" label-width="80px" :rules="editProfileRules" ref="editProfileFormRef">
                 <el-form-item label="用户名">
