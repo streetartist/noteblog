@@ -57,6 +57,7 @@
     </div>
 
     <form method="POST" id="postForm">
+        <input type="hidden" name="status" id="postStatus" value="{{ post.status or 'draft' }}">
         <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;" class="admin-editor-grid">
             <!-- 主要内容区 -->
             <div>
@@ -152,14 +153,6 @@
                     <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">发布设置</h3>
                     
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">状态</label>
-                        <select name="status" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
-                            <option value="draft" {% if post.status == 'draft' %}selected{% endif %}>草稿</option>
-                            <option value="published" {% if post.status == 'published' %}selected{% endif %}>已发布</option>
-                        </select>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 8px; color: #606266; font-size: 14px; font-weight: 500;">文章类型</label>
                         <select name="post_type" style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
                             <option value="post" {% if post.post_type == 'post' %}selected{% endif %}>文章</option>
@@ -243,7 +236,7 @@
 
                 <!-- 操作按钮 -->
                 <div class="admin-card admin-sticky-actions" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <button type="submit" style="width: 100%; padding: 10px; background: #409eff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        <button type="button" onclick="publishPost()" style="width: 100%; padding: 10px; background: #409eff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
                             更新文章
                         </button>
                         <button type="button" onclick="saveDraft()" style="width: 100%; padding: 10px; background: #909399; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
@@ -329,6 +322,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    window.publishPost = function() {
+        window.__syncMarkdownContent();
+        document.getElementById('postStatus').value = 'published';
+        form.submit();
+    };
+
     function updateSlugPreview() {
         const slug = slugInput.value;
         if (slug) {
@@ -360,11 +359,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.saveDraft = function() {
-        if (typeof window.__syncMarkdownContent === 'function') {
-            window.__syncMarkdownContent();
-        }
-        const statusInput = form.querySelector('select[name="status"]');
-        statusInput.value = 'draft';
+        window.__syncMarkdownContent();
+        document.getElementById('postStatus').value = 'draft';
         form.submit();
     };
 
