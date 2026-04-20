@@ -22,6 +22,7 @@ class Plugin(db.Model):
     max_noteblog_version = db.Column(db.String(20), nullable=True)
     
     # 插件状态
+    is_installed = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=False)
     is_system = db.Column(db.Boolean, default=False)  # 是否为系统插件
     _install_path = db.Column('install_path', db.String(255), nullable=False)  # 插件安装路径
@@ -136,6 +137,7 @@ class Plugin(db.Model):
             'license': self.license,
             'min_noteblog_version': self.min_noteblog_version,
             'max_noteblog_version': self.max_noteblog_version,
+            'is_installed': self.is_installed,
             'is_active': self.is_active,
             'is_system': self.is_system,
             'install_path': self.install_path_relative,

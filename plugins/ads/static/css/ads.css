@@ -1,0 +1,14 @@
+.ads-widget {
+    margin-top: 16px;
+}
+.ads-widget .ad-slot-item {
+    margin-bottom: 12px;
+    overflow: hidden;
+    border-radius: 6px;
+}
+.ads-widget .ad-slot-item:last-child {
+    margin-bottom: 0;
+}
+.ads-widget .ad-slot-item ins {
+    display: block;
+}

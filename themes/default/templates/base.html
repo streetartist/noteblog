@@ -430,12 +430,12 @@
                     loginForm: { username: '', password: '', remember: false },
                     registerForm: { username: '', email: '', display_name: '', password: '', confirmPassword: '' },
                     forgotPasswordForm: { email: '' },
-                    editProfileForm: { 
-                        display_name: '{{ current_user.display_name or "" }}', 
-                        email: '{{ current_user.email }}', 
-                        bio: '{{ current_user.bio or "" }}', 
-                        website: '{{ current_user.website or "" }}', 
-                        location: '{{ current_user.location or "" }}' 
+                    editProfileForm: {
+                        display_name: '{{ current_user.display_name or "" }}',
+                        email: '{{ current_user.email }}',
+                        bio: '{{ current_user.bio or "" }}',
+                        website: '{{ current_user.website or "" }}',
+                        location: '{{ current_user.location or "" }}'
                     },
                     changePasswordForm: { current_password: '', new_password: '', confirm_password: '' },
                     // 评论相关表单（post 页面需要）

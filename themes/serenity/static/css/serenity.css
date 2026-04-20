@@ -1507,13 +1507,13 @@ button.serenity-link:focus-visible {
 .serenity-toast {
     position: fixed;
     left: 50%;
-    bottom: 2rem;
-    transform: translate(-50%, 20px);
+    top: 5rem;
+    transform: translate(-50%, -20px);
     background: var(--serenity-surface);
     border: 1px solid var(--serenity-border);
     border-radius: 999px;
     padding: 0.65rem 1.5rem;
-    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.15);
     opacity: 0;
     transition: var(--serenity-transition);
     z-index: 50;

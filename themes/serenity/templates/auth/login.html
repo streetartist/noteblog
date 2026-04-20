@@ -4,7 +4,7 @@
             <h3>登录</h3>
             <button type="button" class="serenity-icon-button" data-modal-close aria-label="关闭">×</button>
         </header>
-        <form action="{{ url_for('auth.login') }}" method="POST">
+        <form action="{{ url_for('auth.login', next=request.args.get('next', '')) }}" method="POST">
             <label for="login-identifier">用户名或邮箱
                 <input id="login-identifier" type="text" name="username" autocomplete="username" required>
             </label>

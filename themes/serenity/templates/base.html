@@ -441,6 +441,19 @@
     </div>
 
     <script src="/themes/serenity/static/js/serenity.js"></script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <script>
+        (function() {
+            var st = window.serenityTheme;
+            if (!st || !st.showToast) return;
+            {% for category, message in messages %}
+            st.showToast('{{ message }}', '{{ category }}');
+            {% endfor %}
+        })();
+        </script>
+        {% endif %}
+    {% endwith %}
     <script>
     (function() {
         var lb = document.getElementById('serenityLightbox');

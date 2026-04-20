@@ -1,0 +1,10 @@
+<!-- 广告侧边栏模块 -->
+{% if ads and ads.slots %}
+<div class="widget ads-widget">
+    {% for slot in ads.slots %}
+    <div class="ad-slot-item">
+        {{ slot.ad_code|safe }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

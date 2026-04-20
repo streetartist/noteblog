@@ -64,11 +64,11 @@
     function getEditorContent() {
         try {
             const editor = window.__adminMarkdownEditor;
-            if (editor && typeof editor.value === 'function') {
-                return editor.value();
+            if (editor && typeof editor.getValue === 'function') {
+                return editor.getValue();
             }
         } catch (err) {
-            console.warn('读取 EasyMDE 内容失败', err);
+            console.warn('读取编辑器内容失败', err);
         }
         const textarea = document.querySelector('textarea[name="content"]');
         return textarea ? textarea.value : '';

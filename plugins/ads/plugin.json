@@ -1,0 +1,65 @@
+{
+    "name": "ads",
+    "display_name": "广告管理",
+    "version": "1.0.0",
+    "description": "在侧边栏显示广告，支持Google AdSense验证",
+    "author": "Noteblog Team",
+    "license": "MIT",
+    "entry_point": "create_plugin",
+    "blueprints": [
+        {
+            "name": "ads_bp",
+            "url_prefix": "/ads"
+        }
+    ],
+    "requirements": [],
+    "min_noteblog_version": "1.0.0",
+    "max_noteblog_version": "2.0.0",
+    "config_schema": {
+        "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "是否启用广告插件"
+        },
+        "adsense_client_id": {
+            "type": "string",
+            "default": "",
+            "description": "Google AdSense发布商ID（如ca-pub-1811066562266173）"
+        },
+        "show_in_sidebar": {
+            "type": "boolean",
+            "default": true,
+            "description": "是否在侧边栏显示广告"
+        }
+    },
+    "hooks": [
+        "template_context",
+        "admin_navigation"
+    ],
+    "filters": [],
+    "permissions": [
+        "admin.access"
+    ],
+    "templates": {
+        "admin": "templates/admin.html",
+        "sidebar": "templates/sidebar.html"
+    },
+    "assets": {
+        "css": [
+            "static/css/ads.css"
+        ]
+    },
+    "database": {
+        "models": [],
+        "migrations": []
+    },
+    "api_endpoints": [
+        {
+            "path": "/api/ads",
+            "methods": ["GET", "POST"],
+            "description": "获取或管理广告位"
+        }
+    ],
+    "cron_jobs": [],
+    "event_listeners": []
+}

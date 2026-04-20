@@ -4,20 +4,8 @@
 
 {% block head %}
 {{ super() }}
-<link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.css">
+<link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/vditor@3.11.2/dist/index.css" />
 <style>
-.markdown-editor-wrapper .CodeMirror,
-.markdown-editor-wrapper .editor-toolbar {
-    border-color: #dcdfe6;
-    border-radius: 4px;
-}
-
-.markdown-editor-wrapper .CodeMirror {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    min-height: 400px;
-}
-
 .markdown-editor-help {
     font-size: 12px;
     color: #909399;
@@ -26,14 +14,13 @@
 }
 
 @media (max-width: 768px) {
-    .markdown-editor-wrapper .CodeMirror { min-height: 300px; }
-    .markdown-editor-wrapper .editor-toolbar { flex-wrap: wrap; }
-    .markdown-editor-wrapper .editor-toolbar button { padding: 2px; }
+    .markdown-editor-wrapper { width: 100%; min-width: 0; }
+    .admin-edit-post { width: 100%; }
     .admin-edit-post .admin-card { padding: 14px !important; margin-bottom: 12px !important; }
     .admin-edit-post .admin-card h3 { font-size: 14px !important; margin-bottom: 12px !important; }
     .admin-edit-post input[type="text"],
     .admin-edit-post textarea,
-    .admin-edit-post select { font-size: 16px !important; }
+    .admin-edit-post select { font-size: 16px !important; width: 100% !important; box-sizing: border-box !important; }
     .admin-sticky-actions {
         position: sticky; bottom: 0; z-index: 50;
         background: #fff; border-top: 1px solid #e4e7ed;
@@ -104,8 +91,8 @@
                 <div class="admin-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
                     <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">文章内容 <span style="color: #f56c6c;">*</span></h3>
                     <div class="markdown-editor-wrapper">
-                        <textarea id="content-editor" name="content" rows="15" placeholder="请输入文章内容，支持Markdown格式" required 
-                                  style="width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; resize: vertical;">{{ post.content|e }}</textarea>
+                        <textarea id="content-editor" name="content" style="display:none;" required>{{ post.content|e }}</textarea>
+                        <div id="vditor-editor"></div>
                         <div class="markdown-editor-help">
                             使用 Markdown 编辑文章，可直接粘贴或拖拽图片，系统会自动上传（单张不超过 {{ upload_limit_mb }}MB，支持 PNG/JPG/GIF/WebP）。
                         </div>
@@ -281,7 +268,7 @@
 {% block scripts %}
 {{ super() }}
 <script src="https://unpkg.com/pinyin-pro"></script>
-<script src="https://fastly.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js"></script>
+<script src="https://fastly.jsdelivr.net/npm/vditor@3.11.2/dist/index.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const titleInput = document.querySelector('input[name="title"]');
@@ -289,72 +276,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const slugPreview = document.getElementById('slug-preview');
     let slugManuallyEdited = !!slugInput.value;
     const form = document.getElementById('postForm');
-    let markdownEditor = null;
 
-    function initMarkdownEditor() {
-        const textarea = document.querySelector('textarea[name="content"]');
-        if (!textarea || typeof EasyMDE === 'undefined') {
-            console.warn('EasyMDE 未加载或内容输入框缺失');
-            return;
-        }
+    var contentTextarea = document.getElementById('content-editor');
+    var initialContent = contentTextarea ? contentTextarea.value : '';
+    var imageMaxSize = {{ upload_limit_mb|int }} * 1024 * 1024;
+    var uploadEndpoint = '{{ url_for("admin.upload_media") }}';
 
-        const imageMaxSize = {{ upload_limit_mb|int }} * 1024 * 1024;
-        const uploadEndpoint = '{{ url_for('admin.upload_media') }}';
-
-        const uploadImage = (file, onSuccess, onError) => {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            fetch(uploadEndpoint, {
-                method: 'POST',
-                body: formData,
-                credentials: 'same-origin'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.success === 1 && data.url) {
-                    onSuccess(data.url);
-                } else {
-                    const message = (data && data.message) || '上传失败，请稍后再试';
-                    onError(message);
+    var vditor = new Vditor('vditor-editor', {
+        value: initialContent,
+        height: 500,
+        mode: 'ir',
+        placeholder: '请输入文章内容，支持Markdown格式',
+        lang: 'zh_CN',
+        cache: { enable: false },
+        cdn: 'https://fastly.jsdelivr.net/npm/vditor@3.11.2',
+        upload: {
+            url: uploadEndpoint,
+            fieldName: 'file',
+            max: imageMaxSize,
+            accept: 'image/png,image/jpeg,image/gif,image/webp',
+            multiple: false,
+            format: function(files, responseText) {
+                var resp = JSON.parse(responseText);
+                if (resp && resp.success === 1 && resp.url) {
+                    return JSON.stringify({msg:'', code:0, data:{errFiles:[], succMap:((o={})=>(o[files[0].name]=resp.url,o))({})}});
                 }
-            })
-            .catch(error => {
-                console.error('上传失败', error);
-                onError('上传失败，请检查网络连接');
-            });
-        };
-
-        markdownEditor = new EasyMDE({
-            element: textarea,
-            spellChecker: false,
-            placeholder: '使用 Markdown 编辑内容，支持粘贴或拖拽图片',
-            status: ['lines', 'words', 'cursor'],
-            uploadImage: true,
-            imageMaxSize: imageMaxSize,
-            imageAccept: 'image/png,image/jpeg,image/gif,image/webp',
-            imageUploadFunction: uploadImage
-        });
-        window.__adminMarkdownEditor = markdownEditor;
-
-        const syncContent = () => {
-            if (markdownEditor && markdownEditor.codemirror) {
-                markdownEditor.codemirror.save();
+                return JSON.stringify({msg: resp.message||'上传失败', code:1, data:{errFiles:[files[0].name], succMap:{}}});
             }
-        };
-
-        if (markdownEditor && markdownEditor.codemirror) {
-            markdownEditor.codemirror.on('change', syncContent);
+        },
+        after: function() {
+            window.__adminMarkdownEditor = vditor;
         }
+    });
 
-        if (form) {
-            form.addEventListener('submit', syncContent);
+    window.__syncMarkdownContent = function() {
+        if (vditor && contentTextarea) {
+            contentTextarea.value = vditor.getValue();
         }
+    };
 
-        window.__syncMarkdownContent = syncContent;
+    if (form) {
+        form.addEventListener('submit', function() {
+            window.__syncMarkdownContent();
+        });
     }
-
-    initMarkdownEditor();
 
     function updateSlugPreview() {
         const slug = slugInput.value;

@@ -1,0 +1,171 @@
+<style>
+.ads-admin { font-family: "Segoe UI", Arial, sans-serif; color: #303133; }
+.ads-admin .admin-card { background: #fff; border: 1px solid #ebeef5; border-radius: 8px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.08); margin-bottom: 20px; }
+.ads-admin .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.ads-admin .card-header h2 { font-size: 20px; margin: 0; }
+.ads-admin .card-header .subtitle { margin: 4px 0 0; color: #909399; font-size: 13px; }
+.ads-admin .btn-primary { background: #409eff; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+.ads-admin .btn-primary:hover { background: #66b1ff; }
+.ads-admin .btn-danger { background: #f56c6c; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.ads-admin .btn-danger:hover { background: #f78989; }
+.ads-admin .btn-success { background: #67c23a; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.ads-admin .btn-warning { background: #e6a23c; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+.ads-admin .config-form { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+.ads-admin .form-group { display: flex; flex-direction: column; gap: 6px; }
+.ads-admin .form-group label { font-weight: 600; font-size: 14px; }
+.ads-admin .form-group input[type="text"] { padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; }
+.ads-admin .form-group textarea { padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; font-family: monospace; min-height: 100px; resize: vertical; }
+.ads-admin .form-group select { padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; }
+.ads-admin .form-group .hint { color: #909399; font-size: 12px; }
+.ads-admin .checkbox-row { display: flex; gap: 24px; align-items: center; }
+.ads-admin table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ads-admin th, .ads-admin td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ebeef5; }
+.ads-admin th { background: #f5f7fa; font-weight: 600; }
+.ads-admin .status-active { color: #67c23a; }
+.ads-admin .status-inactive { color: #909399; }
+.ads-admin .actions { display: flex; gap: 6px; }
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 1000; justify-content: center; align-items: center; }
+.modal-overlay.active { display: flex; }
+.modal { background: #fff; border-radius: 8px; padding: 24px; width: 560px; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
+.modal h3 { margin: 0 0 20px; font-size: 18px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.modal-actions .btn-cancel { background: #f5f7fa; color: #606266; border: 1px solid #dcdfe6; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+</style>
+
+<div class="ads-admin">
+    <!-- 配置区 -->
+    <div class="admin-card">
+        <div class="card-header">
+            <div><h2>广告管理</h2><p class="subtitle">管理广告位和Google AdSense配置</p></div>
+        </div>
+        <div class="config-form">
+            <div class="form-group">
+                <label>AdSense 发布商 ID</label>
+                <input type="text" id="adsense_client_id" value="{{ config.get('adsense_client_id', '') }}" placeholder="ca-pub-1811066562266173">
+                <span class="hint">填写后会自动在页面 &lt;head&gt; 中注入 AdSense 验证脚本</span>
+            </div>
+            <div class="checkbox-row">
+                <label><input type="checkbox" id="cfg_enabled" {{ 'checked' if config.get('enabled', True) }}> 启用广告插件</label>
+                <label><input type="checkbox" id="cfg_sidebar" {{ 'checked' if config.get('show_in_sidebar', True) }}> 在侧边栏显示广告</label>
+            </div>
+            <button class="btn-primary" onclick="saveConfig()">保存配置</button>
+        </div>
+    </div>
+
+    <!-- 广告位列表 -->
+    <div class="admin-card">
+        <div class="card-header">
+            <div><h2>广告位列表</h2></div>
+            <button class="btn-primary" onclick="openModal()">+ 添加广告位</button>
+        </div>
+        <table>
+            <thead><tr><th>名称</th><th>位置</th><th>排序</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="slots-tbody"></tbody>
+        </table>
+    </div>
+
+    <!-- 弹窗 -->
+    <div class="modal-overlay" id="slotModal">
+        <div class="modal">
+            <h3 id="modalTitle">添加广告位</h3>
+            <input type="hidden" id="edit_id">
+            <div class="config-form">
+                <div class="form-group">
+                    <label>广告位名称</label>
+                    <input type="text" id="slot_name" placeholder="如：侧边栏广告1">
+                </div>
+                <div class="form-group">
+                    <label>广告代码 (HTML)</label>
+                    <textarea id="slot_ad_code" placeholder="粘贴Google AdSense广告单元代码或其他广告HTML"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>广告位置</label>
+                    <select id="slot_type">
+                        <option value="sidebar">侧边栏</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>排序权重</label>
+                    <input type="text" id="slot_sort" placeholder="数字越大越靠前" value="0">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn-primary" onclick="saveSlot()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = '/plugins/ads/api';
+let slotsData = {{ slots|tojson }};
+
+function renderSlots() {
+    const tbody = document.getElementById('slots-tbody');
+    if (!slotsData.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#909399;">暂无广告位</td></tr>'; return; }
+    tbody.innerHTML = slotsData.map(s => `<tr>
+        <td>${s.name}</td>
+        <td>${s.slot_type === 'sidebar' ? '侧边栏' : s.slot_type}</td>
+        <td>${s.sort_order}</td>
+        <td class="${s.is_active ? 'status-active' : 'status-inactive'}">${s.is_active ? '启用' : '停用'}</td>
+        <td class="actions">
+            <button class="btn-warning" onclick="editSlot(${s.id})">编辑</button>
+            <button class="${s.is_active ? 'btn-danger' : 'btn-success'}" onclick="toggleSlot(${s.id},${!s.is_active})">${s.is_active ? '停用' : '启用'}</button>
+            <button class="btn-danger" onclick="deleteSlot(${s.id})">删除</button>
+        </td></tr>`).join('');
+}
+
+function saveConfig() {
+    fetch(API + '/config', { method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            adsense_client_id: document.getElementById('adsense_client_id').value.trim(),
+            enabled: document.getElementById('cfg_enabled').checked,
+            show_in_sidebar: document.getElementById('cfg_sidebar').checked
+        })
+    }).then(r => r.json()).then(d => alert(d.message));
+}
+
+function openModal(slot) {
+    document.getElementById('modalTitle').textContent = slot ? '编辑广告位' : '添加广告位';
+    document.getElementById('edit_id').value = slot ? slot.id : '';
+    document.getElementById('slot_name').value = slot ? slot.name : '';
+    document.getElementById('slot_ad_code').value = slot ? slot.ad_code : '';
+    document.getElementById('slot_type').value = slot ? slot.slot_type : 'sidebar';
+    document.getElementById('slot_sort').value = slot ? slot.sort_order : 0;
+    document.getElementById('slotModal').classList.add('active');
+}
+function closeModal() { document.getElementById('slotModal').classList.remove('active'); }
+
+function saveSlot() {
+    const id = document.getElementById('edit_id').value;
+    const data = {
+        name: document.getElementById('slot_name').value,
+        ad_code: document.getElementById('slot_ad_code').value,
+        slot_type: document.getElementById('slot_type').value,
+        sort_order: parseInt(document.getElementById('slot_sort').value) || 0
+    };
+    const url = id ? `${API}/slots/${id}` : `${API}/slots`;
+    const method = id ? 'PUT' : 'POST';
+    fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
+        .then(r => r.json()).then(d => { alert(d.message); if (d.success) { closeModal(); loadSlots(); } });
+}
+
+function editSlot(id) { const s = slotsData.find(x => x.id === id); if (s) openModal(s); }
+
+function toggleSlot(id, active) {
+    fetch(`${API}/slots/${id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({is_active: active}) })
+        .then(r => r.json()).then(d => { if (d.success) loadSlots(); });
+}
+
+function deleteSlot(id) {
+    if (!confirm('确定删除此广告位？')) return;
+    fetch(`${API}/slots/${id}`, { method: 'DELETE' }).then(r => r.json()).then(d => { if (d.success) loadSlots(); });
+}
+
+function loadSlots() {
+    fetch(`${API}/slots`).then(r => r.json()).then(d => { if (d.success) { slotsData = d.data; renderSlots(); } });
+}
+
+renderSlots();
+</script>

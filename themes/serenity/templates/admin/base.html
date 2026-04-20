@@ -55,6 +55,7 @@
         .serenity-admin-main {
             flex: 1;
             margin-left: 250px;
+            min-width: 0;
             display: flex;
             flex-direction: column;
         }
@@ -72,6 +73,7 @@
         .serenity-admin-content {
             flex: 1;
             padding: 2rem;
+            min-width: 0;
         }
         .serenity-admin-page-title {
             font-size: 1.8rem;
@@ -104,8 +106,24 @@
             .serenity-admin-main {
                 margin-left: 0;
             }
+            .serenity-admin-content {
+                padding: 1rem;
+            }
             .serenity-admin-toggle {
                 display: inline-flex;
+            }
+            .admin-editor-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .admin-card {
+                padding: 12px !important;
+            }
+            .admin-card input[type="text"],
+            .admin-card textarea,
+            .admin-card select {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
             }
         }
     </style>

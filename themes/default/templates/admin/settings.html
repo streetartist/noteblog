@@ -163,18 +163,10 @@
                     <h3 style="margin: 0 0 20px 0; color: #303133; font-size: 16px;">快速操作</h3>
                     
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <el-button type="primary" native-type="submit" style="width: 100%;">
-                            <i class="el-icon-check"></i> 保存设置
-                        </el-button>
-                        <el-button @click="resetSettings" style="width: 100%;">
-                            <i class="el-icon-refresh"></i> 重置设置
-                        </el-button>
-                        <el-button @click="exportSettings" style="width: 100%;">
-                            <i class="el-icon-download"></i> 导出设置
-                        </el-button>
-                        <el-button @click="importSettings" style="width: 100%;">
-                            <i class="el-icon-upload2"></i> 导入设置
-                        </el-button>
+                        <button type="submit" style="width: 100%; padding: 10px; background: #409eff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">保存设置</button>
+                        <button type="button" onclick="resetSettings()" style="width: 100%; padding: 10px; background: #f0f0f0; color: #606266; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; font-size: 14px;">重置设置</button>
+                        <button type="button" onclick="exportSettings()" style="width: 100%; padding: 10px; background: #f0f0f0; color: #606266; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; font-size: 14px;">导出设置</button>
+                        <button type="button" onclick="importSettings()" style="width: 100%; padding: 10px; background: #f0f0f0; color: #606266; border: 1px solid #dcdfe6; border-radius: 4px; cursor: pointer; font-size: 14px;">导入设置</button>
                     </div>
                 </div>
 

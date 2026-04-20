@@ -45,15 +45,17 @@ def login():
             next_page = request.args.get('next')
             if not next_page or urlparse(next_page).netloc != '':
                 next_page = url_for('main.index')
-            
-            flash('登录成功！', 'success')
+
+            if not next_page.startswith('/admin'):
+                flash('登录成功！', 'success')
             return redirect(next_page)
         else:
             flash('用户名或密码错误', 'error')
             return redirect(url_for('main.index', modal='login'))
     
     # GET请求重定向到首页并打开登录模态框
-    return redirect(url_for('main.index', modal='login'))
+    next_page = request.args.get('next', '')
+    return redirect(url_for('main.index', modal='login', next=next_page) if next_page else url_for('main.index', modal='login'))
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():

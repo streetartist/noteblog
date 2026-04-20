@@ -146,6 +146,11 @@ class SerenityTheme {
                 closeAll();
             }
         });
+
+        const urlModal = new URLSearchParams(window.location.search).get('modal');
+        if (urlModal && this.modalMap[urlModal]) {
+            openModal(urlModal);
+        }
     }
 
     initBackToTop() {

@@ -224,7 +224,7 @@ def admin_page():
         if plugin:
             config = plugin.get_config()
             links = [link.to_dict() for link in FriendLink.get_all_links()]
-            return render_template('admin.html', config=config, links=links)
+            return render_template('friend_links_admin.html', config=config, links=links)
         return "插件未找到", 404
     except Exception as e:
         current_app.logger.error(f"获取友链插件失败: {e}")
