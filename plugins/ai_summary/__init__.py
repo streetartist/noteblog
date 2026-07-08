@@ -69,6 +69,20 @@ class AISummaryPlugin(PluginBase):
                 accepted_args=3,
                 plugin_name=self.name
             )
+            current_app.plugin_manager.register_hook(
+                'before_post_delete',
+                self._delete_summary_on_post_delete,
+                priority=10,
+                accepted_args=1,
+                plugin_name=self.name
+            )
+
+    def _delete_summary_on_post_delete(self, post: Optional[Post] = None):
+        """文章删除时同步清理摘要缓存，由外层删除事务统一提交。"""
+        if not post or not getattr(post, 'id', None):
+            return
+
+        PostAISummary.query.filter_by(post_id=post.id).delete(synchronize_session=False)
 
     # -------- 过滤器：注入摘要 --------
     def _inject_summary_to_post_context(self, context: Dict[str, Any], post: Post) -> Dict[str, Any]:
@@ -374,6 +388,75 @@ def save_config():
     except Exception as e:
         current_app.logger.error(f'保存配置失败: {e}')
         return jsonify({'success': False, 'message': str(e)})
+
+
+@ai_summary_bp.route('/plugins/ai_summary/api/posts')
+@login_required
+def list_posts_for_summary():
+    try:
+        if not current_user.is_admin:
+            return jsonify({'success': False, 'message': '权限不足'}), 403
+
+        page = max(request.args.get('page', 1, type=int), 1)
+        per_page = min(max(request.args.get('per_page', 10, type=int), 5), 30)
+        status = (request.args.get('status') or '').strip()
+        keyword = (request.args.get('q') or '').strip()
+
+        query = Post.query.filter_by(post_type='post')
+        if status:
+            query = query.filter_by(status=status)
+        if keyword:
+            keyword_like = f'%{keyword}%'
+            filters = [
+                Post.title.ilike(keyword_like),
+                Post.slug.ilike(keyword_like),
+            ]
+            if keyword.isdigit():
+                filters.append(Post.id == int(keyword))
+            query = query.filter(db.or_(*filters))
+
+        posts = query.order_by(Post.created_at.desc()).paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
+
+        post_ids = [post.id for post in posts.items]
+        summaries = {}
+        if post_ids:
+            rows = PostAISummary.query.filter(PostAISummary.post_id.in_(post_ids)).all()
+            summaries = {row.post_id: row for row in rows}
+
+        data = []
+        for post in posts.items:
+            summary = summaries.get(post.id)
+            data.append({
+                'id': post.id,
+                'title': post.title,
+                'slug': post.slug,
+                'status': post.status,
+                'category': post.category.name if post.category else '未分类',
+                'published_at': post.published_at.isoformat() if post.published_at else None,
+                'created_at': post.created_at.isoformat() if post.created_at else None,
+                'summary_cached': bool(summary and summary.summary),
+                'summary_updated_at': summary.updated_at.isoformat() if summary and summary.updated_at else None,
+            })
+
+        return jsonify({
+            'success': True,
+            'posts': data,
+            'pagination': {
+                'page': posts.page,
+                'per_page': posts.per_page,
+                'total': posts.total,
+                'pages': posts.pages,
+                'has_prev': posts.has_prev,
+                'has_next': posts.has_next,
+            }
+        })
+    except Exception as e:
+        current_app.logger.error(f'获取 AI 摘要文章列表失败: {e}')
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 @ai_summary_bp.route('/plugins/ai_summary/api/force/<int:post_id>', methods=['POST'])

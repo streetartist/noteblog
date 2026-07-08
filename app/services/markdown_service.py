@@ -1,8 +1,17 @@
 """
 Markdown处理服务
 """
-import markdown
-from markdown.extensions import codehilite, tables, toc, fenced_code
+from html import escape
+
+from markdown_it import MarkdownIt
+from mdit_py_plugins.deflist import deflist_plugin
+from mdit_py_plugins.dollarmath import dollarmath_plugin
+from mdit_py_plugins.footnote import footnote_plugin
+from mdit_py_plugins.tasklists import tasklists_plugin
+from pygments import highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers import TextLexer, get_lexer_by_name
+from pygments.util import ClassNotFound
 from bleach import clean
 from bleach.sanitizer import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 import re
@@ -20,67 +29,109 @@ class MarkdownService:
             'a', 'img',
             'table', 'thead', 'tbody', 'tr', 'th', 'td',
             'hr', 'div', 'span',
+            'section',
             'input', 'label', 'mark', 'kbd', 'sub', 'sup',
             'details', 'summary'
         ]
 
         self.allowed_attributes = {
             **ALLOWED_ATTRIBUTES,
-            'a': ['href', 'title', 'target'],
+            'a': ['href', 'title', 'target', 'rel', 'id', 'class'],
             'img': ['src', 'alt', 'title', 'width', 'height'],
             'code': ['class'],
             'pre': ['class'],
             'div': ['class'],
             'span': ['class'],
+            'section': ['class'],
+            'ul': ['class'],
+            'ol': ['class'],
+            'hr': ['class'],
             'th': ['align'],
             'td': ['align'],
-            'h1': ['id'],
-            'h2': ['id'],
-            'h3': ['id'],
-            'h4': ['id'],
-            'h5': ['id'],
-            'h6': ['id'],
-            'input': ['type', 'checked', 'disabled'],
+            'h1': ['id', 'class'],
+            'h2': ['id', 'class'],
+            'h3': ['id', 'class'],
+            'h4': ['id', 'class'],
+            'h5': ['id', 'class'],
+            'h6': ['id', 'class'],
+            'input': ['type', 'checked', 'disabled', 'class'],
             'label': ['class'],
-            'li': ['class']
+            'li': ['id', 'class'],
+            'sup': ['id', 'class']
         }
         
-        # 初始化Markdown处理器
-        self.md = markdown.Markdown(
-            extensions=[
-                'codehilite',
-                'fenced_code',
-                'tables',
-                'toc',
-                'nl2br',
-                'attr_list',
-                'def_list',
-                'footnotes',
-                'admonition',
-                'pymdownx.arithmatex',
-                'pymdownx.tasklist',
-                'pymdownx.tilde',
-                'pymdownx.caret',
-                'pymdownx.mark',
-                'pymdownx.keys',
-            ],
-            extension_configs={
-                'codehilite': {
-                    'css_class': 'highlight',
-                    'use_pygments': True
-                },
-                'toc': {
-                    'permalink': True,
-                    'permalink_class': 'headerlink'
-                },
-                'pymdownx.arithmatex': {
-                    'generic': True
-                },
-                'pymdownx.tasklist': {
-                    'custom_checkbox': True
+        self.md = (
+            MarkdownIt(
+                'commonmark',
+                {
+                    'html': True,
+                    'breaks': False,
+                    'linkify': False,
+                    'typographer': False,
+                    'langPrefix': 'language-',
+                    'highlight': self._highlight_code
                 }
-            }
+            )
+            .enable('table')
+            .enable('strikethrough')
+            .use(deflist_plugin)
+            .use(dollarmath_plugin)
+            .use(footnote_plugin)
+            .use(tasklists_plugin, enabled=True, label=True)
         )
+
+    def _highlight_code(self, code, lang, attrs):
+        """使用 Pygments 高亮代码块，并保持 markdown-it 的代码块结构。"""
+        if not lang:
+            return ''
+
+        try:
+            lexer = get_lexer_by_name(lang)
+        except ClassNotFound:
+            lexer = TextLexer()
+
+        formatter = HtmlFormatter(nowrap=True)
+        class_name = f'language-{escape(lang, quote=True)}'
+        highlighted = highlight(code, lexer, formatter)
+        return f'<pre class="highlight"><code class="{class_name}">{highlighted}</code></pre>'
+
+    def _parse_tokens(self, text):
+        env = {}
+        tokens = self.md.parse(text, env)
+        self._apply_heading_ids(tokens)
+        return tokens, env
+
+    def _apply_heading_ids(self, tokens):
+        seen_slugs = {}
+
+        for index, token in enumerate(tokens):
+            if token.type != 'heading_open':
+                continue
+
+            existing_id = token.attrGet('id')
+            if existing_id:
+                seen_slugs[existing_id] = seen_slugs.get(existing_id, 0) + 1
+                continue
+
+            inline = tokens[index + 1] if index + 1 < len(tokens) else None
+            heading_text = self._token_text(inline) if inline else ''
+            token.attrSet('id', self._unique_slug(heading_text, seen_slugs))
+
+    def _token_text(self, token):
+        if not token:
+            return ''
+
+        if token.children:
+            return ''.join(self._token_text(child) for child in token.children)
+
+        return token.content or ''
+
+    def _unique_slug(self, text, seen_slugs):
+        base = re.sub(r'[^\w\s-]', '', text, flags=re.UNICODE).strip().lower()
+        base = re.sub(r'[-\s]+', '-', base).strip('-') or 'section'
+        count = seen_slugs.get(base, 0)
+        seen_slugs[base] = count + 1
+        return base if count == 0 else f'{base}-{count}'
     
     def render(self, text, sanitize=True):
         """
@@ -96,8 +147,8 @@ class MarkdownService:
         if not text:
             return ''
         
-        # 转换Markdown为HTML
-        html = self.md.convert(text)
+        tokens, env = self._parse_tokens(text)
+        html = self.md.renderer.render(tokens, self.md.options, env)
         
         # 如果需要，进行HTML清理
         if sanitize:
@@ -153,15 +204,36 @@ class MarkdownService:
         if not text:
             return ''
         
-        # 重置Markdown处理器状态
-        self.md.reset()
-        
-        # 转换文本
-        self.md.convert(text)
-        
-        # 获取目录
-        toc = getattr(self.md, 'toc', '')
-        return toc
+        tokens, _ = self._parse_tokens(text)
+        items = []
+
+        for index, token in enumerate(tokens):
+            if token.type != 'heading_open':
+                continue
+
+            inline = tokens[index + 1] if index + 1 < len(tokens) else None
+            title = self._token_text(inline).strip()
+            if not title:
+                continue
+
+            items.append({
+                'level': token.tag[1],
+                'id': token.attrGet('id'),
+                'title': title
+            })
+
+        if not items:
+            return ''
+
+        html = ['<div class="toc">', '<ul>']
+        for item in items:
+            html.append(
+                f'<li class="toc-level-{item["level"]}">'
+                f'<a href="#{escape(item["id"], quote=True)}">{escape(item["title"])}</a>'
+                '</li>'
+            )
+        html.extend(['</ul>', '</div>'])
+        return ''.join(html)
     
     def is_markdown(self, text):
         """

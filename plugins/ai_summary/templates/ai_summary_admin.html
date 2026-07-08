@@ -140,6 +140,94 @@
     font-size: 13px;
     min-height: 40px;
 }
+.ai-summary-admin .post-tools {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.ai-summary-admin .post-tools input,
+.ai-summary-admin .post-tools select {
+    height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #f9fafb;
+    color: #111827;
+    font-size: 14px;
+}
+.ai-summary-admin .post-tools input {
+    flex: 1 1 260px;
+}
+.ai-summary-admin .post-tools select {
+    flex: 0 0 140px;
+}
+.ai-summary-admin .post-table-wrap {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+.ai-summary-admin .post-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+.ai-summary-admin .post-table th,
+.ai-summary-admin .post-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eef2f7;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 13px;
+}
+.ai-summary-admin .post-table th {
+    background: #f9fafb;
+    color: #4b5563;
+    font-weight: 700;
+}
+.ai-summary-admin .post-table tr:last-child td {
+    border-bottom: none;
+}
+.ai-summary-admin .post-title {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 3px;
+}
+.ai-summary-admin .post-meta {
+    color: #6b7280;
+    font-size: 12px;
+}
+.ai-summary-admin .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.ai-summary-admin .badge-success {
+    background: #dcfce7;
+    color: #166534;
+}
+.ai-summary-admin .badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+.ai-summary-admin .badge-muted {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+.ai-summary-admin .post-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    color: #6b7280;
+    font-size: 13px;
+}
 </style>
 <div class="ai-summary-admin" id="ai-summary-admin">
     <div class="admin-card">
@@ -190,22 +278,48 @@
 
     <div class="admin-card">
         <h3>缓存与调试</h3>
-        <p class="subtitle">可针对单篇或全部文章删除缓存，下一次访问会重新请求大模型。</p>
-        <div class="inline-input">
-            <div>
-                <label for="ai-summary-post-id">文章 ID</label>
-                <input type="number" id="ai-summary-post-id" placeholder="在后台文章列表中查看 ID">
-            </div>
-            <button type="button" class="btn btn-primary" onclick="window.forceAISummaryForPost(this)">
-                指定文章重算
+        <p class="subtitle">选择文章后删除缓存，下一次访问会重新请求大模型。</p>
+        <div class="post-tools">
+            <input type="search" id="ai-summary-post-search" placeholder="搜索标题、别名或 ID">
+            <select id="ai-summary-post-status" aria-label="文章状态">
+                <option value="">全部状态</option>
+                <option value="published">已发布</option>
+                <option value="draft">草稿</option>
+                <option value="private">私密</option>
+            </select>
+            <button type="button" class="btn btn-ghost" id="ai-summary-refresh-posts">
+                刷新列表
             </button>
+        </div>
+        <div class="post-table-wrap">
+            <table class="post-table">
+                <thead>
+                    <tr>
+                        <th>文章</th>
+                        <th>分类</th>
+                        <th>状态</th>
+                        <th>摘要缓存</th>
+                        <th>发布时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="ai-summary-post-list">
+                    <tr>
+                        <td colspan="6">正在加载文章...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="post-pagination">
+            <span id="ai-summary-post-page-info">-</span>
+            <div class="actions" style="margin-top:0;">
+                <button type="button" class="btn btn-ghost" id="ai-summary-prev-page">上一页</button>
+                <button type="button" class="btn btn-ghost" id="ai-summary-next-page">下一页</button>
+            </div>
         </div>
         <div class="actions">
             <button type="button" class="btn btn-danger" onclick="window.forceAllAISummaries(this)">
                 清空所有摘要缓存
-            </button>
-            <button type="button" class="btn btn-ghost" onclick="window.refreshAISummaryStatus()">
-                刷新状态信息
             </button>
         </div>
         <div class="log-box" id="ai-summary-status">尚未执行任何操作。</div>
@@ -215,6 +329,22 @@
 <script>
 (function() {
     const statusBox = document.getElementById('ai-summary-status');
+    const postList = document.getElementById('ai-summary-post-list');
+    const postSearch = document.getElementById('ai-summary-post-search');
+    const postStatus = document.getElementById('ai-summary-post-status');
+    const refreshPostsBtn = document.getElementById('ai-summary-refresh-posts');
+    const prevPageBtn = document.getElementById('ai-summary-prev-page');
+    const nextPageBtn = document.getElementById('ai-summary-next-page');
+    const pageInfo = document.getElementById('ai-summary-post-page-info');
+    const postListState = {
+        page: 1,
+        perPage: 8,
+        q: '',
+        status: '',
+        pages: 1,
+        total: 0
+    };
+    let searchTimer = null;
 
     function getMessageInstance() {
         if (window.ElMessage) {
@@ -265,6 +395,132 @@
         }
     }
 
+    function escapeHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function formatDate(value) {
+        if (!value) {
+            return '-';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return '-';
+        }
+        return date.toLocaleDateString();
+    }
+
+    function getStatusLabel(status) {
+        const labels = {
+            published: '已发布',
+            draft: '草稿',
+            private: '私密',
+            trash: '回收站'
+        };
+        return labels[status] || status || '-';
+    }
+
+    function getStatusClass(status) {
+        if (status === 'published') {
+            return 'badge-success';
+        }
+        if (status === 'draft') {
+            return 'badge-warning';
+        }
+        return 'badge-muted';
+    }
+
+    function renderPostRows(posts) {
+        if (!postList) {
+            return;
+        }
+        if (!posts || !posts.length) {
+            postList.innerHTML = '<tr><td colspan="6">没有匹配的文章。</td></tr>';
+            return;
+        }
+
+        postList.innerHTML = posts.map(function(post) {
+            const summaryBadge = post.summary_cached
+                ? '<span class="badge badge-success">已有缓存</span>'
+                : '<span class="badge badge-muted">未生成</span>';
+            const statusBadge = `<span class="badge ${getStatusClass(post.status)}">${escapeHtml(getStatusLabel(post.status))}</span>`;
+            return `
+                <tr>
+                    <td>
+                        <div class="post-title">${escapeHtml(post.title)}</div>
+                        <div class="post-meta">ID ${post.id} · ${escapeHtml(post.slug || '')}</div>
+                    </td>
+                    <td>${escapeHtml(post.category || '未分类')}</td>
+                    <td>${statusBadge}</td>
+                    <td>${summaryBadge}</td>
+                    <td>${escapeHtml(formatDate(post.published_at || post.created_at))}</td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="window.forceAISummaryForPost(this, ${post.id})">
+                            重算
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderPagination(pagination) {
+        const page = pagination && pagination.page ? pagination.page : 1;
+        const pages = pagination && pagination.pages ? pagination.pages : 1;
+        const total = pagination && pagination.total ? pagination.total : 0;
+        postListState.page = page;
+        postListState.pages = pages;
+        postListState.total = total;
+        if (pageInfo) {
+            pageInfo.textContent = `共 ${total} 篇 · 第 ${page} / ${pages || 1} 页`;
+        }
+        if (prevPageBtn) {
+            prevPageBtn.disabled = page <= 1;
+        }
+        if (nextPageBtn) {
+            nextPageBtn.disabled = page >= pages;
+        }
+    }
+
+    function loadAISummaryPosts() {
+        if (!postList) {
+            return;
+        }
+        postList.innerHTML = '<tr><td colspan="6">正在加载文章...</td></tr>';
+        const params = new URLSearchParams({
+            page: String(postListState.page),
+            per_page: String(postListState.perPage)
+        });
+        if (postListState.q) {
+            params.set('q', postListState.q);
+        }
+        if (postListState.status) {
+            params.set('status', postListState.status);
+        }
+
+        fetch(`/plugins/ai_summary/api/posts?${params.toString()}`, {
+            credentials: 'same-origin'
+        })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (!data.success) {
+                    throw new Error(data.message || '文章列表加载失败');
+                }
+                renderPostRows(data.posts || []);
+                renderPagination(data.pagination || {});
+            })
+            .catch(function(err) {
+                console.error(err);
+                postList.innerHTML = '<tr><td colspan="6">文章列表加载失败。</td></tr>';
+                showMessage(err.message || '文章列表加载失败', 'error');
+            });
+    }
+
     window.saveAISummaryConfig = function(btn) {
         const form = document.getElementById('ai-summary-config');
         if (!form) {
@@ -310,14 +566,10 @@
             });
     };
 
-    window.forceAISummaryForPost = function(btn) {
-        const input = document.getElementById('ai-summary-post-id');
-        if (!input) {
-            return;
-        }
-        const postId = parseInt((input.value || '').trim(), 10);
+    window.forceAISummaryForPost = function(btn, postId) {
+        postId = parseInt(postId, 10);
         if (!postId || postId <= 0) {
-            showMessage('请输入有效的文章 ID', 'warning');
+            showMessage('无效的文章', 'warning');
             return;
         }
         toggleLoading(btn, true);
@@ -330,6 +582,7 @@
                 if (data.success) {
                     showMessage('已标记该文章下次访问重算', 'success');
                     updateStatus(`文章 ${postId} 缓存已清除。`);
+                    loadAISummaryPosts();
                 } else {
                     showMessage(data.message || '操作失败', 'error');
                     updateStatus('指定文章清理失败。');
@@ -345,6 +598,51 @@
             });
     };
 
+    if (postSearch) {
+        postSearch.addEventListener('input', function() {
+            window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(function() {
+                postListState.q = postSearch.value.trim();
+                postListState.page = 1;
+                loadAISummaryPosts();
+            }, 250);
+        });
+    }
+
+    if (postStatus) {
+        postStatus.addEventListener('change', function() {
+            postListState.status = postStatus.value;
+            postListState.page = 1;
+            loadAISummaryPosts();
+        });
+    }
+
+    if (refreshPostsBtn) {
+        refreshPostsBtn.addEventListener('click', function() {
+            loadAISummaryPosts();
+        });
+    }
+
+    if (prevPageBtn) {
+        prevPageBtn.addEventListener('click', function() {
+            if (postListState.page <= 1) {
+                return;
+            }
+            postListState.page -= 1;
+            loadAISummaryPosts();
+        });
+    }
+
+    if (nextPageBtn) {
+        nextPageBtn.addEventListener('click', function() {
+            if (postListState.page >= postListState.pages) {
+                return;
+            }
+            postListState.page += 1;
+            loadAISummaryPosts();
+        });
+    }
+
     window.forceAllAISummaries = function(btn) {
         if (!confirm('确认要清空所有文章的 AI 摘要缓存吗？下次访问将重新调用大模型。')) {
             return;
@@ -359,6 +657,7 @@
                 if (data.success) {
                     showMessage(data.message || '已清空缓存', 'success');
                     updateStatus(data.message || '已清空所有摘要缓存。');
+                    loadAISummaryPosts();
                 } else {
                     showMessage(data.message || '操作失败', 'error');
                     updateStatus('清空缓存失败。');
@@ -374,8 +673,6 @@
             });
     };
 
-    window.refreshAISummaryStatus = function() {
-        updateStatus('已刷新状态，可在操作后查看最新反馈。');
-    };
+    loadAISummaryPosts();
 })();
 </script>
